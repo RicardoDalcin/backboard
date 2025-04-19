@@ -166,10 +166,10 @@ export class VisualizationEngine {
     private canvas: HTMLCanvasElement,
     private container: HTMLDivElement
   ) {
-    const ctx = this.canvas.getContext("2d");
+    const ctx = this.canvas.getContext('2d');
 
     if (!ctx) {
-      throw new Error("Canvas context is not available");
+      throw new Error('Canvas context is not available');
     }
 
     this.ctx = ctx;
@@ -184,7 +184,7 @@ export class VisualizationEngine {
 
   private draw() {
     this.drawCourt();
-    this.drawShots();
+    // this.drawShots();
   }
 
   private drawShots() {
@@ -198,7 +198,7 @@ export class VisualizationEngine {
       for (let j = 0; j < 50; j++) {
         this.ctx.save();
         this.ctx.globalAlpha = 0.1;
-        this.ctx.strokeStyle = "#ffffff";
+        this.ctx.strokeStyle = '#ffffff';
         this.ctx.strokeRect(gridSize * i, gridSize * j, gridSize, gridSize);
         this.ctx.stroke();
         this.ctx.restore();
@@ -231,20 +231,20 @@ export class VisualizationEngine {
 
     const size = this.size.width / 50;
 
-    this.ctx.fillStyle = "#ff00ff";
+    this.ctx.fillStyle = '#ff00ff';
     this.ctx.fillRect(x, y, size, size);
   }
 
   private drawCourt() {
     this.ctx.clearRect(0, 0, this.size.width, this.size.height);
-    this.ctx.fillStyle = "#242424";
+    this.ctx.fillStyle = '#242424';
     this.ctx.fillRect(0, 0, this.size.width, this.size.height);
 
     // Draw the court lines
     // Border
     const lineWidth = this.feetToPixels(LINE_WIDTH);
     this.ctx.lineWidth = lineWidth;
-    this.ctx.strokeStyle = "#ffffff";
+    this.ctx.strokeStyle = '#ffffff';
     this.ctx.strokeRect(
       lineWidth / 2,
       lineWidth / 2,
@@ -300,7 +300,7 @@ export class VisualizationEngine {
     this.ctx.beginPath();
     this.ctx.save();
     this.ctx.globalAlpha = 0.15;
-    this.ctx.fillStyle = "#ffffff";
+    this.ctx.fillStyle = '#ffffff';
     this.ctx.fillRect(
       this.size.width / 2 - this.feetToPixels(PAINTED_AREA.width) / 2,
       0,
@@ -424,7 +424,7 @@ export class VisualizationEngine {
 
   private bindEvents() {
     window.addEventListener(
-      "resize",
+      'resize',
       () => {
         this.onResize();
         this.draw();
