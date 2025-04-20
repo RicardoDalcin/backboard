@@ -1,0 +1,1094 @@
+[
+  {
+    "month": 10,
+    "year": 2017,
+    "rankings": [
+      {
+        "team": "GSW",
+        "rank": 1,
+        "stat": 117.5
+      },
+      {
+        "team": "ORL",
+        "rank": 2,
+        "stat": 113
+      },
+      {
+        "team": "OKC",
+        "rank": 3,
+        "stat": 109.4
+      },
+      {
+        "team": "MIN",
+        "rank": 4,
+        "stat": 109
+      },
+      {
+        "team": "IND",
+        "rank": 5,
+        "stat": 108.8
+      },
+      {
+        "team": "POR",
+        "rank": 6,
+        "stat": 108.5
+      },
+      {
+        "team": "LAC",
+        "rank": 7,
+        "stat": 108.2
+      },
+      {
+        "team": "BKN",
+        "rank": 8,
+        "stat": 107.3
+      },
+      {
+        "team": "TOR",
+        "rank": 9,
+        "stat": 107.2
+      },
+      {
+        "team": "WAS",
+        "rank": 10,
+        "stat": 106.7
+      },
+      {
+        "team": "HOU",
+        "rank": 11,
+        "stat": 106.4
+      },
+      {
+        "team": "DET",
+        "rank": 12,
+        "stat": 106.1
+      },
+      {
+        "team": "CLE",
+        "rank": 13,
+        "stat": 105.8
+      },
+      {
+        "team": "MIA",
+        "rank": 14,
+        "stat": 105.5
+      },
+      {
+        "team": "NOP",
+        "rank": 15,
+        "stat": 105.1
+      },
+      {
+        "team": "NYK",
+        "rank": 16,
+        "stat": 105.1
+      },
+      {
+        "team": "DEN",
+        "rank": 17,
+        "stat": 105.1
+      },
+      {
+        "team": "MIL",
+        "rank": 18,
+        "stat": 104.8
+      },
+      {
+        "team": "MEM",
+        "rank": 19,
+        "stat": 104.1
+      },
+      {
+        "team": "BOS",
+        "rank": 20,
+        "stat": 103.9
+      },
+      {
+        "team": "PHI",
+        "rank": 21,
+        "stat": 103.1
+      },
+      {
+        "team": "CHA",
+        "rank": 22,
+        "stat": 102.6
+      },
+      {
+        "team": "SAS",
+        "rank": 23,
+        "stat": 101.8
+      },
+      {
+        "team": "DAL",
+        "rank": 24,
+        "stat": 101.3
+      },
+      {
+        "team": "UTA",
+        "rank": 25,
+        "stat": 100.6
+      },
+      {
+        "team": "ATL",
+        "rank": 26,
+        "stat": 99.7
+      },
+      {
+        "team": "LAL",
+        "rank": 27,
+        "stat": 98.4
+      },
+      {
+        "team": "PHX",
+        "rank": 28,
+        "stat": 98.3
+      },
+      {
+        "team": "SAC",
+        "rank": 29,
+        "stat": 96.5
+      },
+      {
+        "team": "CHI",
+        "rank": 30,
+        "stat": 94.1
+      }
+    ]
+  },
+  {
+    "month": 11,
+    "year": 2017,
+    "rankings": [
+      {
+        "team": "HOU",
+        "rank": 1,
+        "stat": 118.9
+      },
+      {
+        "team": "TOR",
+        "rank": 2,
+        "stat": 114.3
+      },
+      {
+        "team": "CLE",
+        "rank": 3,
+        "stat": 114.1
+      },
+      {
+        "team": "GSW",
+        "rank": 4,
+        "stat": 111
+      },
+      {
+        "team": "DET",
+        "rank": 5,
+        "stat": 110.4
+      },
+      {
+        "team": "MIN",
+        "rank": 6,
+        "stat": 109.8
+      },
+      {
+        "team": "DEN",
+        "rank": 7,
+        "stat": 109
+      },
+      {
+        "team": "SAS",
+        "rank": 8,
+        "stat": 108.9
+      },
+      {
+        "team": "NYK",
+        "rank": 9,
+        "stat": 108.8
+      },
+      {
+        "team": "IND",
+        "rank": 10,
+        "stat": 108.7
+      },
+      {
+        "team": "CHA",
+        "rank": 11,
+        "stat": 108.6
+      },
+      {
+        "team": "WAS",
+        "rank": 12,
+        "stat": 108.4
+      },
+      {
+        "team": "UTA",
+        "rank": 13,
+        "stat": 108.1
+      },
+      {
+        "team": "BOS",
+        "rank": 14,
+        "stat": 107.9
+      },
+      {
+        "team": "LAC",
+        "rank": 15,
+        "stat": 107.2
+      },
+      {
+        "team": "MIL",
+        "rank": 16,
+        "stat": 106.9
+      },
+      {
+        "team": "PHI",
+        "rank": 17,
+        "stat": 106.7
+      },
+      {
+        "team": "ATL",
+        "rank": 18,
+        "stat": 106.3
+      },
+      {
+        "team": "NOP",
+        "rank": 19,
+        "stat": 106.2
+      },
+      {
+        "team": "BKN",
+        "rank": 20,
+        "stat": 104.9
+      },
+      {
+        "team": "ORL",
+        "rank": 21,
+        "stat": 103.9
+      },
+      {
+        "team": "LAL",
+        "rank": 22,
+        "stat": 103.8
+      },
+      {
+        "team": "PHX",
+        "rank": 23,
+        "stat": 102.9
+      },
+      {
+        "team": "OKC",
+        "rank": 24,
+        "stat": 102.8
+      },
+      {
+        "team": "MEM",
+        "rank": 25,
+        "stat": 102.7
+      },
+      {
+        "team": "POR",
+        "rank": 26,
+        "stat": 101.8
+      },
+      {
+        "team": "DAL",
+        "rank": 27,
+        "stat": 101.3
+      },
+      {
+        "team": "MIA",
+        "rank": 28,
+        "stat": 100.3
+      },
+      {
+        "team": "SAC",
+        "rank": 29,
+        "stat": 99.8
+      },
+      {
+        "team": "CHI",
+        "rank": 30,
+        "stat": 97.9
+      }
+    ]
+  },
+  {
+    "month": 12,
+    "year": 2017,
+    "rankings": [
+      {
+        "team": "HOU",
+        "rank": 1,
+        "stat": 115.7
+      },
+      {
+        "team": "MIN",
+        "rank": 2,
+        "stat": 115.3
+      },
+      {
+        "team": "CLE",
+        "rank": 3,
+        "stat": 113.7
+      },
+      {
+        "team": "NOP",
+        "rank": 4,
+        "stat": 113.5
+      },
+      {
+        "team": "GSW",
+        "rank": 5,
+        "stat": 113.4
+      },
+      {
+        "team": "MIL",
+        "rank": 6,
+        "stat": 112.8
+      },
+      {
+        "team": "TOR",
+        "rank": 7,
+        "stat": 111.9
+      },
+      {
+        "team": "DEN",
+        "rank": 8,
+        "stat": 111.1
+      },
+      {
+        "team": "DAL",
+        "rank": 9,
+        "stat": 109.8
+      },
+      {
+        "team": "OKC",
+        "rank": 10,
+        "stat": 109.7
+      },
+      {
+        "team": "IND",
+        "rank": 11,
+        "stat": 109.5
+      },
+      {
+        "team": "CHI",
+        "rank": 12,
+        "stat": 108.6
+      },
+      {
+        "team": "ATL",
+        "rank": 13,
+        "stat": 108.4
+      },
+      {
+        "team": "MIA",
+        "rank": 14,
+        "stat": 108.4
+      },
+      {
+        "team": "LAC",
+        "rank": 15,
+        "stat": 107.8
+      },
+      {
+        "team": "BOS",
+        "rank": 16,
+        "stat": 107.7
+      },
+      {
+        "team": "PHX",
+        "rank": 17,
+        "stat": 107.6
+      },
+      {
+        "team": "WAS",
+        "rank": 18,
+        "stat": 107.1
+      },
+      {
+        "team": "SAS",
+        "rank": 19,
+        "stat": 106.5
+      },
+      {
+        "team": "LAL",
+        "rank": 20,
+        "stat": 106.2
+      },
+      {
+        "team": "MEM",
+        "rank": 21,
+        "stat": 106.2
+      },
+      {
+        "team": "SAC",
+        "rank": 22,
+        "stat": 106.1
+      },
+      {
+        "team": "BKN",
+        "rank": 23,
+        "stat": 105.4
+      },
+      {
+        "team": "NYK",
+        "rank": 24,
+        "stat": 105.3
+      },
+      {
+        "team": "POR",
+        "rank": 25,
+        "stat": 104.8
+      },
+      {
+        "team": "PHI",
+        "rank": 26,
+        "stat": 104.7
+      },
+      {
+        "team": "UTA",
+        "rank": 27,
+        "stat": 104.1
+      },
+      {
+        "team": "CHA",
+        "rank": 28,
+        "stat": 102.7
+      },
+      {
+        "team": "DET",
+        "rank": 29,
+        "stat": 102.6
+      },
+      {
+        "team": "ORL",
+        "rank": 30,
+        "stat": 101.8
+      }
+    ]
+  },
+  {
+    "month": 1,
+    "year": 2018,
+    "rankings": [
+      {
+        "team": "GSW",
+        "rank": 1,
+        "stat": 115.9
+      },
+      {
+        "team": "OKC",
+        "rank": 2,
+        "stat": 115.2
+      },
+      {
+        "team": "POR",
+        "rank": 3,
+        "stat": 114.6
+      },
+      {
+        "team": "MIN",
+        "rank": 4,
+        "stat": 113.9
+      },
+      {
+        "team": "HOU",
+        "rank": 5,
+        "stat": 112.6
+      },
+      {
+        "team": "CHA",
+        "rank": 6,
+        "stat": 111.8
+      },
+      {
+        "team": "TOR",
+        "rank": 7,
+        "stat": 111
+      },
+      {
+        "team": "ORL",
+        "rank": 8,
+        "stat": 110.3
+      },
+      {
+        "team": "IND",
+        "rank": 9,
+        "stat": 110.1
+      },
+      {
+        "team": "PHI",
+        "rank": 10,
+        "stat": 109.5
+      },
+      {
+        "team": "LAC",
+        "rank": 11,
+        "stat": 109.4
+      },
+      {
+        "team": "WAS",
+        "rank": 12,
+        "stat": 109.3
+      },
+      {
+        "team": "MIL",
+        "rank": 13,
+        "stat": 108.2
+      },
+      {
+        "team": "CHI",
+        "rank": 14,
+        "stat": 107.5
+      },
+      {
+        "team": "NOP",
+        "rank": 15,
+        "stat": 107.3
+      },
+      {
+        "team": "DEN",
+        "rank": 16,
+        "stat": 107.1
+      },
+      {
+        "team": "CLE",
+        "rank": 17,
+        "stat": 107
+      },
+      {
+        "team": "DAL",
+        "rank": 18,
+        "stat": 106.5
+      },
+      {
+        "team": "NYK",
+        "rank": 19,
+        "stat": 106.4
+      },
+      {
+        "team": "MEM",
+        "rank": 20,
+        "stat": 106.3
+      },
+      {
+        "team": "DET",
+        "rank": 21,
+        "stat": 106.3
+      },
+      {
+        "team": "UTA",
+        "rank": 22,
+        "stat": 105.9
+      },
+      {
+        "team": "SAS",
+        "rank": 23,
+        "stat": 105.2
+      },
+      {
+        "team": "ATL",
+        "rank": 24,
+        "stat": 105
+      },
+      {
+        "team": "LAL",
+        "rank": 25,
+        "stat": 104.5
+      },
+      {
+        "team": "PHX",
+        "rank": 26,
+        "stat": 104.3
+      },
+      {
+        "team": "MIA",
+        "rank": 27,
+        "stat": 104.2
+      },
+      {
+        "team": "SAC",
+        "rank": 28,
+        "stat": 103.7
+      },
+      {
+        "team": "BOS",
+        "rank": 29,
+        "stat": 103.3
+      },
+      {
+        "team": "BKN",
+        "rank": 30,
+        "stat": 102.2
+      }
+    ]
+  },
+  {
+    "month": 2,
+    "year": 2018,
+    "rankings": [
+      {
+        "team": "TOR",
+        "rank": 1,
+        "stat": 119.2
+      },
+      {
+        "team": "DEN",
+        "rank": 2,
+        "stat": 119.1
+      },
+      {
+        "team": "HOU",
+        "rank": 3,
+        "stat": 118
+      },
+      {
+        "team": "GSW",
+        "rank": 4,
+        "stat": 116.9
+      },
+      {
+        "team": "MIN",
+        "rank": 5,
+        "stat": 116.5
+      },
+      {
+        "team": "CLE",
+        "rank": 6,
+        "stat": 113
+      },
+      {
+        "team": "LAL",
+        "rank": 7,
+        "stat": 112.8
+      },
+      {
+        "team": "CHA",
+        "rank": 8,
+        "stat": 112.6
+      },
+      {
+        "team": "SAS",
+        "rank": 9,
+        "stat": 112.3
+      },
+      {
+        "team": "LAC",
+        "rank": 10,
+        "stat": 111.7
+      },
+      {
+        "team": "WAS",
+        "rank": 11,
+        "stat": 111.4
+      },
+      {
+        "team": "BOS",
+        "rank": 12,
+        "stat": 111
+      },
+      {
+        "team": "UTA",
+        "rank": 13,
+        "stat": 110
+      },
+      {
+        "team": "OKC",
+        "rank": 14,
+        "stat": 109.1
+      },
+      {
+        "team": "IND",
+        "rank": 15,
+        "stat": 108.8
+      },
+      {
+        "team": "NOP",
+        "rank": 16,
+        "stat": 108.6
+      },
+      {
+        "team": "POR",
+        "rank": 17,
+        "stat": 108.5
+      },
+      {
+        "team": "PHI",
+        "rank": 18,
+        "stat": 108.3
+      },
+      {
+        "team": "MIA",
+        "rank": 19,
+        "stat": 108.1
+      },
+      {
+        "team": "DAL",
+        "rank": 20,
+        "stat": 107.7
+      },
+      {
+        "team": "ORL",
+        "rank": 21,
+        "stat": 107.6
+      },
+      {
+        "team": "DET",
+        "rank": 22,
+        "stat": 107.2
+      },
+      {
+        "team": "SAC",
+        "rank": 23,
+        "stat": 106.9
+      },
+      {
+        "team": "BKN",
+        "rank": 24,
+        "stat": 106.8
+      },
+      {
+        "team": "MIL",
+        "rank": 25,
+        "stat": 105.8
+      },
+      {
+        "team": "ATL",
+        "rank": 26,
+        "stat": 103.2
+      },
+      {
+        "team": "NYK",
+        "rank": 27,
+        "stat": 102.9
+      },
+      {
+        "team": "CHI",
+        "rank": 28,
+        "stat": 101.7
+      },
+      {
+        "team": "PHX",
+        "rank": 29,
+        "stat": 99.9
+      },
+      {
+        "team": "MEM",
+        "rank": 30,
+        "stat": 96.8
+      }
+    ]
+  },
+  {
+    "month": 3,
+    "year": 2018,
+    "rankings": [
+      {
+        "team": "DEN",
+        "rank": 1,
+        "stat": 115.6
+      },
+      {
+        "team": "HOU",
+        "rank": 2,
+        "stat": 115
+      },
+      {
+        "team": "TOR",
+        "rank": 3,
+        "stat": 114.9
+      },
+      {
+        "team": "CLE",
+        "rank": 4,
+        "stat": 114.5
+      },
+      {
+        "team": "MIL",
+        "rank": 5,
+        "stat": 113.4
+      },
+      {
+        "team": "POR",
+        "rank": 6,
+        "stat": 113.1
+      },
+      {
+        "team": "LAC",
+        "rank": 7,
+        "stat": 112.8
+      },
+      {
+        "team": "PHI",
+        "rank": 8,
+        "stat": 111.9
+      },
+      {
+        "team": "OKC",
+        "rank": 9,
+        "stat": 111.9
+      },
+      {
+        "team": "BKN",
+        "rank": 10,
+        "stat": 111.1
+      },
+      {
+        "team": "MIA",
+        "rank": 11,
+        "stat": 111.1
+      },
+      {
+        "team": "CHA",
+        "rank": 12,
+        "stat": 111
+      },
+      {
+        "team": "MIN",
+        "rank": 13,
+        "stat": 110.6
+      },
+      {
+        "team": "LAL",
+        "rank": 14,
+        "stat": 109.5
+      },
+      {
+        "team": "UTA",
+        "rank": 15,
+        "stat": 109.3
+      },
+      {
+        "team": "WAS",
+        "rank": 16,
+        "stat": 107.7
+      },
+      {
+        "team": "NYK",
+        "rank": 17,
+        "stat": 107.3
+      },
+      {
+        "team": "BOS",
+        "rank": 18,
+        "stat": 107.2
+      },
+      {
+        "team": "GSW",
+        "rank": 19,
+        "stat": 106.9
+      },
+      {
+        "team": "SAS",
+        "rank": 20,
+        "stat": 106.1
+      },
+      {
+        "team": "IND",
+        "rank": 21,
+        "stat": 106.1
+      },
+      {
+        "team": "NOP",
+        "rank": 22,
+        "stat": 106
+      },
+      {
+        "team": "DAL",
+        "rank": 23,
+        "stat": 105.6
+      },
+      {
+        "team": "DET",
+        "rank": 24,
+        "stat": 105
+      },
+      {
+        "team": "SAC",
+        "rank": 25,
+        "stat": 104.2
+      },
+      {
+        "team": "CHI",
+        "rank": 26,
+        "stat": 103.2
+      },
+      {
+        "team": "ATL",
+        "rank": 27,
+        "stat": 102.5
+      },
+      {
+        "team": "MEM",
+        "rank": 28,
+        "stat": 102
+      },
+      {
+        "team": "PHX",
+        "rank": 29,
+        "stat": 99.6
+      },
+      {
+        "team": "ORL",
+        "rank": 30,
+        "stat": 99.3
+      }
+    ]
+  },
+  {
+    "month": 4,
+    "year": 2018,
+    "rankings": [
+      {
+        "team": "PHI",
+        "rank": 1,
+        "stat": 116.5
+      },
+      {
+        "team": "CHA",
+        "rank": 2,
+        "stat": 116.4
+      },
+      {
+        "team": "UTA",
+        "rank": 3,
+        "stat": 115.1
+      },
+      {
+        "team": "CLE",
+        "rank": 4,
+        "stat": 114.3
+      },
+      {
+        "team": "NOP",
+        "rank": 5,
+        "stat": 114.1
+      },
+      {
+        "team": "OKC",
+        "rank": 6,
+        "stat": 113.4
+      },
+      {
+        "team": "DET",
+        "rank": 7,
+        "stat": 113.1
+      },
+      {
+        "team": "DEN",
+        "rank": 8,
+        "stat": 112.2
+      },
+      {
+        "team": "SAS",
+        "rank": 9,
+        "stat": 109.9
+      },
+      {
+        "team": "MIN",
+        "rank": 10,
+        "stat": 109
+      },
+      {
+        "team": "GSW",
+        "rank": 11,
+        "stat": 107.4
+      },
+      {
+        "team": "MEM",
+        "rank": 12,
+        "stat": 107.1
+      },
+      {
+        "team": "IND",
+        "rank": 13,
+        "stat": 107
+      },
+      {
+        "team": "MIL",
+        "rank": 14,
+        "stat": 106.9
+      },
+      {
+        "team": "TOR",
+        "rank": 15,
+        "stat": 106.9
+      },
+      {
+        "team": "NYK",
+        "rank": 16,
+        "stat": 106.8
+      },
+      {
+        "team": "LAC",
+        "rank": 17,
+        "stat": 106.8
+      },
+      {
+        "team": "BKN",
+        "rank": 18,
+        "stat": 106.3
+      },
+      {
+        "team": "PHX",
+        "rank": 19,
+        "stat": 106
+      },
+      {
+        "team": "MIA",
+        "rank": 20,
+        "stat": 104.4
+      },
+      {
+        "team": "CHI",
+        "rank": 21,
+        "stat": 104.2
+      },
+      {
+        "team": "LAL",
+        "rank": 22,
+        "stat": 103.9
+      },
+      {
+        "team": "POR",
+        "rank": 23,
+        "stat": 103.6
+      },
+      {
+        "team": "WAS",
+        "rank": 24,
+        "stat": 103.4
+      },
+      {
+        "team": "BOS",
+        "rank": 25,
+        "stat": 102.9
+      },
+      {
+        "team": "DAL",
+        "rank": 26,
+        "stat": 102.6
+      },
+      {
+        "team": "HOU",
+        "rank": 27,
+        "stat": 102.4
+      },
+      {
+        "team": "ATL",
+        "rank": 28,
+        "stat": 101.8
+      },
+      {
+        "team": "ORL",
+        "rank": 29,
+        "stat": 99.9
+      },
+      {
+        "team": "SAC",
+        "rank": 30,
+        "stat": 98.7
+      }
+    ]
+  }
+]

@@ -1,0 +1,938 @@
+[
+  {
+    "month": 11,
+    "year": 2004,
+    "rankings": [
+      {
+        "team": "SAS",
+        "rank": 1,
+        "stat": 94.6
+      },
+      {
+        "team": "CLE",
+        "rank": 2,
+        "stat": 97.5
+      },
+      {
+        "team": "POR",
+        "rank": 3,
+        "stat": 98.9
+      },
+      {
+        "team": "DEN",
+        "rank": 4,
+        "stat": 99
+      },
+      {
+        "team": "GSW",
+        "rank": 5,
+        "stat": 99.4
+      },
+      {
+        "team": "LOS",
+        "rank": 6,
+        "stat": 99.6
+      },
+      {
+        "team": "DAL",
+        "rank": 7,
+        "stat": 99.7
+      },
+      {
+        "team": "ORL",
+        "rank": 8,
+        "stat": 99.8
+      },
+      {
+        "team": "PHX",
+        "rank": 9,
+        "stat": 99.8
+      },
+      {
+        "team": "HOU",
+        "rank": 10,
+        "stat": 100.4
+      },
+      {
+        "team": "BOS",
+        "rank": 11,
+        "stat": 101.4
+      },
+      {
+        "team": "NJN",
+        "rank": 12,
+        "stat": 101.9
+      },
+      {
+        "team": "PHI",
+        "rank": 13,
+        "stat": 102
+      },
+      {
+        "team": "IND",
+        "rank": 14,
+        "stat": 102.4
+      },
+      {
+        "team": "SEA",
+        "rank": 15,
+        "stat": 102.9
+      },
+      {
+        "team": "MIA",
+        "rank": 16,
+        "stat": 103.5
+      },
+      {
+        "team": "MEM",
+        "rank": 17,
+        "stat": 103.6
+      },
+      {
+        "team": "UTA",
+        "rank": 18,
+        "stat": 103.8
+      },
+      {
+        "team": "DET",
+        "rank": 19,
+        "stat": 103.8
+      },
+      {
+        "team": "MIL",
+        "rank": 20,
+        "stat": 103.8
+      },
+      {
+        "team": "CHI",
+        "rank": 21,
+        "stat": 103.9
+      },
+      {
+        "team": "NYK",
+        "rank": 22,
+        "stat": 104.1
+      },
+      {
+        "team": "MIN",
+        "rank": 23,
+        "stat": 104.3
+      },
+      {
+        "team": "WAS",
+        "rank": 24,
+        "stat": 104.3
+      },
+      {
+        "team": "LAL",
+        "rank": 25,
+        "stat": 104.9
+      },
+      {
+        "team": "NOH",
+        "rank": 26,
+        "stat": 104.9
+      },
+      {
+        "team": "TOR",
+        "rank": 27,
+        "stat": 105.3
+      },
+      {
+        "team": "CHA",
+        "rank": 28,
+        "stat": 105.7
+      },
+      {
+        "team": "SAC",
+        "rank": 29,
+        "stat": 106.5
+      },
+      {
+        "team": "ATL",
+        "rank": 30,
+        "stat": 108.1
+      }
+    ]
+  },
+  {
+    "month": 12,
+    "year": 2004,
+    "rankings": [
+      {
+        "team": "SAS",
+        "rank": 1,
+        "stat": 93.2
+      },
+      {
+        "team": "DET",
+        "rank": 2,
+        "stat": 94
+      },
+      {
+        "team": "CHI",
+        "rank": 3,
+        "stat": 96.7
+      },
+      {
+        "team": "HOU",
+        "rank": 4,
+        "stat": 96.9
+      },
+      {
+        "team": "DAL",
+        "rank": 5,
+        "stat": 99.1
+      },
+      {
+        "team": "NJN",
+        "rank": 6,
+        "stat": 100.5
+      },
+      {
+        "team": "MEM",
+        "rank": 7,
+        "stat": 100.6
+      },
+      {
+        "team": "IND",
+        "rank": 8,
+        "stat": 101.6
+      },
+      {
+        "team": "SAC",
+        "rank": 9,
+        "stat": 101.9
+      },
+      {
+        "team": "MIA",
+        "rank": 10,
+        "stat": 102
+      },
+      {
+        "team": "CHA",
+        "rank": 11,
+        "stat": 102.5
+      },
+      {
+        "team": "MIN",
+        "rank": 12,
+        "stat": 102.7
+      },
+      {
+        "team": "WAS",
+        "rank": 13,
+        "stat": 103.2
+      },
+      {
+        "team": "PHI",
+        "rank": 14,
+        "stat": 103.5
+      },
+      {
+        "team": "NOH",
+        "rank": 15,
+        "stat": 104.6
+      },
+      {
+        "team": "POR",
+        "rank": 16,
+        "stat": 105
+      },
+      {
+        "team": "NYK",
+        "rank": 17,
+        "stat": 105.1
+      },
+      {
+        "team": "GSW",
+        "rank": 18,
+        "stat": 105.4
+      },
+      {
+        "team": "PHX",
+        "rank": 19,
+        "stat": 105.7
+      },
+      {
+        "team": "MIL",
+        "rank": 20,
+        "stat": 105.7
+      },
+      {
+        "team": "ATL",
+        "rank": 21,
+        "stat": 105.8
+      },
+      {
+        "team": "SEA",
+        "rank": 22,
+        "stat": 105.9
+      },
+      {
+        "team": "DEN",
+        "rank": 23,
+        "stat": 106.1
+      },
+      {
+        "team": "LAL",
+        "rank": 24,
+        "stat": 106.6
+      },
+      {
+        "team": "CLE",
+        "rank": 25,
+        "stat": 106.6
+      },
+      {
+        "team": "TOR",
+        "rank": 26,
+        "stat": 106.7
+      },
+      {
+        "team": "BOS",
+        "rank": 27,
+        "stat": 107
+      },
+      {
+        "team": "LOS",
+        "rank": 28,
+        "stat": 107.6
+      },
+      {
+        "team": "ORL",
+        "rank": 29,
+        "stat": 109.1
+      },
+      {
+        "team": "UTA",
+        "rank": 30,
+        "stat": 111.6
+      }
+    ]
+  },
+  {
+    "month": 1,
+    "year": 2005,
+    "rankings": [
+      {
+        "team": "CHI",
+        "rank": 1,
+        "stat": 95
+      },
+      {
+        "team": "DET",
+        "rank": 2,
+        "stat": 98.2
+      },
+      {
+        "team": "SAS",
+        "rank": 3,
+        "stat": 99.2
+      },
+      {
+        "team": "MEM",
+        "rank": 4,
+        "stat": 100
+      },
+      {
+        "team": "SAC",
+        "rank": 5,
+        "stat": 101.4
+      },
+      {
+        "team": "ORL",
+        "rank": 6,
+        "stat": 102.1
+      },
+      {
+        "team": "LOS",
+        "rank": 7,
+        "stat": 102.3
+      },
+      {
+        "team": "HOU",
+        "rank": 8,
+        "stat": 103.1
+      },
+      {
+        "team": "PHI",
+        "rank": 9,
+        "stat": 103.2
+      },
+      {
+        "team": "CLE",
+        "rank": 10,
+        "stat": 103.3
+      },
+      {
+        "team": "BOS",
+        "rank": 11,
+        "stat": 103.5
+      },
+      {
+        "team": "MIA",
+        "rank": 12,
+        "stat": 104.1
+      },
+      {
+        "team": "TOR",
+        "rank": 13,
+        "stat": 104.3
+      },
+      {
+        "team": "ATL",
+        "rank": 14,
+        "stat": 104.4
+      },
+      {
+        "team": "NJN",
+        "rank": 15,
+        "stat": 104.6
+      },
+      {
+        "team": "DAL",
+        "rank": 16,
+        "stat": 105.5
+      },
+      {
+        "team": "IND",
+        "rank": 17,
+        "stat": 106.2
+      },
+      {
+        "team": "DEN",
+        "rank": 18,
+        "stat": 106.5
+      },
+      {
+        "team": "MIN",
+        "rank": 19,
+        "stat": 106.6
+      },
+      {
+        "team": "NOH",
+        "rank": 20,
+        "stat": 107.5
+      },
+      {
+        "team": "LAL",
+        "rank": 21,
+        "stat": 107.8
+      },
+      {
+        "team": "PHX",
+        "rank": 22,
+        "stat": 107.9
+      },
+      {
+        "team": "WAS",
+        "rank": 23,
+        "stat": 108.2
+      },
+      {
+        "team": "NYK",
+        "rank": 24,
+        "stat": 108.4
+      },
+      {
+        "team": "GSW",
+        "rank": 25,
+        "stat": 108.6
+      },
+      {
+        "team": "CHA",
+        "rank": 26,
+        "stat": 108.7
+      },
+      {
+        "team": "UTA",
+        "rank": 27,
+        "stat": 108.9
+      },
+      {
+        "team": "MIL",
+        "rank": 28,
+        "stat": 109.5
+      },
+      {
+        "team": "POR",
+        "rank": 29,
+        "stat": 111.7
+      },
+      {
+        "team": "SEA",
+        "rank": 30,
+        "stat": 112.7
+      }
+    ]
+  },
+  {
+    "month": 2,
+    "year": 2005,
+    "rankings": [
+      {
+        "team": "DET",
+        "rank": 1,
+        "stat": 96.3
+      },
+      {
+        "team": "SAS",
+        "rank": 2,
+        "stat": 97.3
+      },
+      {
+        "team": "DEN",
+        "rank": 3,
+        "stat": 98.4
+      },
+      {
+        "team": "MEM",
+        "rank": 4,
+        "stat": 100.2
+      },
+      {
+        "team": "IND",
+        "rank": 5,
+        "stat": 100.5
+      },
+      {
+        "team": "NJN",
+        "rank": 6,
+        "stat": 101.6
+      },
+      {
+        "team": "POR",
+        "rank": 7,
+        "stat": 102.5
+      },
+      {
+        "team": "MIA",
+        "rank": 8,
+        "stat": 103.2
+      },
+      {
+        "team": "CHI",
+        "rank": 9,
+        "stat": 103.8
+      },
+      {
+        "team": "HOU",
+        "rank": 10,
+        "stat": 104.1
+      },
+      {
+        "team": "PHI",
+        "rank": 11,
+        "stat": 104.2
+      },
+      {
+        "team": "MIL",
+        "rank": 12,
+        "stat": 104.3
+      },
+      {
+        "team": "BOS",
+        "rank": 13,
+        "stat": 104.8
+      },
+      {
+        "team": "DAL",
+        "rank": 14,
+        "stat": 106
+      },
+      {
+        "team": "GSW",
+        "rank": 15,
+        "stat": 106.2
+      },
+      {
+        "team": "CLE",
+        "rank": 16,
+        "stat": 106.4
+      },
+      {
+        "team": "CHA",
+        "rank": 17,
+        "stat": 106.8
+      },
+      {
+        "team": "ORL",
+        "rank": 18,
+        "stat": 107.5
+      },
+      {
+        "team": "MIN",
+        "rank": 19,
+        "stat": 107.6
+      },
+      {
+        "team": "WAS",
+        "rank": 20,
+        "stat": 107.7
+      },
+      {
+        "team": "UTA",
+        "rank": 21,
+        "stat": 107.8
+      },
+      {
+        "team": "SEA",
+        "rank": 22,
+        "stat": 108
+      },
+      {
+        "team": "NYK",
+        "rank": 23,
+        "stat": 108.6
+      },
+      {
+        "team": "NOH",
+        "rank": 24,
+        "stat": 109.1
+      },
+      {
+        "team": "LOS",
+        "rank": 25,
+        "stat": 109.4
+      },
+      {
+        "team": "LAL",
+        "rank": 26,
+        "stat": 109.5
+      },
+      {
+        "team": "PHX",
+        "rank": 27,
+        "stat": 109.7
+      },
+      {
+        "team": "TOR",
+        "rank": 28,
+        "stat": 110.8
+      },
+      {
+        "team": "ATL",
+        "rank": 29,
+        "stat": 111.3
+      },
+      {
+        "team": "SAC",
+        "rank": 30,
+        "stat": 111.8
+      }
+    ]
+  },
+  {
+    "month": 3,
+    "year": 2005,
+    "rankings": [
+      {
+        "team": "HOU",
+        "rank": 1,
+        "stat": 96.7
+      },
+      {
+        "team": "MIA",
+        "rank": 2,
+        "stat": 98.5
+      },
+      {
+        "team": "SAS",
+        "rank": 3,
+        "stat": 98.7
+      },
+      {
+        "team": "DEN",
+        "rank": 4,
+        "stat": 99.8
+      },
+      {
+        "team": "CHI",
+        "rank": 5,
+        "stat": 99.9
+      },
+      {
+        "team": "PHI",
+        "rank": 6,
+        "stat": 100.6
+      },
+      {
+        "team": "NJN",
+        "rank": 7,
+        "stat": 100.7
+      },
+      {
+        "team": "MEM",
+        "rank": 8,
+        "stat": 101.6
+      },
+      {
+        "team": "WAS",
+        "rank": 9,
+        "stat": 103.6
+      },
+      {
+        "team": "MIN",
+        "rank": 10,
+        "stat": 104.2
+      },
+      {
+        "team": "DAL",
+        "rank": 11,
+        "stat": 104.4
+      },
+      {
+        "team": "NOH",
+        "rank": 12,
+        "stat": 104.7
+      },
+      {
+        "team": "CLE",
+        "rank": 13,
+        "stat": 105
+      },
+      {
+        "team": "UTA",
+        "rank": 14,
+        "stat": 105.2
+      },
+      {
+        "team": "IND",
+        "rank": 15,
+        "stat": 105.4
+      },
+      {
+        "team": "DET",
+        "rank": 16,
+        "stat": 105.7
+      },
+      {
+        "team": "SEA",
+        "rank": 17,
+        "stat": 106
+      },
+      {
+        "team": "GSW",
+        "rank": 18,
+        "stat": 106.4
+      },
+      {
+        "team": "LOS",
+        "rank": 19,
+        "stat": 106.6
+      },
+      {
+        "team": "ORL",
+        "rank": 20,
+        "stat": 106.7
+      },
+      {
+        "team": "CHA",
+        "rank": 21,
+        "stat": 106.8
+      },
+      {
+        "team": "NYK",
+        "rank": 22,
+        "stat": 106.9
+      },
+      {
+        "team": "BOS",
+        "rank": 23,
+        "stat": 107.1
+      },
+      {
+        "team": "PHX",
+        "rank": 24,
+        "stat": 107.2
+      },
+      {
+        "team": "SAC",
+        "rank": 25,
+        "stat": 107.7
+      },
+      {
+        "team": "TOR",
+        "rank": 26,
+        "stat": 108
+      },
+      {
+        "team": "POR",
+        "rank": 27,
+        "stat": 109.4
+      },
+      {
+        "team": "ATL",
+        "rank": 28,
+        "stat": 111.8
+      },
+      {
+        "team": "MIL",
+        "rank": 29,
+        "stat": 112.1
+      },
+      {
+        "team": "LAL",
+        "rank": 30,
+        "stat": 112.7
+      }
+    ]
+  },
+  {
+    "month": 4,
+    "year": 2005,
+    "rankings": [
+      {
+        "team": "DET",
+        "rank": 1,
+        "stat": 97
+      },
+      {
+        "team": "CHI",
+        "rank": 2,
+        "stat": 97
+      },
+      {
+        "team": "IND",
+        "rank": 3,
+        "stat": 98.6
+      },
+      {
+        "team": "NJN",
+        "rank": 4,
+        "stat": 99.8
+      },
+      {
+        "team": "DAL",
+        "rank": 5,
+        "stat": 100.6
+      },
+      {
+        "team": "HOU",
+        "rank": 6,
+        "stat": 101.2
+      },
+      {
+        "team": "MIA",
+        "rank": 7,
+        "stat": 101.4
+      },
+      {
+        "team": "PHI",
+        "rank": 8,
+        "stat": 101.6
+      },
+      {
+        "team": "MEM",
+        "rank": 9,
+        "stat": 102.4
+      },
+      {
+        "team": "LOS",
+        "rank": 10,
+        "stat": 103
+      },
+      {
+        "team": "PHX",
+        "rank": 11,
+        "stat": 103.6
+      },
+      {
+        "team": "MIN",
+        "rank": 12,
+        "stat": 104.6
+      },
+      {
+        "team": "NOH",
+        "rank": 13,
+        "stat": 104.8
+      },
+      {
+        "team": "DEN",
+        "rank": 14,
+        "stat": 104.9
+      },
+      {
+        "team": "CHA",
+        "rank": 15,
+        "stat": 105.1
+      },
+      {
+        "team": "SAS",
+        "rank": 16,
+        "stat": 105.8
+      },
+      {
+        "team": "UTA",
+        "rank": 17,
+        "stat": 106.5
+      },
+      {
+        "team": "BOS",
+        "rank": 18,
+        "stat": 106.6
+      },
+      {
+        "team": "GSW",
+        "rank": 19,
+        "stat": 107
+      },
+      {
+        "team": "POR",
+        "rank": 20,
+        "stat": 107.9
+      },
+      {
+        "team": "WAS",
+        "rank": 21,
+        "stat": 109.1
+      },
+      {
+        "team": "TOR",
+        "rank": 22,
+        "stat": 109.7
+      },
+      {
+        "team": "ORL",
+        "rank": 23,
+        "stat": 110.5
+      },
+      {
+        "team": "NYK",
+        "rank": 24,
+        "stat": 110.7
+      },
+      {
+        "team": "CLE",
+        "rank": 25,
+        "stat": 110.8
+      },
+      {
+        "team": "SAC",
+        "rank": 26,
+        "stat": 111.3
+      },
+      {
+        "team": "MIL",
+        "rank": 27,
+        "stat": 111.8
+      },
+      {
+        "team": "ATL",
+        "rank": 28,
+        "stat": 113.6
+      },
+      {
+        "team": "SEA",
+        "rank": 29,
+        "stat": 114.5
+      },
+      {
+        "team": "LAL",
+        "rank": 30,
+        "stat": 116.8
+      }
+    ]
+  }
+]
