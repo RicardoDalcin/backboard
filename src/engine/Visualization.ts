@@ -5,6 +5,8 @@ import { shotsTable } from '@/db/schema';
 // 50mm (0.16 ft)
 const LINE_WIDTH = 0.16;
 
+const GRID_SIZE = 50;
+
 // Distance between sideline and three-point line
 const THREE_POINT_LINE_DISTANCE = 3;
 
@@ -38,21 +40,35 @@ const COURT_WIDTH_FT = 50;
 
 const COURT_ASPECT_RATIO = COURT_WIDTH_FT / COURT_LENGTH_FT;
 
+// const THEME = {
+//   background: '#242424',
+//   line: '#ffffff',
+//   paintedArea: '#ffffff',
+// };
+
+const THEME = {
+  background: '#ffffff',
+  line: '#555555',
+  paintedArea: '#353535',
+};
+
 interface ShotSection {
-  // X and Y in the 50x50 grid
+  // X and Y in the GRID_SIZExGRID_SIZE grid
   x: number;
   y: number;
 
   quantity: number;
+  fieldGoalPercentage: number;
+
   totalMade: number;
   totalMissed: number;
 }
 
 export class VisualizationEngine {
   private ctx: CanvasRenderingContext2D;
-  private size = { width: 0, height: 0 };
+  private size = { width: 0, height: 0, sectionSize: 0 };
   private abortController = new AbortController();
-  private shots: ShotSection[] = [];
+  private shots = new Map<number, ShotSection>();
 
   private mostShots = 0;
 
@@ -74,44 +90,50 @@ export class VisualizationEngine {
     this.draw();
   }
 
+  private getShotKey(x: number, y: number) {
+    return x + y * GRID_SIZE;
+  }
+
   setShots(shots: (typeof shotsTable.$inferSelect)[]) {
-    const sections: ShotSection[] = [];
+    this.shots.clear();
 
     for (const shot of shots) {
-      const x =
-        this.size.width / 2 -
-        (this.size.width / 2) * (Math.ceil(Number(shot.locX)) / 25);
-
-      const y = this.feetToPixels(Math.ceil(Number(shot.locY)));
-
-      const section = sections.find(
-        (section) => section.x === x && section.y === y
+      const { x, y } = this.positionToSection(
+        this.size.width / 2 - (this.size.width / 2) * (Number(shot.locX) / 25),
+        this.feetToPixels(Number(shot.locY))
       );
 
-      if (section) {
-        section.quantity++;
-        section.totalMade += Number(shot.shotMade);
-        section.totalMissed += Number(shot.shotMade) === 0 ? 1 : 0;
+      const key = this.getShotKey(x, y);
 
-        if (this.mostShots < section.quantity) {
-          this.mostShots = section.quantity;
+      const section = this.shots.get(key);
+
+      if (section) {
+        if (shot.shotMade) {
+          section.totalMade++;
+        } else {
+          section.totalMissed++;
         }
       } else {
-        sections.push({
+        this.shots.set(key, {
           x,
           y,
-          quantity: 1,
+          quantity: 0,
+          fieldGoalPercentage: 0,
           totalMade: Number(shot.shotMade),
           totalMissed: Number(shot.shotMade) === 0 ? 1 : 0,
         });
-
-        if (this.mostShots === 0) {
-          this.mostShots = 1;
-        }
       }
     }
 
-    this.shots = sections;
+    this.shots.values().forEach((section) => {
+      section.quantity = section.totalMade + section.totalMissed;
+      section.fieldGoalPercentage = section.totalMade / section.quantity;
+
+      if (section.quantity > this.mostShots) {
+        this.mostShots = section.quantity;
+      }
+    });
+
     this.draw();
   }
 
@@ -122,67 +144,84 @@ export class VisualizationEngine {
     this.drawShots();
   }
 
+  private positionToSection(x: number, y: number) {
+    const xSection = Math.floor(x / this.size.sectionSize);
+    const ySection = Math.floor(y / this.size.sectionSize);
+
+    return {
+      x: xSection,
+      y: ySection,
+    };
+  }
+
+  private sectionToPosition(x: number, y: number) {
+    return {
+      x: x * this.size.sectionSize,
+      y: y * this.size.sectionSize,
+    };
+  }
+
   private drawShots() {
     this.shots.forEach((shot) => {
       this.drawShot(shot);
     });
 
-    // draw grid of 50 squares
-    // const gridSize = this.size.width / 50;
-    // for (let i = 0; i < 50; i++) {
-    //   for (let j = 0; j < 50; j++) {
-    //     this.ctx.save();
-    //     this.ctx.globalAlpha = 0.1;
-    //     this.ctx.strokeStyle = '#ffffff';
-    //     this.ctx.strokeRect(gridSize * i, gridSize * j, gridSize, gridSize);
-    //     this.ctx.stroke();
-    //     this.ctx.restore();
-    //   }
-    // }
+    for (let i = 0; i < GRID_SIZE; i++) {
+      for (let j = 0; j < GRID_SIZE; j++) {
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.02;
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = THEME.line;
+        this.ctx.strokeRect(
+          this.size.sectionSize * i,
+          this.size.sectionSize * j,
+          this.size.sectionSize,
+          this.size.sectionSize
+        );
+        this.ctx.stroke();
+        this.ctx.restore();
+      }
+    }
   }
 
-  // private lerp(
-  //   startA: number,
-  //   endA: number,
-  //   startB: number,
-  //   endB: number,
-  //   t: number
-  // ) {
-  //   return startA + (endA - startA) * t;
-  // }
-
   private drawShot(shot: ShotSection) {
-    const totalSize = this.size.width / 50;
-
-    // Total size is the max it can be if number of shots is equal to the most
     const size = Math.max(
-      totalSize * (shot.quantity / this.mostShots),
-      totalSize * 0.3
+      this.size.sectionSize * (shot.quantity / this.mostShots),
+      this.size.sectionSize * 0.2
     );
 
-    this.ctx.fillStyle = '#ff00ff';
+    const { x, y } = this.sectionToPosition(shot.x, shot.y);
+
+    const color = getAccuracyColor(shot.fieldGoalPercentage);
+    this.ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+
     this.ctx.beginPath();
-    this.ctx.roundRect(shot.x - size / 2, shot.y - size / 2, size, size, 2);
+    this.ctx.roundRect(
+      x + (this.size.sectionSize - size) / 2,
+      y + (this.size.sectionSize - size) / 2,
+      size,
+      size,
+      size * 0.1
+    );
     this.ctx.closePath();
     this.ctx.fill();
   }
 
   private drawCourt() {
     this.ctx.clearRect(0, 0, this.size.width, this.size.height);
-    this.ctx.fillStyle = '#242424';
+    this.ctx.fillStyle = THEME.background;
     this.ctx.fillRect(0, 0, this.size.width, this.size.height);
 
     // Draw the court lines
     // Border
     const lineWidth = this.feetToPixels(LINE_WIDTH);
     this.ctx.lineWidth = lineWidth;
-    this.ctx.strokeStyle = '#ffffff';
-    this.ctx.strokeRect(
-      lineWidth / 2,
-      lineWidth / 2,
-      this.size.width - lineWidth * 2,
-      this.size.height - lineWidth * 2
-    );
+    this.ctx.strokeStyle = THEME.line;
+
+    this.ctx.save();
+    this.ctx.lineWidth = lineWidth * 2;
+    this.ctx.strokeRect(0, 0, this.size.width, this.size.height);
+    this.ctx.restore();
 
     // Three-point line (two straight lines and one arc)
     this.ctx.beginPath();
@@ -232,7 +271,7 @@ export class VisualizationEngine {
     this.ctx.beginPath();
     this.ctx.save();
     this.ctx.globalAlpha = 0.15;
-    this.ctx.fillStyle = '#ffffff';
+    this.ctx.fillStyle = THEME.paintedArea;
     this.ctx.fillRect(
       this.size.width / 2 - this.feetToPixels(PAINTED_AREA.width) / 2,
       0,
@@ -349,6 +388,7 @@ export class VisualizationEngine {
     this.size = {
       width: width,
       height: width / COURT_ASPECT_RATIO,
+      sectionSize: width / GRID_SIZE,
     };
 
     this.ctx.scale(devicePixelRatio, devicePixelRatio);
@@ -369,3 +409,34 @@ export class VisualizationEngine {
     return feet * (this.size.width / COURT_WIDTH_FT);
   }
 }
+
+const getRgb = (color: string) => {
+  const [r, g, b] = color
+    .replace('rgb(', '')
+    .replace(')', '')
+    .split(',')
+    .map((str) => Number(str));
+  return {
+    r,
+    g,
+    b,
+  };
+};
+
+const colorInterpolate = (colorA: string, colorB: string, intval: number) => {
+  const rgbA = getRgb(colorA);
+  const rgbB = getRgb(colorB);
+
+  const colorVal = (prop: 'r' | 'g' | 'b') =>
+    Math.round(rgbA[prop] * (1 - intval) + rgbB[prop] * intval);
+
+  return {
+    r: colorVal('r'),
+    g: colorVal('g'),
+    b: colorVal('b'),
+  };
+};
+
+const getAccuracyColor = (accuracy: number) => {
+  return colorInterpolate('rgb(101, 146, 173)', 'rgb(2, 49, 77)', accuracy);
+};
