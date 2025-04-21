@@ -1,14 +1,16 @@
 import 'dotenv/config';
 
+import { parse } from 'csv-parse/sync';
+import { readFile } from 'fs/promises';
+
 import { db } from '.';
 import { shotsTable } from './schema';
 
+import { TEAMS_BY_NAME } from '../../scripts/league-utils';
+
 import { defensiveRatings } from '../../data/defensive';
 import { offensiveRatings } from '../../data/offensive';
-
-import { parse } from 'csv-parse/sync';
-import { readFile } from 'fs/promises';
-import { TEAMS_BY_NAME } from '../../scripts/league-utils';
+import { players } from '../../data/players';
 import { winners } from '../../data/winners';
 
 interface CsvRow {
@@ -63,8 +65,43 @@ async function parseCsvFile<T = CsvRow>(): Promise<T[]> {
   }
 }
 
+interface Player {
+  player_id: number;
+  name: string;
+  height: string;
+  weight: string;
+  birthdate: string;
+}
+
+class PlayerCache {
+  private cache: Map<string, Player> = new Map();
+  private playersList = Object.values(players);
+
+  get(playerId: string): Player {
+    const numberId = Number(playerId);
+
+    if (this.cache.has(playerId)) {
+      return this.cache.get(playerId)!;
+    }
+
+    const player = this.playersList.find((item) => item.player_id === numberId);
+
+    if (player) {
+      this.cache.set(playerId, player);
+      return player;
+    }
+
+    throw new Error(`Player with ID ${playerId} not found`);
+  }
+}
+
+const roundTo = (num: number, precision: number) => {
+  return Math.round(num * 10 ** precision) / 10 ** precision;
+};
+
 async function seed() {
-  console.log('aaaaa');
+  const playersCache = new PlayerCache();
+
   const records = await parseCsvFile<Row>();
 
   const dbRecords = records.map((record) => {
@@ -96,7 +133,13 @@ async function seed() {
 
     const winnersSeason = winners[record.SEASON_2 as keyof typeof winners];
     const gameWinner = winnersSeason[`00${record.GAME_ID}`];
-    console.log(gameWinner, teamShortName);
+
+    const player = playersCache.get(record.PLAYER_ID);
+
+    const playerFt = Number(player.height.substring(0, 1));
+    const playerIn = Number(player.height.substring(2, player.height.length));
+
+    const playerHeight = roundTo(playerFt + playerIn / 12, 3);
 
     const shot: typeof shotsTable.$inferInsert = {
       season,
@@ -118,64 +161,36 @@ async function seed() {
       zoneName: record.ZONE_NAME,
       zoneAbb: record.ZONE_ABB,
       zoneRange: record.ZONE_RANGE,
-      locX: record.LOC_X,
-      locY: record.LOC_Y,
-      shotDistance: record.SHOT_DISTANCE,
+      locX: String(roundTo(Number(record.LOC_X), 2)),
+      locY: String(roundTo(Number(record.LOC_Y), 2)),
+      shotDistance: String(roundTo(Number(record.SHOT_DISTANCE), 2)),
       quarter: Number(record.QUARTER),
       minsLeft: Number(record.MINS_LEFT),
       secsLeft: Number(record.SECS_LEFT),
-      defRtg: String(defensiveRanking?.stat) ?? '0',
+      defRtg: defensiveRanking?.stat
+        ? String(roundTo(defensiveRanking.stat, 2))
+        : '0',
       defRtgRank: defensiveRanking?.rank ?? 0,
-      offRtg: String(offensiveRanking?.stat) ?? '0',
+      offRtg: offensiveRanking?.stat
+        ? String(roundTo(offensiveRanking.stat, 2))
+        : '0',
       offRtgRank: offensiveRanking?.rank ?? 0,
-      playerHeight: '0',
-      playerWeight: '0',
+      playerHeight: player.height ? String(playerHeight) : '0',
+      playerWeight: player.weight ? Number(player.weight) : 0,
       gameWon: gameWinner === teamShortName,
     };
 
     return shot;
   });
 
-  for (const record of dbRecords) {
-    console.log(record);
-    // await db.insert(shotsTable).values(record);
+  // insert in 1000 chunks
+  for (let i = 0; i < dbRecords.length; i += 1000) {
+    console.log(
+      `Inserting chunk ${i / 1000}/${Math.ceil(dbRecords.length / 1000)}`
+    );
+    const chunk = dbRecords.slice(i, i + 1000);
+    await db.insert(shotsTable).values(chunk);
   }
-
-  // const exampleShot: typeof shotsTable.$inferInsert = {
-  //   season: 2024,
-  //   teamId: 1610612764,
-  //   teamName: 'Washington Wizards',
-  //   playerId: 1629673,
-  //   playerName: 'Jordan Poole',
-  //   positionGroup: 'G',
-  //   position: 'SG',
-  //   gameId: 22300003,
-  //   gameDate: '11-03-2023',
-  //   homeTeam: 'MIA',
-  //   awayTeam: 'WAS',
-  //   eventType: 'Missed Shot',
-  //   shotMade: false,
-  //   actionType: 'Driving Floating Jump Shot',
-  //   shotType: '2PT Field Goal',
-  //   basicZone: 'In The Paint (Non-RA)',
-  //   zoneName: 'Center',
-  //   zoneAbb: 'C',
-  //   zoneRange: '8-16 ft.',
-  //   locX: '-0.4',
-  //   locY: '17.45',
-  //   shotDistance: '12',
-  //   quarter: 1,
-  //   minsLeft: 11,
-  //   secsLeft: 1,
-  //   defRtg: '0',
-  //   defRtgRank: 0,
-  //   offRtg: '0',
-  //   offRtgRank: 0,
-  //   playerHeight: '0',
-  //   playerWeight: '0',
-  //   gameWon: false,
-  // };
-  // await db.insert(shotsTable).values(exampleShot);
 }
 
 seed();
