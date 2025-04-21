@@ -1,123 +1,4 @@
-export type Shot = {
-  // season: string;
-  // teamId: string;
-  // teamName: string;
-  // playerId: string;
-  // playerName: string;
-  // positionGroup: string;
-  // position: string;
-  // gameDate: string;
-  // gameId: string;
-  // homeTeam: string;
-  // awayTeam: string;
-  // eventType: string;
-  // shotMade: string;
-  // actionType: string;
-  // shotType: string;
-  // zone: {
-  //   basic: string;
-  //   name: string;
-  //   abbreviation: string;
-  //   range: string;
-  // };
-  location: {
-    x: number;
-    y: number;
-    // distance: number;
-  };
-  // time: {
-  //   quarter: number;
-  //   minsLeft: number;
-  //   secsLeft: number;
-  // };
-};
-
-const SHOTS: Shot[] = [
-  {
-    location: {
-      x: -0,
-      y: 5.95,
-    },
-  },
-  {
-    location: {
-      x: -12.2,
-      y: 21.75,
-    },
-  },
-  {
-    location: {
-      x: -0,
-      y: 7.05,
-    },
-  },
-  {
-    location: {
-      x: -1,
-      y: 29.65,
-    },
-  },
-  {
-    location: {
-      x: -22.8,
-      y: 6.35,
-    },
-  },
-  {
-    location: {
-      x: 15.1,
-      y: 25.25,
-    },
-  },
-  {
-    location: {
-      x: 15,
-      y: 24.75,
-    },
-  },
-  {
-    location: {
-      x: 19.7,
-      y: 21.65,
-    },
-  },
-  {
-    location: {
-      x: -1.5,
-      y: 4.75,
-    },
-  },
-  {
-    location: {
-      x: -1.5,
-      y: 4.65,
-    },
-  },
-  {
-    location: {
-      x: 0.4,
-      y: 5.45,
-    },
-  },
-  {
-    location: {
-      x: -1.7,
-      y: 5.15,
-    },
-  },
-  {
-    location: {
-      x: -1.5,
-      y: 5.45,
-    },
-  },
-  {
-    location: {
-      x: -1.4,
-      y: 5.15,
-    },
-  },
-];
+import { shotsTable } from '@/db/schema';
 
 // All units are in feet
 
@@ -157,10 +38,23 @@ const COURT_WIDTH_FT = 50;
 
 const COURT_ASPECT_RATIO = COURT_WIDTH_FT / COURT_LENGTH_FT;
 
+interface ShotSection {
+  // X and Y in the 50x50 grid
+  x: number;
+  y: number;
+
+  quantity: number;
+  totalMade: number;
+  totalMissed: number;
+}
+
 export class VisualizationEngine {
   private ctx: CanvasRenderingContext2D;
   private size = { width: 0, height: 0 };
   private abortController = new AbortController();
+  private shots: ShotSection[] = [];
+
+  private mostShots = 0;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -180,30 +74,71 @@ export class VisualizationEngine {
     this.draw();
   }
 
+  setShots(shots: (typeof shotsTable.$inferSelect)[]) {
+    const sections: ShotSection[] = [];
+
+    for (const shot of shots) {
+      const x =
+        this.size.width / 2 -
+        (this.size.width / 2) * (Math.ceil(Number(shot.locX)) / 25);
+
+      const y = this.feetToPixels(Math.ceil(Number(shot.locY)));
+
+      const section = sections.find(
+        (section) => section.x === x && section.y === y
+      );
+
+      if (section) {
+        section.quantity++;
+        section.totalMade += Number(shot.shotMade);
+        section.totalMissed += Number(shot.shotMade) === 0 ? 1 : 0;
+
+        if (this.mostShots < section.quantity) {
+          this.mostShots = section.quantity;
+        }
+      } else {
+        sections.push({
+          x,
+          y,
+          quantity: 1,
+          totalMade: Number(shot.shotMade),
+          totalMissed: Number(shot.shotMade) === 0 ? 1 : 0,
+        });
+
+        if (this.mostShots === 0) {
+          this.mostShots = 1;
+        }
+      }
+    }
+
+    this.shots = sections;
+    this.draw();
+  }
+
   destroy() {}
 
   private draw() {
     this.drawCourt();
-    // this.drawShots();
+    this.drawShots();
   }
 
   private drawShots() {
-    SHOTS.forEach((shot) => {
+    this.shots.forEach((shot) => {
       this.drawShot(shot);
     });
 
     // draw grid of 50 squares
-    const gridSize = this.size.width / 50;
-    for (let i = 0; i < 50; i++) {
-      for (let j = 0; j < 50; j++) {
-        this.ctx.save();
-        this.ctx.globalAlpha = 0.1;
-        this.ctx.strokeStyle = '#ffffff';
-        this.ctx.strokeRect(gridSize * i, gridSize * j, gridSize, gridSize);
-        this.ctx.stroke();
-        this.ctx.restore();
-      }
-    }
+    // const gridSize = this.size.width / 50;
+    // for (let i = 0; i < 50; i++) {
+    //   for (let j = 0; j < 50; j++) {
+    //     this.ctx.save();
+    //     this.ctx.globalAlpha = 0.1;
+    //     this.ctx.strokeStyle = '#ffffff';
+    //     this.ctx.strokeRect(gridSize * i, gridSize * j, gridSize, gridSize);
+    //     this.ctx.stroke();
+    //     this.ctx.restore();
+    //   }
+    // }
   }
 
   // private lerp(
@@ -216,23 +151,20 @@ export class VisualizationEngine {
   //   return startA + (endA - startA) * t;
   // }
 
-  private drawShot(shot: Shot) {
-    // 0 is the center of the court
-    // -25 is the right side of the court
-    // 25 is the left side of the court
+  private drawShot(shot: ShotSection) {
+    const totalSize = this.size.width / 50;
 
-    // y is the distance from baseline
-
-    const x =
-      this.size.width / 2 -
-      (this.size.width / 2) * (Math.ceil(shot.location.x) / 25);
-
-    const y = this.feetToPixels(Math.ceil(shot.location.y));
-
-    const size = this.size.width / 50;
+    // Total size is the max it can be if number of shots is equal to the most
+    const size = Math.max(
+      totalSize * (shot.quantity / this.mostShots),
+      totalSize * 0.3
+    );
 
     this.ctx.fillStyle = '#ff00ff';
-    this.ctx.fillRect(x, y, size, size);
+    this.ctx.beginPath();
+    this.ctx.roundRect(shot.x - size / 2, shot.y - size / 2, size, size, 2);
+    this.ctx.closePath();
+    this.ctx.fill();
   }
 
   private drawCourt() {

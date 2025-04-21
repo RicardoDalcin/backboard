@@ -3,7 +3,13 @@
 import { VisualizationEngine } from '@/engine/Visualization';
 import { useEffect, useRef } from 'react';
 
-export const Visualization = () => {
+import { shotsTable } from '@/db/schema';
+
+export const Visualization = ({
+  shots,
+}: {
+  shots: (typeof shotsTable.$inferSelect)[];
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const initialized = useRef(false);
@@ -24,6 +30,14 @@ export const Visualization = () => {
     engine.current = new VisualizationEngine(canvas, container);
     initialized.current = true;
   }, []);
+
+  useEffect(() => {
+    if (!engine.current) {
+      return;
+    }
+
+    engine.current.setShots(shots);
+  }, [shots]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
