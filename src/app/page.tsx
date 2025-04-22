@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { Visualization } from './_components/visualization';
 import { shotsTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { Chart } from './_components/chart';
 
 interface Zone {
   count: number;
@@ -50,28 +51,48 @@ function getBasicZones(shots: (typeof shotsTable.$inferSelect)[]) {
 }
 
 export default async function Home() {
-  const shots = await db.select().from(shotsTable).where(
-    // lte(shotsTable.offRtgRank, 1)
-    // and(
-    //   eq(shotsTable.teamId, 1610612742),
-    //   lte(shotsTable.playerHeight, '6.5')
-    // )
-    eq(shotsTable.playerId, 201942)
-  );
+  const shots = await db
+    .select()
+    .from(shotsTable)
+    .where(eq(shotsTable.playerId, 201942));
+
+  const shots2 = await db
+    .select()
+    .from(shotsTable)
+    .where(eq(shotsTable.playerId, 1629029));
+
+  const shots3 = await db
+    .select()
+    .from(shotsTable)
+    .where(eq(shotsTable.playerId, 1630639));
 
   const zones = getBasicZones(shots);
+  const zones2 = getBasicZones(shots2);
+  const zones3 = getBasicZones(shots3);
 
   return (
     <div className="flex flex-col w-full h-full p-14">
       <Visualization shots={shots} />
 
-      {zones.map((zone) => {
-        return (
-          <div key={zone.count}>
-            {zone.key}: {zone.frequency}% _ {zone.accuracy.toFixed(2)}%
-          </div>
-        );
-      })}
+      <Chart
+        data={[
+          {
+            id: 201942,
+            name: 'Demar DeRozan',
+            zones: zones,
+          },
+          {
+            id: 1629029,
+            name: 'Luka Doncic',
+            zones: zones2,
+          },
+          {
+            id: 1629023,
+            name: 'A.J. Lawson',
+            zones: zones3,
+          },
+        ]}
+      />
     </div>
   );
 }
