@@ -145,7 +145,7 @@ export class VisualizationEngine {
   }
 
   private positionToSection(x: number, y: number) {
-    const xSection = Math.floor(x / this.size.sectionSize);
+    const xSection = Math.round(x / this.size.sectionSize);
     const ySection = Math.floor(y / this.size.sectionSize);
 
     return {
@@ -187,7 +187,7 @@ export class VisualizationEngine {
   private drawShot(shot: ShotSection) {
     const size = Math.max(
       this.size.sectionSize * (shot.quantity / this.mostShots),
-      this.size.sectionSize * 0.2
+      this.size.sectionSize * 0.25
     );
 
     const { x, y } = this.sectionToPosition(shot.x, shot.y);
