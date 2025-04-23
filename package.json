@@ -1,41 +1,20 @@
 {
   "name": "nba-viz",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "scrape:def": "tsx scripts/scrape-defensive-ratings.ts",
-    "scrape:off": "tsx scripts/scrape-offensive-ratings.ts",
-    "db:push": "npx drizzle-kit push",
-    "db:generate": "npx drizzle-kit generate",
-    "db:seed": "tsx src/db/seed.ts"
-  },
-  "dependencies": {
-    "chart.js": "^4.4.9",
-    "dotenv": "^16.5.0",
-    "drizzle-orm": "^0.42.0",
-    "next": "15.3.0",
-    "postgres": "^3.4.5",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "recharts": "^2.15.3"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "csv-parse": "^5.6.0",
-    "drizzle-kit": "^0.31.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.0",
-    "puppeteer": "^24.6.1",
-    "tailwindcss": "^4",
-    "tsx": "^4.19.3",
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.0",
     "typescript": "^5"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
   }
 }
