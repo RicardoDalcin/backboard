@@ -1,0 +1,21 @@
+{
+  "name": "@nba-viz/data",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "scrape:def": "tsx src/defensive/scrape-defensive-ratings.ts",
+    "scrape:off": "tsx src/offensive/scrape-offensive-ratings.ts",
+    "scrape:winners": "python3 src/winners/nba_winners_to_json.py",
+    "scrape:players": "python3 src/players/players.py",
+    "db:create": "tsx src/create-db.ts"
+  },
+  "devDependencies": {
+    "csv-parse": "^5.6.0",
+    "puppeteer": "^24.6.1",
+    "sqlite3": "^5.1.7",
+    "tsx": "^4.19.3"
+  }
+}
