@@ -10,9 +10,10 @@
     "scrape:off": "tsx src/offensive/scrape-offensive-ratings.ts",
     "scrape:winners": "python3 src/winners/nba_winners_to_json.py",
     "scrape:players": "python3 src/players/players.py",
-    "db:create": "tsx src/create-db.ts"
+    "db:create": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsx src/create-db.ts"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "csv-parse": "^5.6.0",
     "puppeteer": "^24.6.1",
     "sqlite3": "^5.1.7",

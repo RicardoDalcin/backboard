@@ -14,6 +14,7 @@ const ALL_TEAMS = {
   ROCKETS: { name: 'Houston Rockets', abbreviation: 'HOU' },
   PACERS: { name: 'Indiana Pacers', abbreviation: 'IND' },
   CLIPPERS: { name: 'LA Clippers', abbreviation: 'LAC' },
+  CLIPPERS2: { name: 'Los Angeles Clippers', abbreviation: 'LAC' },
   LAKERS: { name: 'Los Angeles Lakers', abbreviation: 'LAL' },
   GRIZZLIES: { name: 'Memphis Grizzlies', abbreviation: 'MEM' },
   HEAT: { name: 'Miami Heat', abbreviation: 'MIA' },
