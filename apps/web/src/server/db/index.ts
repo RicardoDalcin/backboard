@@ -27,7 +27,7 @@ const initializeSQLite = async () => {
 
     log(
       'OPFS is available, created persisted database at',
-      openResponse.result.filename.replace(/^file:(.*?)\?vfs=opfs$/, '$1')
+      openResponse.result.filename.replace(/^file:(.*?)\?vfs=opfs$/, '$1'),
     );
 
     // Execute a query to count the number of rows in the game table

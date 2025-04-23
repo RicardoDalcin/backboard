@@ -12,7 +12,7 @@ declare module '@sqlite.org/sqlite-wasm' {
   type PromiserConfigGetMessage = (
     msg: 'config-get',
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    params: {} // currently ignored and may be elided.
+    params: {}, // currently ignored and may be elided.
   ) => Promise<{
     result: {
       version: {
@@ -29,7 +29,7 @@ declare module '@sqlite.org/sqlite-wasm' {
     params: {
       filename: string;
       vfs?: string;
-    }
+    },
   ) => Promise<
     DBMessageResult & {
       type: 'open';
@@ -56,7 +56,7 @@ declare module '@sqlite.org/sqlite-wasm' {
         rowNumber: number | null;
         columnNames: string[];
       }) => void;
-    }
+    },
   ) => Promise<
     DBMessageResult & {
       type: 'exec';
@@ -73,7 +73,7 @@ declare module '@sqlite.org/sqlite-wasm' {
     msg: 'export',
     params: {
       dbId: string;
-    }
+    },
   ) => Promise<
     DBMessageResult & {
       type: 'export';

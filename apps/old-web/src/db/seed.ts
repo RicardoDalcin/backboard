@@ -125,10 +125,10 @@ async function seed() {
     const teamShortName = TEAMS_BY_NAME[record.TEAM_NAME].abbreviation;
 
     const offensiveRanking = offensiveMonth?.rankings.find(
-      (item) => item.team === teamShortName
+      (item) => item.team === teamShortName,
     );
     const defensiveRanking = defensiveMonth?.rankings.find(
-      (item) => item.team === teamShortName
+      (item) => item.team === teamShortName,
     );
 
     const winnersSeason = winners[record.SEASON_2 as keyof typeof winners];
@@ -186,7 +186,7 @@ async function seed() {
   // insert in 1000 chunks
   for (let i = 0; i < dbRecords.length; i += 1000) {
     console.log(
-      `Inserting chunk ${i / 1000}/${Math.ceil(dbRecords.length / 1000)}`
+      `Inserting chunk ${i / 1000}/${Math.ceil(dbRecords.length / 1000)}`,
     );
     const chunk = dbRecords.slice(i, i + 1000);
     await db.insert(shotsTable).values(chunk);

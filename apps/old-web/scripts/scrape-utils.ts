@@ -17,7 +17,7 @@ type MonthlyRanking = {
 export async function scrapeStats(
   sortingType: string,
   statIndex: number,
-  getFilePath: (season: string) => string
+  getFilePath: (season: string) => string,
 ): Promise<void> {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
@@ -37,7 +37,7 @@ export async function scrapeStats(
 
       const rankings: TeamRanking[] = await page.evaluate((teams) => {
         const rows = Array.from(
-          document.querySelectorAll('table.Crom_table__p1iZz tbody tr')
+          document.querySelectorAll('table.Crom_table__p1iZz tbody tr'),
         );
 
         return rows.map((row, i) => {

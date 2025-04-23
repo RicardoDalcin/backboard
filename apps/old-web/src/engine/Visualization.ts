@@ -74,7 +74,7 @@ export class VisualizationEngine {
 
   constructor(
     private canvas: HTMLCanvasElement,
-    private container: HTMLDivElement
+    private container: HTMLDivElement,
   ) {
     const ctx = this.canvas.getContext('2d');
 
@@ -100,7 +100,7 @@ export class VisualizationEngine {
     for (const shot of shots) {
       const { x, y } = this.positionToSection(
         this.size.width / 2 - (this.size.width / 2) * (Number(shot.locX) / 25),
-        this.feetToPixels(Number(shot.locY))
+        this.feetToPixels(Number(shot.locY)),
       );
 
       const key = this.getShotKey(x, y);
@@ -176,7 +176,7 @@ export class VisualizationEngine {
           this.size.sectionSize * i,
           this.size.sectionSize * j,
           this.size.sectionSize,
-          this.size.sectionSize
+          this.size.sectionSize,
         );
         this.ctx.stroke();
         this.ctx.restore();
@@ -187,7 +187,7 @@ export class VisualizationEngine {
   private drawShot(shot: ShotSection) {
     const size = Math.max(
       this.size.sectionSize * (shot.quantity / this.mostShots),
-      this.size.sectionSize * 0.25
+      this.size.sectionSize * 0.25,
     );
 
     const { x, y } = this.sectionToPosition(shot.x, shot.y);
@@ -201,7 +201,7 @@ export class VisualizationEngine {
       y + (this.size.sectionSize - size) / 2,
       size,
       size,
-      size * 0.1
+      size * 0.1,
     );
     this.ctx.closePath();
     this.ctx.fill();
@@ -229,7 +229,7 @@ export class VisualizationEngine {
 
     this.ctx.lineTo(
       this.feetToPixels(THREE_POINT_LINE_DISTANCE),
-      this.feetToPixels(THREE_POINT_LINE_STRAIGHT_LENGTH)
+      this.feetToPixels(THREE_POINT_LINE_STRAIGHT_LENGTH),
     );
 
     this.ctx.arc(
@@ -238,12 +238,12 @@ export class VisualizationEngine {
       this.feetToPixels(THREE_POINT_LINE_RADIUS),
       this.degToRad(180 - 22.5),
       this.degToRad(360 + 22),
-      true
+      true,
     );
 
     this.ctx.lineTo(
       this.size.width - this.feetToPixels(THREE_POINT_LINE_DISTANCE),
-      0
+      0,
     );
 
     this.ctx.stroke();
@@ -251,17 +251,17 @@ export class VisualizationEngine {
     this.ctx.beginPath();
     const backboardWidth = this.feetToPixels(BACKBOARD_WIDTH);
     const backboardDistanceToBackline = this.feetToPixels(
-      BACKBOARD_DISTANCE_TO_BACKLINE
+      BACKBOARD_DISTANCE_TO_BACKLINE,
     );
 
     // Backboard
     this.ctx.moveTo(
       this.size.width / 2 - backboardWidth / 2,
-      backboardDistanceToBackline
+      backboardDistanceToBackline,
     );
     this.ctx.lineTo(
       this.size.width / 2 + backboardWidth / 2,
-      backboardDistanceToBackline
+      backboardDistanceToBackline,
     );
     this.ctx.save();
     this.ctx.lineWidth = this.feetToPixels(BACKBOARD_DEPTH);
@@ -276,14 +276,14 @@ export class VisualizationEngine {
       this.size.width / 2 - this.feetToPixels(PAINTED_AREA.width) / 2,
       0,
       this.feetToPixels(PAINTED_AREA.width),
-      this.feetToPixels(PAINTED_AREA.length)
+      this.feetToPixels(PAINTED_AREA.length),
     );
     this.ctx.restore();
     this.ctx.strokeRect(
       this.size.width / 2 - this.feetToPixels(PAINTED_AREA.width) / 2,
       0,
       this.feetToPixels(PAINTED_AREA.width),
-      this.feetToPixels(PAINTED_AREA.length)
+      this.feetToPixels(PAINTED_AREA.length),
     );
     this.ctx.stroke();
 
@@ -292,11 +292,11 @@ export class VisualizationEngine {
     this.ctx.beginPath();
     this.ctx.moveTo(
       this.size.width / 2,
-      this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE)
+      this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE),
     );
     this.ctx.lineTo(
       this.size.width / 2,
-      this.feetToPixels(BASKET_DISTANCE_TO_BACKLINE) - basketRadius
+      this.feetToPixels(BASKET_DISTANCE_TO_BACKLINE) - basketRadius,
     );
 
     this.ctx.stroke();
@@ -307,7 +307,7 @@ export class VisualizationEngine {
       this.feetToPixels(BASKET_DISTANCE_TO_BACKLINE),
       basketRadius,
       0,
-      2 * Math.PI
+      2 * Math.PI,
     );
     this.ctx.stroke();
 
@@ -317,7 +317,7 @@ export class VisualizationEngine {
       this.feetToPixels(PAINTED_AREA.length),
       this.feetToPixels(FREE_THROW_CIRCLE_RADIUS),
       this.degToRad(0),
-      this.degToRad(180)
+      this.degToRad(180),
     );
     this.ctx.stroke();
 
@@ -327,7 +327,7 @@ export class VisualizationEngine {
       this.feetToPixels(PAINTED_AREA.length),
       this.feetToPixels(FREE_THROW_CIRCLE_RADIUS),
       this.degToRad(180),
-      this.degToRad(360)
+      this.degToRad(360),
     );
     this.ctx.setLineDash([10, 10]);
     this.ctx.stroke();
@@ -336,13 +336,13 @@ export class VisualizationEngine {
     this.ctx.beginPath();
     this.ctx.moveTo(
       this.size.width / 2 - this.feetToPixels(RESTRICTED_AREA_WIDTH / 2),
-      this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE)
+      this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE),
     );
 
     this.ctx.lineTo(
       this.size.width / 2 - this.feetToPixels(RESTRICTED_AREA_WIDTH / 2),
       this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE) +
-        this.feetToPixels(RESTRICTED_LINE_LENGTH)
+        this.feetToPixels(RESTRICTED_LINE_LENGTH),
     );
 
     this.ctx.arc(
@@ -351,12 +351,12 @@ export class VisualizationEngine {
       this.feetToPixels(RESTRICTED_CIRCLE_RADIUS),
       this.degToRad(180),
       this.degToRad(360),
-      true
+      true,
     );
 
     this.ctx.lineTo(
       this.size.width / 2 + this.feetToPixels(RESTRICTED_AREA_WIDTH / 2),
-      this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE)
+      this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE),
     );
 
     this.ctx.stroke();
@@ -366,7 +366,7 @@ export class VisualizationEngine {
       this.size.width / 2 - this.feetToPixels(FREE_THROW_CIRCLE_RADIUS),
       0,
       this.feetToPixels(2 * FREE_THROW_CIRCLE_RADIUS),
-      this.feetToPixels(PAINTED_AREA.length)
+      this.feetToPixels(PAINTED_AREA.length),
     );
     this.ctx.stroke();
   }
@@ -401,7 +401,7 @@ export class VisualizationEngine {
         this.onResize();
         this.draw();
       },
-      { signal: this.abortController.signal }
+      { signal: this.abortController.signal },
     );
   }
 

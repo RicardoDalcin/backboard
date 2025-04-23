@@ -44,7 +44,7 @@ const ALL_TEAMS = {
 
 export const TEAMS_BY_NAME = Object.values(ALL_TEAMS).reduce(
   (acc, team) => ({ ...acc, [team.name]: team }),
-  {} as Record<string, Team>
+  {} as Record<string, Team>,
 );
 
 type Team = (typeof ALL_TEAMS)[keyof typeof ALL_TEAMS];
