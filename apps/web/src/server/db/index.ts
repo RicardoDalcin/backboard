@@ -1,65 +1,143 @@
-import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
 
-const log = console.log;
-const error = console.error;
+class FileSystem {
+  private opfsRoot: FileSystemDirectoryHandle | null = null;
 
-const initializeSQLite = async () => {
-  try {
-    log('Loading and initializing SQLite3 module...');
+  constructor() {}
 
-    const promiser = await new Promise<
-      ReturnType<typeof sqlite3Worker1Promiser>
-    >((resolve) => {
+  async fileExists(path: string) {
+    if (this.opfsRoot == null) {
+      this.opfsRoot = await navigator.storage.getDirectory();
+    }
+
+    try {
+      const fileHandle = await this.opfsRoot.getFileHandle(path, {
+        create: false,
+      });
+
+      return fileHandle.kind === 'file';
+    } catch {
+      return false;
+    }
+  }
+
+  async createFile(path: string) {
+    if (this.opfsRoot == null) {
+      this.opfsRoot = await navigator.storage.getDirectory();
+    }
+
+    const fileHandle = await this.opfsRoot.getFileHandle(path, {
+      create: true,
+    });
+
+    return fileHandle;
+  }
+}
+
+class LocalDatabase {
+  private databaseId = '';
+  private promiser!: Promiser;
+
+  constructor(private readonly filePath: string) {}
+
+  async init() {
+    if (this.databaseId) {
+      return;
+    }
+
+    this.promiser = await new Promise((resolve) => {
       const _promiser = sqlite3Worker1Promiser({
         onready: () => resolve(_promiser),
       });
     });
 
-    const configResponse = await promiser('config-get', {});
+    const configResponse = await this.promiser('config-get', {});
 
-    log('Running SQLite3 version', configResponse.result.version.libVersion);
+    if (import.meta.env.DEV) {
+      console.log(
+        'Running SQLite3 version',
+        configResponse.result.version.libVersion,
+      );
+    }
 
-    const openResponse = await promiser('open', {
-      filename: 'file:nba_db.sqlite?vfs=opfs',
+    const openResponse = await this.promiser('open', {
+      filename: `file:${this.filePath}?vfs=opfs`,
     });
 
     const { dbId } = openResponse;
+    this.databaseId = dbId;
 
-    log(
-      'OPFS is available, created persisted database at',
-      openResponse.result.filename.replace(/^file:(.*?)\?vfs=opfs$/, '$1'),
-    );
+    if (import.meta.env.DEV) {
+      console.log(
+        'OPFS is available, created persisted database at',
+        openResponse.result.filename.replace(/^file:(.*?)\?vfs=opfs$/, '$1'),
+      );
+    }
+  }
 
-    // Execute a query to count the number of rows in the game table
-    const countQuery = 'SELECT * FROM game LIMIT 10;';
+  async get<T = unknown>(query: string) {
+    const data: T[] = [];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any[] = [];
-
-    await promiser('exec', {
-      dbId,
-      sql: countQuery,
+    await this.promiser('exec', {
+      dbId: this.databaseId,
+      sql: query,
       callback: ({ row, rowNumber }) => {
         if (row == null || rowNumber == null) {
           return;
         }
 
-        data.push(row);
+        data.push(row as T);
       },
       rowMode: 'object',
     });
 
-    console.log('data', data);
-  } catch (err) {
-    if (!(err instanceof Error)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newError = new Error((err as any).result.message);
-      error(newError.name, newError.message);
-      return;
+    return data;
+  }
+}
+
+class NBADatabase {
+  private readonly DATABASE_REMOTE_URL =
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRrpm3dxcaL40zYZTcws8SuWH6vUFBfnKOyhj5';
+
+  private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
+
+  private fileSystem: FileSystem;
+  private db: LocalDatabase;
+
+  constructor() {
+    this.fileSystem = new FileSystem();
+    this.db = new LocalDatabase(this.DATABASE_OPFS_PATH);
+  }
+
+  async load() {
+    const dbExists = await this.fileSystem.fileExists(this.DATABASE_OPFS_PATH);
+
+    if (!dbExists) {
+      await this.downloadDatabase();
     }
 
-    error(err.name, err.message);
+    await this.db.init();
   }
-};
 
-initializeSQLite();
+  private async downloadDatabase() {
+    const response = await fetch(this.DATABASE_REMOTE_URL);
+    const compressedStream = response.body;
+
+    if (!compressedStream) {
+      throw new Error('Failed to fetch database file');
+    }
+
+    const decompressionStream = new DecompressionStream('gzip');
+    const decompressedStream =
+      compressedStream.pipeThrough(decompressionStream);
+
+    const file = await this.fileSystem.createFile(this.DATABASE_OPFS_PATH);
+    const writable = await file.createWritable();
+
+    return decompressedStream.pipeTo(writable);
+  }
+}
+
+const db = new NBADatabase();
+
+export { db };
