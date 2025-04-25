@@ -21,6 +21,35 @@ class FileSystem {
     }
   }
 
+  async getFileSize(path: string) {
+    if (this.opfsRoot == null) {
+      this.opfsRoot = await navigator.storage.getDirectory();
+    }
+
+    try {
+      const fileHandle = await this.opfsRoot.getFileHandle(path, {
+        create: false,
+      });
+
+      const file = await fileHandle.getFile();
+      return file.size;
+    } catch {
+      return 0;
+    }
+  }
+
+  async deleteFile(path: string) {
+    if (this.opfsRoot == null) {
+      this.opfsRoot = await navigator.storage.getDirectory();
+    }
+
+    if (!this.fileExists(path)) {
+      return;
+    }
+
+    return this.opfsRoot.removeEntry(path);
+  }
+
   async createFile(path: string) {
     if (this.opfsRoot == null) {
       this.opfsRoot = await navigator.storage.getDirectory();
@@ -96,9 +125,9 @@ class LocalDatabase {
 }
 
 class NBADatabase {
+  private readonly EXPECTED_DB_SIZE = 900153344;
   private readonly DATABASE_REMOTE_URL =
     'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRrpm3dxcaL40zYZTcws8SuWH6vUFBfnKOyhj5';
-
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
   private fileSystem: FileSystem;
@@ -111,8 +140,15 @@ class NBADatabase {
 
   async load() {
     const dbExists = await this.fileSystem.fileExists(this.DATABASE_OPFS_PATH);
+    const fileSize = await this.fileSystem.getFileSize(this.DATABASE_OPFS_PATH);
 
-    if (!dbExists) {
+    console.log(dbExists, fileSize);
+
+    if (!dbExists || fileSize < this.EXPECTED_DB_SIZE) {
+      if (dbExists) {
+        await this.fileSystem.deleteFile(this.DATABASE_OPFS_PATH);
+      }
+
       await this.downloadDatabase();
     }
 
