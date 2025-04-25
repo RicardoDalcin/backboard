@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { existsSync } from 'fs';
-import { rm, mkdir, readFile } from 'fs/promises';
+import { rm, mkdir, readFile, writeFile } from 'fs/promises';
 import { parse } from 'csv-parse/sync';
 
 import { offensiveRatings } from './offensive';
@@ -70,23 +70,21 @@ async function createDb() {
         id INTEGER PRIMARY KEY,
         season INTEGER,
         team_id INTEGER,
-        team_name TEXT,
         player_id INTEGER,
-        player_name TEXT,
         position_group TEXT,
         position TEXT,
         game_date TEXT,
         game_id INTEGER,
         home_team TEXT,
         away_team TEXT,
-        event_type TEXT,
+        event_type INTEGER,
         shot_made INTEGER,
-        action_type TEXT,
-        shot_type TEXT,
-        basic_zone TEXT,
-        zone_name TEXT,
-        zone_abb TEXT,
-        zone_range TEXT,
+        action_type INTEGER,
+        shot_type INTEGER,
+        basic_zone INTEGER,
+        zone_name INTEGER,
+        zone_abb INTEGER,
+        zone_range INTEGER,
         loc_x REAL,
         loc_y REAL,
         shot_distance REAL,
@@ -153,6 +151,14 @@ class PlayerCache {
 const roundTo = (num: number, precision: number) =>
   Math.round(num * 10 ** precision) / 10 ** precision;
 
+const invertMap = (map: Map<string, number>) => {
+  const invertedMap: { [key: number]: string } = {};
+  for (const [key, value] of map.entries()) {
+    invertedMap[value] = key;
+  }
+  return invertedMap;
+};
+
 async function createAndSeed() {
   const db = await createDb();
 
@@ -182,6 +188,23 @@ async function createAndSeed() {
 
   const playersCache = new PlayerCache();
 
+  // Maps to store string-to-integer mappings
+  const eventTypeMap = new Map<string, number>();
+  const actionTypeMap = new Map<string, number>();
+  const shotTypeMap = new Map<string, number>();
+  const basicZoneMap = new Map<string, number>();
+  const zoneNameMap = new Map<string, number>();
+  const zoneAbbMap = new Map<string, number>();
+  const zoneRangeMap = new Map<string, number>();
+
+  // Helper function to get or create map entries
+  const getOrCreateId = (map: Map<string, number>, value: string) => {
+    if (!map.has(value)) {
+      map.set(value, map.size + 1);
+    }
+    return map.get(value)!;
+  };
+
   let id = 1;
 
   for (const file of files) {
@@ -208,10 +231,6 @@ async function createAndSeed() {
       const defensiveMonth = defensiveSeason.find(
         (item) => item.month === month,
       );
-
-      if (!TEAMS_BY_NAME[record.TEAM_NAME]) {
-        console.log(record.TEAM_NAME);
-      }
 
       const teamShortName = TEAMS_BY_NAME[record.TEAM_NAME].abbreviation;
       const oponentShortName =
@@ -240,23 +259,21 @@ async function createAndSeed() {
         id: id++,
         season,
         teamId: Number(record.TEAM_ID),
-        teamName: record.TEAM_NAME,
         playerId: Number(record.PLAYER_ID),
-        playerName: record.PLAYER_NAME,
         positionGroup: record.POSITION_GROUP,
         position: record.POSITION,
         gameDate: `${year}-${monthString}-${dayString}`,
         gameId: Number(record.GAME_ID),
         homeTeam: record.HOME_TEAM,
         awayTeam: record.AWAY_TEAM,
-        eventType: record.EVENT_TYPE,
+        eventType: getOrCreateId(eventTypeMap, record.EVENT_TYPE),
         shotMade: record.SHOT_MADE === 'TRUE',
-        actionType: record.ACTION_TYPE,
-        shotType: record.SHOT_TYPE,
-        basicZone: record.BASIC_ZONE,
-        zoneName: record.ZONE_NAME,
-        zoneAbb: record.ZONE_ABB,
-        zoneRange: record.ZONE_RANGE,
+        actionType: getOrCreateId(actionTypeMap, record.ACTION_TYPE),
+        shotType: getOrCreateId(shotTypeMap, record.SHOT_TYPE),
+        basicZone: getOrCreateId(basicZoneMap, record.BASIC_ZONE),
+        zoneName: getOrCreateId(zoneNameMap, record.ZONE_NAME),
+        zoneAbb: getOrCreateId(zoneAbbMap, record.ZONE_ABB),
+        zoneRange: getOrCreateId(zoneRangeMap, record.ZONE_RANGE),
         locX: String(roundTo(Number(record.LOC_X), 2)),
         locY: String(roundTo(Number(record.LOC_Y), 2)),
         shotDistance: String(roundTo(Number(record.SHOT_DISTANCE), 2)),
@@ -279,17 +296,15 @@ async function createAndSeed() {
       return shot;
     });
 
-    console.log(dbRecords.length);
-
     const toValues = (obj: (typeof dbRecords)[number]) =>
-      `(${obj.id}, ${obj.season}, ${obj.teamId}, "${obj.teamName}", ${obj.playerId}, "${obj.playerName}", "${obj.positionGroup}", "${obj.position}", "${obj.gameDate}", ${obj.gameId}, "${obj.homeTeam}", "${obj.awayTeam}", "${obj.eventType}", ${obj.shotMade ? 1 : 0}, "${obj.actionType}", "${obj.shotType}", "${obj.basicZone}", "${obj.zoneName}", "${obj.zoneAbb}", "${obj.zoneRange}", ${obj.locX}, ${obj.locY}, ${obj.shotDistance}, ${obj.quarter}, ${obj.minsLeft}, ${obj.secsLeft}, ${obj.defRtg}, ${obj.defRtgRank}, ${obj.offRtg}, ${obj.offRtgRank}, ${obj.playerHeight}, ${obj.playerWeight}, ${obj.gameWon ? 1 : 0})`;
+      `(${obj.id}, ${obj.season}, ${obj.teamId}, ${obj.playerId}, "${obj.positionGroup}", "${obj.position}", "${obj.gameDate}", ${obj.gameId}, "${obj.homeTeam}", "${obj.awayTeam}", ${obj.eventType}, ${obj.shotMade ? 1 : 0}, ${obj.actionType}, ${obj.shotType}, ${obj.basicZone}, ${obj.zoneName}, ${obj.zoneAbb}, ${obj.zoneRange}, ${obj.locX}, ${obj.locY}, ${obj.shotDistance}, ${obj.quarter}, ${obj.minsLeft}, ${obj.secsLeft}, ${obj.defRtg}, ${obj.defRtgRank}, ${obj.offRtg}, ${obj.offRtgRank}, ${obj.playerHeight}, ${obj.playerWeight}, ${obj.gameWon ? 1 : 0})`;
 
-    const CHUNK_SIZE = 500;
+    const CHUNK_SIZE = 1_000;
 
     for (let i = 0; i < dbRecords.length; i += CHUNK_SIZE) {
       const chunk = dbRecords.slice(i, i + CHUNK_SIZE);
 
-      const sql = `insert into shots (id, season, team_id, team_name, player_id, player_name, position_group, position, game_date, game_id, home_team, away_team, event_type, shot_made, action_type, shot_type, basic_zone, zone_name, zone_abb, zone_range, loc_x, loc_y, shot_distance, quarter, mins_left, secs_left, def_rtg, def_rtg_rank, off_rtg, off_rtg_rank, player_height, player_weight, game_won) values
+      const sql = `insert into shots (id, season, team_id, player_id,position_group, position, game_date, game_id, home_team, away_team, event_type, shot_made, action_type, shot_type, basic_zone, zone_name, zone_abb, zone_range, loc_x, loc_y, shot_distance, quarter, mins_left, secs_left, def_rtg, def_rtg_rank, off_rtg, off_rtg_rank, player_height, player_weight, game_won) values
         ${chunk.map((record) => `${toValues(record)}`).join(',')}`;
 
       try {
@@ -312,11 +327,22 @@ async function createAndSeed() {
     }
   }
 
-  const test = db.get('select count(*) from shots', {}, (err, row) => {
-    console.log(row);
-  });
+  // Generate the data dictionary
+  const dataDictionary = {
+    eventType: invertMap(eventTypeMap),
+    actionType: invertMap(actionTypeMap),
+    shotType: invertMap(shotTypeMap),
+    basicZone: invertMap(basicZoneMap),
+    zoneName: invertMap(zoneNameMap),
+    zoneAbb: invertMap(zoneAbbMap),
+    zoneRange: invertMap(zoneRangeMap),
+  };
 
-  console.log(test);
+  await writeFile(
+    `${FOLDER_PATH}/data_dictionary.json`,
+    JSON.stringify(dataDictionary, null, 2),
+  );
+
   db.close();
 }
 
