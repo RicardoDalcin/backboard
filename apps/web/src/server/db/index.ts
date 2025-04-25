@@ -1,3 +1,4 @@
+import { DatabaseShot, Shot } from '@/types';
 import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
 
 class FileSystem {
@@ -104,8 +105,8 @@ class LocalDatabase {
     }
   }
 
-  async get<T = unknown>(query: string) {
-    const data: T[] = [];
+  async get<T = unknown, R = T>(query: string, transform?: (row: T) => R) {
+    const data: R[] = [];
 
     await this.promiser('exec', {
       dbId: this.databaseId,
@@ -115,7 +116,11 @@ class LocalDatabase {
           return;
         }
 
-        data.push(row as T);
+        if (transform) {
+          data.push(transform(row as T));
+        } else {
+          data.push(row as R);
+        }
       },
       rowMode: 'object',
     });
@@ -171,6 +176,67 @@ class NBADatabase {
     const writable = await file.createWritable();
 
     return decompressedStream.pipeTo(writable);
+  }
+
+  private getFiltersQuery(
+    filters: Record<string, unknown>,
+    filtersConfig: Record<
+      string,
+      {
+        column: string;
+        type: 'INTEGER' | 'TEXT' | 'REAL';
+      }
+    >,
+  ) {
+    if (Object.keys(filters).length === 0) {
+      return '';
+    }
+
+    const filtersQuery = Object.entries(filters)
+      .map(([key, value]) => {
+        const { column, type } = filtersConfig[key];
+
+        if (type === 'INTEGER') {
+          return `${column} = ${value}`;
+        }
+
+        if (type === 'TEXT') {
+          return `${column} = '${value}'`;
+        }
+
+        if (type === 'REAL') {
+          return `${column} = ${value}`;
+        }
+      })
+      .join(' AND ');
+
+    return `WHERE ${filtersQuery}`;
+  }
+
+  async getShots(
+    count?: number,
+    filters?: {
+      season?: number;
+      teamId?: number;
+      playerId?: number;
+      basicZone?: string;
+    },
+  ) {
+    const FILTERS = {
+      season: { column: 'season', type: 'INTEGER' },
+      teamId: { column: 'team_id', type: 'INTEGER' },
+      playerId: { column: 'player_id', type: 'INTEGER' },
+      basicZone: { column: 'basic_zone', type: 'TEXT' },
+    } as const;
+
+    const query = `SELECT loc_x as locX, loc_y as locY, shot_made as shotMade, basic_zone as basicZone
+      FROM shots 
+      ${filters ? this.getFiltersQuery(filters, FILTERS) : ''}
+      LIMIT ${count}`;
+
+    console.log(query);
+
+    return this.db.get<DatabaseShot, Shot>(query);
   }
 }
 
