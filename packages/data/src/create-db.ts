@@ -100,8 +100,12 @@ async function createDb() {
         player_height REAL,
         player_weight INTEGER,
         game_won INTEGER
-      )`,
+      ) WITHOUT ROWID`,
     );
+
+    db.run(`CREATE INDEX IF NOT EXISTS player_id_index on shots (player_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS season_index on shots (season)`);
+    db.run(`CREATE INDEX IF NOT EXISTS team_id_index on shots (team_id)`);
   });
 
   return db;
