@@ -60,13 +60,13 @@ function App() {
 
     const load = async () => {
       await db.load();
-      const shotList = await db.getShots(100_000);
+      const shotList = await db.getShots(1_000_000, { playerId: 2544 });
       setShots(shotList);
 
       const zones = await Promise.all([
-        await db.getShots(10_000, { playerId: 201942 }),
-        await db.getShots(10_000, { playerId: 1629029 }),
-        await db.getShots(10_000, { playerId: 1629023 }),
+        await db.getShots(100_000, { playerId: 201942 }),
+        await db.getShots(100_000, { playerId: 1629029 }),
+        await db.getShots(100_000, { playerId: 1629023 }),
       ]);
 
       console.log(zones);

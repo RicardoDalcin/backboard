@@ -188,7 +188,7 @@ export class VisualizationEngine {
     const size = Math.max(
       this.size.sectionSize *
         (Math.log(shot.quantity + 1) / Math.log(this.mostShots + 1)),
-      this.size.sectionSize * 0.25,
+      this.size.sectionSize * 0.1,
     );
 
     const { x, y } = this.sectionToPosition(shot.x, shot.y);

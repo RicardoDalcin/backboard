@@ -130,9 +130,9 @@ class LocalDatabase {
 }
 
 class NBADatabase {
-  private readonly EXPECTED_DB_SIZE = 900153344;
+  private readonly EXPECTED_DB_SIZE = 690409472;
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRrpm3dxcaL40zYZTcws8SuWH6vUFBfnKOyhj5';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRKr15CLgzM4byFGHmrh32jetNQn9kCi6wdoc5';
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
   private fileSystem: FileSystem;
