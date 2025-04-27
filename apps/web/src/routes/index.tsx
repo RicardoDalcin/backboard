@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { Card } from '@/components/ui/card';
 import { Filters } from './-components/filters';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -31,11 +32,19 @@ function Index() {
         <Filters />
 
         <div className="grid grid-cols-12 gap-6 flex-1">
-          <Card className="col-span-12 h-[600px] xl:col-span-7"></Card>
-          <Card className="col-span-12 h-[600px] xl:col-span-5"></Card>
+          <Card className="col-span-12 h-[600px] xl:col-span-7 py-0 overflow-hidden">
+            <Skeleton className="w-full h-full" />
+          </Card>
+          <Card className="col-span-12 h-[600px] xl:col-span-5 py-0 overflow-hidden">
+            <Skeleton className="w-full h-full" />
+          </Card>
 
-          <Card className="col-span-12 h-[600px] xl:col-span-5"></Card>
-          <Card className="col-span-12 h-[600px] xl:col-span-7"></Card>
+          <Card className="col-span-12 h-[600px] xl:col-span-5 py-0 overflow-hidden">
+            <Skeleton className="w-full h-full" />
+          </Card>
+          <Card className="col-span-12 h-[600px] xl:col-span-7 py-0 overflow-hidden">
+            <Skeleton className="w-full h-full" />
+          </Card>
         </div>
       </div>
     </div>

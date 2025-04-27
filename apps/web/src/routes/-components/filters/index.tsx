@@ -13,8 +13,11 @@ import {
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import { FilterForm } from './form';
+import { useFilters } from '@/stores/filters';
 
 export const Filters = ({ className }: { className?: string }) => {
+  const { filters, currentFilter, selectFilter } = useFilters();
+
   return (
     <Card
       className={clsx('flex flex-col gap-5 w-[350px] h-min px-5', className)}
@@ -34,18 +37,18 @@ export const Filters = ({ className }: { className?: string }) => {
               <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup value={'1'} onValueChange={() => {}}>
-              <DropdownMenuRadioItem value="1">
-                New filter
-              </DropdownMenuRadioItem>
-
-              <DropdownMenuRadioItem value="2">
-                LeBron James
-              </DropdownMenuRadioItem>
-
-              <DropdownMenuRadioItem value="3">
-                Luka Doncic
-              </DropdownMenuRadioItem>
+            <DropdownMenuRadioGroup
+              value={String(currentFilter.id)}
+              onValueChange={(newValue) => selectFilter(Number(newValue))}
+            >
+              {filters.map((filter) => (
+                <DropdownMenuRadioItem
+                  key={filter.id}
+                  value={String(filter.id)}
+                >
+                  {filter.name}
+                </DropdownMenuRadioItem>
+              ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
