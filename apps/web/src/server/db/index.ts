@@ -130,9 +130,9 @@ class LocalDatabase {
 }
 
 class NBADatabase {
-  private readonly EXPECTED_DB_SIZE = 690409472;
+  private readonly EXPECTED_DB_SIZE = 726249472;
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRKr15CLgzM4byFGHmrh32jetNQn9kCi6wdoc5';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRL8KRHFuNuUEB7ijsFPhwrtCV9z6A3YWxQbf8';
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
   private fileSystem: FileSystem;
@@ -149,7 +149,7 @@ class NBADatabase {
 
     console.log(dbExists, fileSize);
 
-    if (!dbExists || fileSize < this.EXPECTED_DB_SIZE) {
+    if (!dbExists || fileSize != this.EXPECTED_DB_SIZE) {
       if (dbExists) {
         await this.fileSystem.deleteFile(this.DATABASE_OPFS_PATH);
       }
@@ -229,7 +229,7 @@ class NBADatabase {
       basicZone: { column: 'basic_zone', type: 'TEXT' },
     } as const;
 
-    const query = `SELECT loc_x as locX, loc_y as locY, shot_made as shotMade, basic_zone as basicZone
+    const query = `SELECT loc_x as locX, loc_y as locY, shot_made as shotMade, basic_zone as basicZone, quarter as quarter, mins_left as minsLeft, shot_type as shotType
       FROM shots 
       ${filters ? this.getFiltersQuery(filters, FILTERS) : ''}
       LIMIT ${count}`;

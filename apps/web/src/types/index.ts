@@ -39,6 +39,9 @@ export interface Shot {
   locY: number;
   shotMade: boolean;
   basicZone: string;
+  quarter: number;
+  minsLeft: number;
+  shotType: ShotType;
 }
 
 export interface Zone {
@@ -48,4 +51,18 @@ export interface Zone {
   totalMissed: number;
   accuracy: number;
   frequency: number;
+}
+
+export interface ClockSummary {
+  id: number;
+  count: number;
+  totalMade: number;
+  totalMissed: number;
+  accuracy: number;
+  frequency: number;
+}
+
+export enum ShotType {
+  ThreePointer = 1,
+  TwoPointer = 2,
 }
