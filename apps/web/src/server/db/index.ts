@@ -138,6 +138,8 @@ class NBADatabase {
   private fileSystem: FileSystem;
   private db: LocalDatabase;
 
+  private progressCallbacks: Set<(progress: number) => void> = new Set();
+
   constructor() {
     this.fileSystem = new FileSystem();
     this.db = new LocalDatabase(this.DATABASE_OPFS_PATH);
@@ -146,8 +148,6 @@ class NBADatabase {
   async load() {
     const dbExists = await this.fileSystem.fileExists(this.DATABASE_OPFS_PATH);
     const fileSize = await this.fileSystem.getFileSize(this.DATABASE_OPFS_PATH);
-
-    console.log(dbExists, fileSize);
 
     if (!dbExists || fileSize != this.EXPECTED_DB_SIZE) {
       if (dbExists) {
@@ -158,6 +158,13 @@ class NBADatabase {
     }
 
     await this.db.init();
+  }
+
+  subscribeLoadProgress(callback: (progress: number) => void) {
+    this.progressCallbacks.add(callback);
+    return () => {
+      this.progressCallbacks.delete(callback);
+    };
   }
 
   private async downloadDatabase() {
@@ -175,7 +182,35 @@ class NBADatabase {
     const file = await this.fileSystem.createFile(this.DATABASE_OPFS_PATH);
     const writable = await file.createWritable();
 
-    return decompressedStream.pipeTo(writable);
+    let writtenBytes = 0;
+
+    // Create a new stream with a transform for tracking progress
+    const progressTrackingStream = new TransformStream({
+      transform: (chunk, controller) => {
+        // Update progress
+        const { writtenBytes, totalBytes } = trackProgress(chunk.byteLength);
+        const progress = writtenBytes / totalBytes;
+
+        // Call the progress callbacks
+        this.progressCallbacks.forEach((callback) => callback(progress));
+
+        // Forward the chunk to the next stream
+        controller.enqueue(chunk);
+      },
+    });
+
+    // Pipe the decompressed stream through the progress tracking stream
+    return decompressedStream
+      .pipeThrough(progressTrackingStream)
+      .pipeTo(writable);
+
+    function trackProgress(chunkSize: number) {
+      writtenBytes = (writtenBytes || 0) + chunkSize;
+      return {
+        writtenBytes: writtenBytes,
+        totalBytes: 726249472,
+      };
+    }
   }
 
   private getFiltersQuery(
