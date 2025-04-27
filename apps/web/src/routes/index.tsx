@@ -1,6 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { db } from '@/server/db';
 import { Loader } from './-components/loader';
+import { Button } from '@/components/ui/button';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
+import { Card } from '@/components/ui/card';
+import { Filters } from './-components/filters';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -10,8 +14,30 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   return (
-    <div className="min-h-screen pt-[var(--nav-height)]">
-      <h3>Welcome Home!</h3>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between w-full">
+        <h2 className="text-3xl font-bold">Explore</h2>
+
+        <div className="flex items-center gap-4">
+          <Button variant="outline">Share</Button>
+
+          <Button>
+            <ArrowDownTrayIcon className="size-4" /> Export
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex gap-6">
+        <Filters />
+
+        <div className="grid grid-cols-12 gap-6 flex-1">
+          <Card className="col-span-12 h-[600px] xl:col-span-7"></Card>
+          <Card className="col-span-12 h-[600px] xl:col-span-5"></Card>
+
+          <Card className="col-span-12 h-[600px] xl:col-span-5"></Card>
+          <Card className="col-span-12 h-[600px] xl:col-span-7"></Card>
+        </div>
+      </div>
     </div>
   );
 }
