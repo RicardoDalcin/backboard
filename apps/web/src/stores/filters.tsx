@@ -6,7 +6,7 @@ interface FiltersStore {
   filters: FilterItem[];
   currentFilter: FilterItem;
   saveFilter: (filter: FilterItem) => void;
-  newFilter: (name: string) => void;
+  newFilter: (name: string) => number;
   selectFilter: (id: number) => void;
 }
 
@@ -14,7 +14,7 @@ const FiltersStoreContext = createContext<FiltersStore>({
   filters: [],
   currentFilter: { id: 0, name: '', filters: DEFAULT_FILTER },
   saveFilter: () => {},
-  newFilter: () => {},
+  newFilter: () => -1,
   selectFilter: () => {},
 });
 
@@ -82,6 +82,8 @@ export const FiltersProvider = ({
 
   const newFilter = useCallback(
     (name: string) => {
+      let newId = -1;
+
       setFilters((filters) => {
         const maxId = filters.reduce(
           (maxId, filter) => Math.max(maxId, filter.id),
@@ -94,8 +96,12 @@ export const FiltersProvider = ({
           filters: DEFAULT_FILTER,
         };
 
+        newId = newFilter.id;
+
         return [...filters, newFilter];
       });
+
+      return newId;
     },
     [setFilters],
   );

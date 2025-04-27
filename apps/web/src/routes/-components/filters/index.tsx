@@ -12,48 +12,125 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
-import { FilterForm } from './form';
 import { useFilters } from '@/stores/filters';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { Combobox } from '@/components/ui/combobox';
+import { MultiCombobox } from '@/components/ui/multi-combobox';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RangeSlider } from '@/components/ui/range-slider';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { InformationCircleIcon } from '@heroicons/react/20/solid';
+import { POSITIONS, RESULTS, SEASONS, TEAMS, Filter } from '@/types/filters';
+import { useCallback, useEffect } from 'react';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { CreateFilterDialog } from './create-filter';
+
+const schema = z.object({
+  season: z.number().min(4).max(24),
+  defensiveRatingRank: z.tuple([
+    z.number().min(1).max(30),
+    z.number().min(1).max(30),
+  ]),
+  offensiveRatingRank: z.tuple([
+    z.number().min(1).max(30),
+    z.number().min(1).max(30),
+  ]),
+  teams: z.array(z.number()),
+  players: z.array(z.number()),
+  positions: z.array(z.enum(POSITIONS)),
+  result: z.enum(RESULTS),
+});
 
 export const Filters = ({ className }: { className?: string }) => {
-  const { filters, currentFilter, selectFilter } = useFilters();
+  const { filters, currentFilter, selectFilter, saveFilter, newFilter } =
+    useFilters();
+
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: { ...currentFilter.filters },
+  });
+
+  function onSubmit(data: z.infer<typeof schema>) {
+    saveFilter({ ...currentFilter, filters: data as Filter });
+    form.reset(data);
+  }
+
+  useEffect(() => {
+    form.reset({ ...currentFilter.filters });
+  }, [currentFilter.filters, form]);
+
+  const onCreateFilter = useCallback(
+    (name: string) => {
+      const newId = newFilter(name);
+      selectFilter(newId);
+    },
+    [newFilter, selectFilter],
+  );
 
   return (
     <Card
       className={clsx('flex flex-col gap-5 w-[350px] h-min px-5', className)}
     >
-      <div className="w-full flex items-center justify-between ">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="-ml-2" asChild>
-            <Button variant="ghost">
-              <p className="text-lg font-semibold">New filter</p>
-              <ChevronDownIcon className="size-5" />
-            </Button>
-          </DropdownMenuTrigger>
+      <div className="flex items-center justify-between gap-2 w-full">
+        <Dialog>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="-ml-2 shrink-1 min-w-0" asChild>
+              <Button variant="ghost">
+                <p className="text-lg font-semibold truncate">
+                  {currentFilter.name}
+                </p>
+                <ChevronDownIcon className="size-5" />
+              </Button>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent className="w-[280px]" align="start">
-            <DropdownMenuItem>
-              Create filter
-              <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={String(currentFilter.id)}
-              onValueChange={(newValue) => selectFilter(Number(newValue))}
-            >
-              {filters.map((filter) => (
-                <DropdownMenuRadioItem
-                  key={filter.id}
-                  value={String(filter.id)}
-                >
-                  {filter.name}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenuContent className="w-[280px]" align="start">
+              <DialogTrigger asChild>
+                <DropdownMenuItem>
+                  Create filter
+                  <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DialogTrigger>
 
-        <Button variant="ghost" className="-mr-2">
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={String(currentFilter.id)}
+                onValueChange={(newValue) => selectFilter(Number(newValue))}
+              >
+                {filters.map((filter) => (
+                  <DropdownMenuRadioItem
+                    key={filter.id}
+                    value={String(filter.id)}
+                  >
+                    {filter.name}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <CreateFilterDialog onCreate={onCreateFilter} />
+        </Dialog>
+
+        <Button
+          variant="ghost"
+          className="-mr-2 shrink-0"
+          disabled={!form.formState.isDirty}
+          onClick={() => form.reset()}
+        >
           <svg
             width="20"
             height="20"
@@ -81,7 +158,220 @@ export const Filters = ({ className }: { className?: string }) => {
         </Button>
       </div>
 
-      <FilterForm />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="season"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Season</FormLabel>
+                <Combobox
+                  {...field}
+                  options={SEASONS}
+                  onSelect={(value) =>
+                    form.setValue('season', value, { shouldDirty: true })
+                  }
+                  className="w-full"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="defensiveRatingRank"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  DRTG Ranking
+                  <Tooltip delayDuration={500}>
+                    <TooltipTrigger>
+                      <InformationCircleIcon className="size-5" />
+                    </TooltipTrigger>
+
+                    <TooltipContent>
+                      <p>
+                        DRTG ranking of the opposing team during the month of
+                        the game.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </FormLabel>
+
+                <RangeSlider
+                  min={1}
+                  max={30}
+                  step={1}
+                  value={field.value}
+                  label={(item) => item}
+                  onValueChange={(value) =>
+                    form.setValue(
+                      'defensiveRatingRank',
+                      value as typeof field.value,
+                      { shouldDirty: true },
+                    )
+                  }
+                  className="w-full"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="offensiveRatingRank"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  ORTG Ranking
+                  <Tooltip delayDuration={500}>
+                    <TooltipTrigger>
+                      <InformationCircleIcon className="size-5" />
+                    </TooltipTrigger>
+
+                    <TooltipContent>
+                      <p>
+                        ORTG ranking of the atacking team during the month of
+                        the game.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </FormLabel>
+
+                <RangeSlider
+                  min={1}
+                  max={30}
+                  step={1}
+                  value={field.value}
+                  label={(item) => item}
+                  onValueChange={(value) =>
+                    form.setValue(
+                      'offensiveRatingRank',
+                      value as typeof field.value,
+                      { shouldDirty: true },
+                    )
+                  }
+                  className="w-full"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="teams"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Teams</FormLabel>
+
+                <MultiCombobox
+                  values={field.value}
+                  options={TEAMS}
+                  onSelect={(values) =>
+                    form.setValue('teams', values, { shouldDirty: true })
+                  }
+                  className="w-full"
+                  multiSelectedMessage="teams selected"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="players"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Players</FormLabel>
+
+                <MultiCombobox
+                  values={field.value}
+                  options={[]}
+                  onSelect={(values) =>
+                    form.setValue('players', values, { shouldDirty: true })
+                  }
+                  className="w-full"
+                  multiSelectedMessage="players selected"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="positions"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Positions</FormLabel>
+
+                <ToggleGroup
+                  type="multiple"
+                  value={field.value}
+                  onValueChange={(values) =>
+                    form.setValue('positions', values as typeof field.value, {
+                      shouldDirty: true,
+                    })
+                  }
+                  className="w-full"
+                >
+                  {POSITIONS.map((option) => (
+                    <ToggleGroupItem value={option} key={option}>
+                      {option}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="result"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Result</FormLabel>
+
+                <Tabs
+                  value={field.value}
+                  onValueChange={(value) =>
+                    form.setValue('result', value as typeof field.value, {
+                      shouldDirty: true,
+                    })
+                  }
+                >
+                  <TabsList className="w-full">
+                    {RESULTS.map((option) => (
+                      <TabsTrigger
+                        key={option}
+                        value={option}
+                        className="capitalize"
+                      >
+                        {option}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!form.formState.isDirty}
+          >
+            Apply
+          </Button>
+        </form>
+      </Form>
     </Card>
   );
 };
