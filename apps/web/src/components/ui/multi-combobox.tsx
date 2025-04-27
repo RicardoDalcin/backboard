@@ -8,6 +8,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
+  CommandSeparator,
 } from './command';
 import { FormControl } from './form';
 import { Popover, PopoverTrigger, PopoverContent } from './popover';
@@ -82,10 +83,23 @@ export function MultiCombobox<T>({
             placeholder={searchPlaceholder ?? 'Search...'}
             className="h-9"
           />
+
+          <CommandGroup>
+            <CommandItem
+              key="clear"
+              onSelect={() => onSelect([])}
+              disabled={!values.length}
+            >
+              Clear all selected
+            </CommandItem>
+          </CommandGroup>
+
           <CommandList>
             <CommandEmpty>
               {searchEmptyMessage ?? 'No results found'}
             </CommandEmpty>
+
+            <CommandSeparator />
 
             <CommandGroup>
               {options.map((option) => (

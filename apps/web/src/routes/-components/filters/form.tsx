@@ -13,6 +13,13 @@ import { Combobox } from '@/components/ui/combobox';
 import { MultiCombobox } from '@/components/ui/multi-combobox';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RangeSlider } from '@/components/ui/range-slider';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { InformationCircleIcon } from '@heroicons/react/20/solid';
 
 const seasons = [
   { label: '2023-24', value: 24 },
@@ -76,10 +83,14 @@ const RESULTS = ['all', 'wins', 'losses'] as const;
 
 const schema = z.object({
   season: z.number().min(4).max(24),
-  defensiveRatingRankLower: z.number().min(1).max(30),
-  defensiveRatingRankUpper: z.number().min(1).max(30),
-  offensiveRatingRankLower: z.number().min(1).max(30),
-  offensiveRatingRankUpper: z.number().min(1).max(30),
+  defensiveRatingRank: z.tuple([
+    z.number().min(1).max(30),
+    z.number().min(1).max(30),
+  ]),
+  offensiveRatingRank: z.tuple([
+    z.number().min(1).max(30),
+    z.number().min(1).max(30),
+  ]),
   teams: z.array(z.number()),
   players: z.array(z.number()),
   positions: z.array(z.enum(POSITIONS)),
@@ -91,10 +102,8 @@ export const FilterForm = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       season: seasons[0].value,
-      defensiveRatingRankLower: 1,
-      defensiveRatingRankUpper: 30,
-      offensiveRatingRankLower: 1,
-      offensiveRatingRankUpper: 30,
+      defensiveRatingRank: [1, 30],
+      offensiveRatingRank: [1, 30],
       teams: [],
       players: [],
       positions: [...POSITIONS],
@@ -120,6 +129,86 @@ export const FilterForm = () => {
                 {...field}
                 options={seasons}
                 onSelect={(value) => form.setValue('season', value)}
+                className="w-full"
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="defensiveRatingRank"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                DRTG Ranking
+                <Tooltip delayDuration={500}>
+                  <TooltipTrigger>
+                    <InformationCircleIcon className="size-5" />
+                  </TooltipTrigger>
+
+                  <TooltipContent>
+                    <p>
+                      DRTG ranking of the opposing team during the month of the
+                      game.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </FormLabel>
+
+              <RangeSlider
+                min={1}
+                max={30}
+                step={1}
+                value={field.value}
+                label={(item) => item}
+                onValueChange={(value) =>
+                  form.setValue(
+                    'defensiveRatingRank',
+                    value as typeof field.value,
+                  )
+                }
+                className="w-full"
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="offensiveRatingRank"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                ORTG Ranking
+                <Tooltip delayDuration={500}>
+                  <TooltipTrigger>
+                    <InformationCircleIcon className="size-5" />
+                  </TooltipTrigger>
+
+                  <TooltipContent>
+                    <p>
+                      ORTG ranking of the atacking team during the month of the
+                      game.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </FormLabel>
+
+              <RangeSlider
+                min={1}
+                max={30}
+                step={1}
+                value={field.value}
+                label={(item) => item}
+                onValueChange={(value) =>
+                  form.setValue(
+                    'offensiveRatingRank',
+                    value as typeof field.value,
+                  )
+                }
                 className="w-full"
               />
               <FormMessage />
