@@ -63,7 +63,7 @@ def fetch_player_info(pid):
         # enforce a 5‑second HTTP timeout
         info = CommonPlayerInfo(player_id=pid, timeout=5).get_normalized_dict()["CommonPlayerInfo"][0]
         return {
-            "player_id": pid,
+            "id": pid,
             "name": info["DISPLAY_FIRST_LAST"],
             "height": info["HEIGHT"],
             "weight": info["WEIGHT"],

@@ -34,7 +34,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
-import { POSITIONS, RESULTS, SEASONS, TEAMS, Filter } from '@/types/filters';
+import {
+  POSITIONS,
+  RESULTS,
+  SEASONS,
+  TEAMS,
+  PLAYERS,
+  Filter,
+} from '@/types/filters';
 import { useCallback, useEffect } from 'react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CreateFilterDialog } from './create-filter';
@@ -291,7 +298,8 @@ export const Filters = ({ className }: { className?: string }) => {
 
                 <MultiCombobox
                   values={field.value}
-                  options={[]}
+                  options={PLAYERS}
+                  maxOptions={50}
                   onSelect={(values) =>
                     form.setValue('players', values, { shouldDirty: true })
                   }

@@ -12,11 +12,12 @@ import {
 } from './command';
 import { FormControl } from './form';
 import { Popover, PopoverTrigger, PopoverContent } from './popover';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 interface ComboboxProps<T> {
   values: T[];
   options: Array<{ label: string; value: T }>;
+  maxOptions?: number;
   onSelect: (values: T[]) => void;
   placeholder?: string;
   searchPlaceholder?: string;
@@ -33,8 +34,11 @@ export function MultiCombobox<T>({
   searchPlaceholder,
   searchEmptyMessage,
   multiSelectedMessage,
+  maxOptions,
   className,
 }: ComboboxProps<T>) {
+  const [query, setQuery] = useState('');
+
   const valueFormatted = useMemo(() => {
     if (values.length === 0) {
       return placeholder ?? 'Select options';
@@ -57,6 +61,26 @@ export function MultiCombobox<T>({
     },
     [onSelect, values],
   );
+
+  const finalOptions = useMemo(() => {
+    if (!maxOptions) {
+      return options;
+    }
+
+    const list: { label: string; value: T }[] = [];
+
+    for (const option of options) {
+      if (option.label.toLowerCase().includes(query.toLowerCase())) {
+        list.push(option);
+      }
+
+      if (list.length === maxOptions) {
+        break;
+      }
+    }
+
+    return list;
+  }, [maxOptions, options, query]);
 
   return (
     <Popover>
@@ -82,6 +106,8 @@ export function MultiCombobox<T>({
           <CommandInput
             placeholder={searchPlaceholder ?? 'Search...'}
             className="h-9"
+            value={query}
+            onValueChange={setQuery}
           />
 
           <CommandGroup>
@@ -102,7 +128,7 @@ export function MultiCombobox<T>({
             <CommandSeparator />
 
             <CommandGroup>
-              {options.map((option) => (
+              {finalOptions.map((option) => (
                 <CommandItem
                   value={option.label}
                   key={String(option.value)}

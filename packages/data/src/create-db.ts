@@ -232,7 +232,12 @@ async function createAndSeed() {
         (item) => item.month === month,
       );
 
-      const teamShortName = TEAMS_BY_NAME[record.TEAM_NAME].abbreviation;
+      const teamName =
+        record.TEAM_NAME === 'LA Clippers'
+          ? 'Los Angeles Clippers'
+          : record.TEAM_NAME;
+
+      const teamShortName = TEAMS_BY_NAME[teamName].abbreviation;
       const oponentShortName =
         record.HOME_TEAM === teamShortName
           ? record.AWAY_TEAM
