@@ -17,10 +17,7 @@ import { FilterForm } from './form';
 export const Filters = ({ className }: { className?: string }) => {
   return (
     <Card
-      className={clsx(
-        'flex flex-col gap-5 w-[350px] h-[720px] px-5',
-        className,
-      )}
+      className={clsx('flex flex-col gap-5 w-[350px] h-min px-5', className)}
     >
       <div className="w-full flex items-center justify-between ">
         <DropdownMenu>
@@ -82,8 +79,6 @@ export const Filters = ({ className }: { className?: string }) => {
       </div>
 
       <FilterForm />
-
-      <div className="h-full w-full bg-zinc-100"></div>
     </Card>
   );
 };

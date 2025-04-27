@@ -10,6 +10,9 @@ import {
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
+import { MultiCombobox } from '@/components/ui/multi-combobox';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const seasons = [
   { label: '2023-24', value: 24 },
@@ -33,6 +36,39 @@ const seasons = [
   { label: '2005-06', value: 6 },
   { label: '2004-05', value: 5 },
   { label: '2003-04', value: 4 },
+];
+
+const teams = [
+  { label: 'Atlanta Hawks', value: 1610612737 },
+  { label: 'Boston Celtics', value: 1610612738 },
+  { label: 'Brooklyn Nets', value: 1610612739 },
+  { label: 'Charlotte Hornets', value: 1610612740 },
+  { label: 'Chicago Bulls', value: 1610612741 },
+  { label: 'Cleveland Cavaliers', value: 1610612742 },
+  { label: 'Dallas Mavericks', value: 1610612743 },
+  { label: 'Denver Nuggets', value: 1610612744 },
+  { label: 'Detroit Pistons', value: 1610612745 },
+  { label: 'Golden State Warriors', value: 1610612746 },
+  { label: 'Houston Rockets', value: 1610612747 },
+  { label: 'Indiana Pacers', value: 1610612748 },
+  { label: 'Los Angeles Clippers', value: 1610612749 },
+  { label: 'Los Angeles Lakers', value: 1610612750 },
+  { label: 'Memphis Grizzlies', value: 1610612751 },
+  { label: 'Miami Heat', value: 1610612752 },
+  { label: 'Milwaukee Bucks', value: 1610612753 },
+  { label: 'Minnesota Timberwolves', value: 1610612754 },
+  { label: 'New Orleans Pelicans', value: 1610612755 },
+  { label: 'New York Knicks', value: 1610612756 },
+  { label: 'Oklahoma City Thunder', value: 1610612757 },
+  { label: 'Orlando Magic', value: 1610612758 },
+  { label: 'Philadelphia 76ers', value: 1610612759 },
+  { label: 'Phoenix Suns', value: 1610612760 },
+  { label: 'Portland Trail Blazers', value: 1610612761 },
+  { label: 'Sacramento Kings', value: 1610612762 },
+  { label: 'San Antonio Spurs', value: 1610612763 },
+  { label: 'Toronto Raptors', value: 1610612764 },
+  { label: 'Utah Jazz', value: 1610612765 },
+  { label: 'Washington Wizards', value: 1610612766 },
 ];
 
 const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'] as const;
@@ -72,7 +108,7 @@ export const FilterForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="season"
@@ -86,6 +122,100 @@ export const FilterForm = () => {
                 onSelect={(value) => form.setValue('season', value)}
                 className="w-full"
               />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="teams"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Teams</FormLabel>
+
+              <MultiCombobox
+                values={field.value}
+                options={teams}
+                onSelect={(values) => form.setValue('teams', values)}
+                className="w-full"
+                multiSelectedMessage="teams selected"
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="players"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Players</FormLabel>
+
+              <MultiCombobox
+                values={field.value}
+                options={[]}
+                onSelect={(values) => form.setValue('players', values)}
+                className="w-full"
+                multiSelectedMessage="players selected"
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="positions"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Positions</FormLabel>
+
+              <ToggleGroup
+                type="multiple"
+                value={field.value}
+                onValueChange={(values) =>
+                  form.setValue('positions', values as typeof field.value)
+                }
+                className="w-full"
+              >
+                {POSITIONS.map((option) => (
+                  <ToggleGroupItem value={option} key={option}>
+                    {option}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="result"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Result</FormLabel>
+
+              <Tabs
+                value={field.value}
+                onValueChange={(value) =>
+                  form.setValue('result', value as typeof field.value)
+                }
+              >
+                <TabsList className="w-full">
+                  {RESULTS.map((option) => (
+                    <TabsTrigger
+                      key={option}
+                      value={option}
+                      className="capitalize"
+                    >
+                      {option}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
               <FormMessage />
             </FormItem>
           )}
