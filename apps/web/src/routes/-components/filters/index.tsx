@@ -52,6 +52,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 const schema = z.object({
   season: z.number().min(4).max(24),
@@ -70,8 +71,14 @@ const schema = z.object({
 });
 
 export const Filters = ({ className }: { className?: string }) => {
-  const { filters, currentFilter, selectFilter, saveFilter, newFilter, deleteFilter } =
-    useFilters();
+  const {
+    filters,
+    currentFilter,
+    selectFilter,
+    saveFilter,
+    newFilter,
+    deleteFilter,
+  } = useFilters();
 
   const [filterCreateType, setFilterCreateType] = useState<
     'new' | 'copy' | 'edit'
@@ -124,12 +131,34 @@ export const Filters = ({ className }: { className?: string }) => {
     ],
   );
 
+  const [isDialogOpen, setDialogOpen] = useState(false);
+
+  useHotkeys(
+    'ctrl+n',
+    (e) => {
+      e.preventDefault();
+      setFilterCreateType('new');
+      setDialogOpen(true);
+    },
+    [setDialogOpen, setFilterCreateType],
+  );
+
+  useHotkeys(
+    'ctrl+shift+n',
+    (e) => {
+      e.preventDefault();
+      setFilterCreateType('copy');
+      setDialogOpen(true);
+    },
+    [setDialogOpen, setFilterCreateType],
+  );
+
   return (
     <Card
       className={clsx('flex flex-col gap-5 w-[350px] h-min px-5', className)}
     >
       <div className="flex items-center justify-between gap-2 w-full">
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
           <DropdownMenu>
             <DropdownMenuTrigger className="-ml-2 shrink-1 min-w-0" asChild>
               <Button variant="ghost">
