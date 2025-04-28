@@ -42,9 +42,16 @@ import {
   PLAYERS,
   Filter,
 } from '@/types/filters';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CreateFilterDialog } from './create-filter';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 
 const schema = z.object({
   season: z.number().min(4).max(24),
@@ -63,8 +70,15 @@ const schema = z.object({
 });
 
 export const Filters = ({ className }: { className?: string }) => {
-  const { filters, currentFilter, selectFilter, saveFilter, newFilter } =
+  const { filters, currentFilter, selectFilter, saveFilter, newFilter, deleteFilter } =
     useFilters();
+
+  const [filterCreateType, setFilterCreateType] = useState<
+    'new' | 'copy' | 'edit'
+  >('new');
+
+  const [editingFilterId, setEditingFilterId] = useState<number | null>(null);
+  const [editingFilterName, setEditingFilterName] = useState('');
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -82,10 +96,32 @@ export const Filters = ({ className }: { className?: string }) => {
 
   const onCreateFilter = useCallback(
     (name: string) => {
+      if (editingFilterId && filterCreateType === 'edit') {
+        saveFilter({
+          id: editingFilterId,
+          name,
+          filters: form.getValues() as Filter,
+        });
+        setFilterCreateType('new');
+        return;
+      }
+
       const newId = newFilter(name);
+
+      if (filterCreateType === 'copy') {
+        saveFilter({ id: newId, name, filters: form.getValues() as Filter });
+      }
+
       selectFilter(newId);
     },
-    [newFilter, selectFilter],
+    [
+      editingFilterId,
+      filterCreateType,
+      form,
+      newFilter,
+      saveFilter,
+      selectFilter,
+    ],
   );
 
   return (
@@ -105,10 +141,20 @@ export const Filters = ({ className }: { className?: string }) => {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-[280px]" align="start">
-              <DialogTrigger asChild>
+              <DialogTrigger asChild onClick={() => setFilterCreateType('new')}>
                 <DropdownMenuItem>
                   Create filter
                   <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DialogTrigger>
+
+              <DialogTrigger
+                asChild
+                onClick={() => setFilterCreateType('copy')}
+              >
+                <DropdownMenuItem>
+                  Save as new filter
+                  <DropdownMenuShortcut>⌘shift+N</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DialogTrigger>
 
@@ -118,18 +164,54 @@ export const Filters = ({ className }: { className?: string }) => {
                 onValueChange={(newValue) => selectFilter(Number(newValue))}
               >
                 {filters.map((filter) => (
-                  <DropdownMenuRadioItem
-                    key={filter.id}
-                    value={String(filter.id)}
-                  >
-                    {filter.name}
-                  </DropdownMenuRadioItem>
+                  <ContextMenu>
+                    <ContextMenuTrigger asChild>
+                      <DropdownMenuRadioItem
+                        key={filter.id}
+                        value={String(filter.id)}
+                      >
+                        {filter.name}
+                      </DropdownMenuRadioItem>
+                    </ContextMenuTrigger>
+
+                    <ContextMenuContent className="w-[200px]">
+                      <ContextMenuItem onClick={() => selectFilter(filter.id)}>
+                        Select
+                      </ContextMenuItem>
+
+                      <DialogTrigger asChild>
+                        <ContextMenuItem
+                          onClick={() => {
+                            setEditingFilterName(filter.name);
+                            setFilterCreateType('edit');
+                            setEditingFilterId(filter.id);
+                          }}
+                        >
+                          Rename
+                        </ContextMenuItem>
+                      </DialogTrigger>
+
+                      <ContextMenuSeparator />
+
+                      <ContextMenuItem
+                        onClick={() => deleteFilter(filter.id)}
+                        variant="destructive"
+                      >
+                        Delete
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 ))}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <CreateFilterDialog onCreate={onCreateFilter} />
+          <CreateFilterDialog
+            onCreate={onCreateFilter}
+            defaultName={
+              filterCreateType === 'edit' ? editingFilterName : undefined
+            }
+          />
         </Dialog>
 
         <Button

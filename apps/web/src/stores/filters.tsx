@@ -8,6 +8,7 @@ interface FiltersStore {
   saveFilter: (filter: FilterItem) => void;
   newFilter: (name: string) => number;
   selectFilter: (id: number) => void;
+  deleteFilter: (id: number) => void;
 }
 
 const FiltersStoreContext = createContext<FiltersStore>({
@@ -16,6 +17,7 @@ const FiltersStoreContext = createContext<FiltersStore>({
   saveFilter: () => {},
   newFilter: () => -1,
   selectFilter: () => {},
+  deleteFilter: () => {},
 });
 
 export const FiltersProvider = ({
@@ -113,6 +115,19 @@ export const FiltersProvider = ({
     [setCurrentFilterId],
   );
 
+  const deleteFilter = useCallback(
+    (id: number) => {
+      setFilters((filters) => {
+        return filters.filter((f) => f.id !== id);
+      });
+
+      if (currentFilter.id === id) {
+        selectFilter(filters.find((f) => f.id !== id)?.id ?? 0);
+      }
+    },
+    [currentFilter.id, filters, selectFilter, setFilters],
+  );
+
   return (
     <FiltersStoreContext.Provider
       value={{
@@ -121,6 +136,7 @@ export const FiltersProvider = ({
         saveFilter,
         newFilter,
         selectFilter,
+        deleteFilter,
       }}
     >
       {children}

@@ -8,14 +8,16 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export const CreateFilterDialog = ({
+  defaultName,
   onCreate,
 }: {
+  defaultName?: string;
   onCreate: (name: string) => void;
 }) => {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(defaultName ?? '');
 
   const onSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -32,10 +34,16 @@ export const CreateFilterDialog = ({
     [name, onCreate],
   );
 
+  useEffect(() => {
+    setName(defaultName ?? '');
+  }, [defaultName]);
+
   return (
     <DialogContent className="w-[280px] sm:w-[400px]">
       <DialogHeader>
-        <DialogTitle>Create filter</DialogTitle>
+        <DialogTitle>
+          {defaultName ? 'Edit filter' : 'Create filter'}
+        </DialogTitle>
       </DialogHeader>
 
       <form onSubmit={onSubmit}>
