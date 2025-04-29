@@ -18,10 +18,17 @@ export const Route = createFileRoute('/')({
 function Index() {
   const { data, isLoading } = useStats();
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between w-full">
-        <h2 className="text-3xl font-bold">{data.length}</h2>
+        <h2 className="text-3xl font-bold">
+          Exploring {formatter.format(data.length)} shots
+        </h2>
 
         <div className="flex items-center gap-4">
           <Button variant="outline">Share</Button>

@@ -185,9 +185,15 @@ export class VisualizationEngine {
   }
 
   private drawShot(shot: ShotSection) {
+    const shots =
+      shot.quantity * Math.min(Math.max(1, 10 - shot.quantity / 1_000), 1);
+    const mostShots =
+      this.mostShots * Math.min(Math.max(1, 10 - this.mostShots / 1_000), 1);
+
     const size = Math.max(
       this.size.sectionSize *
-        (Math.log(shot.quantity + 1) / Math.log(this.mostShots + 1)),
+        (Math.log10(shots + 1) / Math.log10(mostShots + 1)) *
+        2,
       this.size.sectionSize * 0.1,
     );
 
