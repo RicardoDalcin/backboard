@@ -71,8 +71,8 @@ export const Route = createRootRoute({
           </header>
 
           <ScrollArea className="w-screen h-screen">
-            <div className="min-h-screen pt-[var(--nav-height)]">
-              <section className="px-8 pt-4 pb-8">
+            <div className="flex min-h-screen pt-[var(--nav-height)]">
+              <section className="px-8 pt-4 pb-8 flex-1 w-full">
                 <Outlet />
                 <TanStackRouterDevtools />
               </section>

@@ -141,11 +141,25 @@ export class VisualizationEngine {
 
   private draw() {
     this.drawCourt();
+
+    // Add Gaussian blur here
+    // this.ctx.save();
+    // this.ctx.filter = 'blur(2px)'; // Adjust the pixel value to control the blur amount
+    this.ctx.save();
     this.drawShots();
   }
 
   private positionToSection(x: number, y: number) {
-    const xSection = Math.round(x / this.size.sectionSize);
+    const centerLeft = this.size.width / 2 - this.size.sectionSize * 2;
+    const centerRight = this.size.width / 2 + this.size.sectionSize * 2;
+
+    const xSection =
+      x < centerLeft
+        ? Math.floor(x / this.size.sectionSize)
+        : x > centerRight
+          ? Math.floor(x / this.size.sectionSize)
+          : Math.round(x / this.size.sectionSize);
+
     const ySection = Math.floor(y / this.size.sectionSize);
 
     return {
@@ -193,8 +207,8 @@ export class VisualizationEngine {
     const size = Math.max(
       this.size.sectionSize *
         (Math.log10(shots + 1) / Math.log10(mostShots + 1)) *
-        2,
-      this.size.sectionSize * 0.1,
+        1.5,
+      this.size.sectionSize * 0,
     );
 
     const { x, y } = this.sectionToPosition(shot.x, shot.y);
@@ -446,5 +460,5 @@ const colorInterpolate = (colorA: string, colorB: string, intval: number) => {
 };
 
 const getAccuracyColor = (accuracy: number) => {
-  return colorInterpolate('rgb(101, 146, 173)', 'rgb(2, 49, 77)', accuracy);
+  return colorInterpolate('rgb(101, 146, 173)', 'rgb(0, 20, 30)', accuracy);
 };

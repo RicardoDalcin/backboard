@@ -27,7 +27,9 @@ function Index() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between w-full">
         <h2 className="text-3xl font-bold">
-          Exploring {formatter.format(data.length)} shots
+          {isLoading
+            ? `Loading shots...`
+            : `Exploring ${formatter.format(data.length)} shots`}
         </h2>
 
         <div className="flex items-center gap-4">
@@ -44,12 +46,13 @@ function Index() {
 
         <div className="grid grid-cols-12 gap-6 flex-1">
           <Card className="col-span-12 xl:col-span-7 py-0 overflow-hidden">
-            {isLoading && !data.length ? (
+            {isLoading ? (
               <Skeleton className="w-full aspect-[541/406.83]" />
             ) : (
               <Court shots={data} />
             )}
           </Card>
+
           <Card className="col-span-12 xl:col-span-5 py-0 overflow-hidden">
             <Skeleton className="w-full h-full" />
           </Card>

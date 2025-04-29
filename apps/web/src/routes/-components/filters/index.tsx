@@ -81,7 +81,7 @@ export const Filters = ({ className }: { className?: string }) => {
     deleteFilter,
   } = useFilters();
 
-  const { isLoading } = useStats();
+  const { isLoading, isValidating } = useStats();
 
   const [filterCreateType, setFilterCreateType] = useState<
     'new' | 'copy' | 'edit'
@@ -489,7 +489,7 @@ export const Filters = ({ className }: { className?: string }) => {
             type="submit"
             className="w-full"
             disabled={!form.formState.isDirty}
-            loading={isLoading}
+            loading={isLoading || isValidating}
           >
             Apply
           </Button>

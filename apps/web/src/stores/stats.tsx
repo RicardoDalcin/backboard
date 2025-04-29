@@ -8,11 +8,13 @@ import { Shot } from '@/types';
 interface StatsStore {
   data: Array<Pick<Shot, 'locX' | 'locY' | 'shotMade'>>;
   isLoading: boolean;
+  isValidating: boolean;
 }
 
 const StatsStoreContext = createContext<StatsStore>({
   data: [],
   isLoading: false,
+  isValidating: false,
 });
 
 function useShots<T extends ShotColumn[]>(
@@ -22,7 +24,7 @@ function useShots<T extends ShotColumn[]>(
 ) {
   const filterKey = useMemo(() => JSON.stringify(filter), [filter]);
 
-  const { data, isLoading, mutate } = useSWR(`/api/shots`, () => {
+  const { data, isLoading, isValidating, mutate } = useSWR(`/api/shots`, () => {
     return db.getShots(columns, count, {
       teamIds: filter.teams,
       playerIds: filter.players,
@@ -41,13 +43,14 @@ function useShots<T extends ShotColumn[]>(
   return {
     data,
     isLoading,
+    isValidating,
   };
 }
 
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentFilter } = useFilters();
 
-  const { data, isLoading } = useShots(
+  const { data, isLoading, isValidating } = useShots(
     ['locX', 'locY', 'shotMade'],
     1_000_000,
     currentFilter.filters,
@@ -56,7 +59,9 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const dataList = useMemo(() => data ?? [], [data]);
 
   return (
-    <StatsStoreContext.Provider value={{ data: dataList, isLoading }}>
+    <StatsStoreContext.Provider
+      value={{ data: dataList, isLoading, isValidating }}
+    >
       {children}
     </StatsStoreContext.Provider>
   );
