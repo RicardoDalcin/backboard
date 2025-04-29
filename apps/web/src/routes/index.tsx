@@ -6,6 +6,7 @@ import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { Card } from '@/components/ui/card';
 import { Filters } from './-components/filters';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useStats } from '@/stores/stats';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -14,6 +15,8 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
+  const { data, isLoading } = useStats();
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between w-full">

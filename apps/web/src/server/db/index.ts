@@ -1,5 +1,41 @@
-import { DatabaseShot, Shot } from '@/types';
+import { Shot } from '@/types';
 import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+
+export type ShotColumn = keyof Shot;
+
+export const SHOT_COLUMNS: Record<ShotColumn, string> = {
+  id: 'id',
+  season: 'season',
+  teamId: 'team_id',
+  playerId: 'player_id',
+  positionGroup: 'position_group',
+  position: 'position',
+  gameDate: 'game_date',
+  gameId: 'game_id',
+  homeTeam: 'home_team',
+  awayTeam: 'away_team',
+  eventType: 'event_type',
+  shotMade: 'shot_made',
+  actionType: 'action_type',
+  shotType: 'shot_type',
+  basicZone: 'basic_zone',
+  zoneName: 'zone_name',
+  zoneAbb: 'zone_abb',
+  zoneRange: 'zone_range',
+  locX: 'loc_x',
+  locY: 'loc_y',
+  shotDistance: 'shot_distance',
+  quarter: 'quarter',
+  minsLeft: 'mins_left',
+  secsLeft: 'secs_left',
+  defRtg: 'def_rtg',
+  defRtgRank: 'def_rtg_rank',
+  offRtg: 'off_rtg',
+  offRtgRank: 'off_rtg_rank',
+  playerHeight: 'player_height',
+  playerWeight: 'player_weight',
+  gameWon: 'game_won',
+};
 
 class FileSystem {
   private opfsRoot: FileSystemDirectoryHandle | null = null;
@@ -229,6 +265,10 @@ class NBADatabase {
 
     const filtersQuery = Object.entries(filters)
       .map(([key, value]) => {
+        if (value === undefined) {
+          return '';
+        }
+
         const { column, type } = filtersConfig[key];
 
         if (type === 'INTEGER') {
@@ -243,12 +283,14 @@ class NBADatabase {
           return `${column} = ${value}`;
         }
       })
+      .filter((item) => item !== '')
       .join(' AND ');
 
     return `WHERE ${filtersQuery}`;
   }
 
-  async getShots(
+  async getShots<T extends ShotColumn[]>(
+    columns: T,
     count?: number,
     filters?: {
       season?: number;
@@ -256,6 +298,7 @@ class NBADatabase {
       playerId?: number;
       basicZone?: string;
     },
+    signal?: AbortSignal,
   ) {
     const FILTERS = {
       season: { column: 'season', type: 'INTEGER' },
@@ -264,14 +307,24 @@ class NBADatabase {
       basicZone: { column: 'basic_zone', type: 'TEXT' },
     } as const;
 
-    const query = `SELECT loc_x as locX, loc_y as locY, shot_made as shotMade, basic_zone as basicZone, quarter as quarter, mins_left as minsLeft, shot_type as shotType
-      FROM shots 
+    const sqlColumns = columns.map(
+      (column) => `${SHOT_COLUMNS[column]} as ${column}`,
+    );
+
+    const query = `SELECT ${sqlColumns.join(',')} FROM shots 
       ${filters ? this.getFiltersQuery(filters, FILTERS) : ''}
       LIMIT ${count}`;
 
     console.log(query);
 
-    return this.db.get<DatabaseShot, Shot>(query);
+    return new Promise<Pick<Shot, T[number]>[]>((resolve, reject) => {
+      signal?.addEventListener('abort', () => {
+        console.log('Aborting request');
+        reject(new Error('Request aborted'));
+      });
+
+      this.db.get<Pick<Shot, T[number]>>(query).then(resolve).catch(reject);
+    });
   }
 }
 

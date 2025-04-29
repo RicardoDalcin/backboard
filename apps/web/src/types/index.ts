@@ -1,47 +1,35 @@
-export interface DatabaseShot {
+export interface Shot {
   id: number;
   season: number;
-  team_id: number;
-  team_name: string;
-  player_id: number;
-  player_name: string;
-  position_group: string;
+  teamId: number;
+  playerId: number;
+  positionGroup: string;
   position: string;
-  game_date: string;
-  game_id: number;
-  home_team: string;
-  away_team: string;
-  event_type: string;
-  shot_made: number;
-  action_type: string;
-  shot_type: string;
-  basic_zone: string;
-  zone_name: string;
-  zone_abb: string;
-  zone_range: string;
-  loc_x: number;
-  loc_y: number;
-  shot_distance: number;
-  quarter: number;
-  mins_left: number;
-  secs_left: number;
-  def_rtg: number;
-  def_rtg_rank: number;
-  off_rtg: number;
-  off_rtg_rank: number;
-  player_height: number;
-  player_weight: number;
-  game_won: number;
-}
-
-export interface Shot {
+  gameDate: string;
+  gameId: number;
+  homeTeam: string;
+  awayTeam: string;
+  eventType: string;
+  shotMade: number;
+  actionType: string;
+  shotType: string;
+  basicZone: string;
+  zoneName: string;
+  zoneAbb: string;
+  zoneRange: string;
   locX: number;
   locY: number;
-  shotMade: boolean;
-  basicZone: string;
+  shotDistance: number;
   quarter: number;
   minsLeft: number;
-  shotType: ShotType;
+  secsLeft: number;
+  defRtg: number;
+  defRtgRank: number;
+  offRtg: number;
+  offRtgRank: number;
+  playerHeight: number;
+  playerWeight: number;
+  gameWon: number;
 }
 
 export interface Zone {
