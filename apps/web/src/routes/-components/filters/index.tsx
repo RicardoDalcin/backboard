@@ -53,6 +53,7 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { useStats } from '@/stores/stats';
 
 const schema = z.object({
   season: z.number().min(4).max(24),
@@ -79,6 +80,8 @@ export const Filters = ({ className }: { className?: string }) => {
     newFilter,
     deleteFilter,
   } = useFilters();
+
+  const { isLoading } = useStats();
 
   const [filterCreateType, setFilterCreateType] = useState<
     'new' | 'copy' | 'edit'
@@ -486,6 +489,7 @@ export const Filters = ({ className }: { className?: string }) => {
             type="submit"
             className="w-full"
             disabled={!form.formState.isDirty}
+            loading={isLoading}
           >
             Apply
           </Button>

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Filters } from './-components/filters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useStats } from '@/stores/stats';
+import { Court } from '@/components/viz/court';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -20,7 +21,7 @@ function Index() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between w-full">
-        <h2 className="text-3xl font-bold">Explore</h2>
+        <h2 className="text-3xl font-bold">{data.length}</h2>
 
         <div className="flex items-center gap-4">
           <Button variant="outline">Share</Button>
@@ -35,10 +36,14 @@ function Index() {
         <Filters />
 
         <div className="grid grid-cols-12 gap-6 flex-1">
-          <Card className="col-span-12 h-[600px] xl:col-span-7 py-0 overflow-hidden">
-            <Skeleton className="w-full h-full" />
+          <Card className="col-span-12 xl:col-span-7 py-0 overflow-hidden">
+            {isLoading && !data.length ? (
+              <Skeleton className="w-full aspect-[541/406.83]" />
+            ) : (
+              <Court shots={data} />
+            )}
           </Card>
-          <Card className="col-span-12 h-[600px] xl:col-span-5 py-0 overflow-hidden">
+          <Card className="col-span-12 xl:col-span-5 py-0 overflow-hidden">
             <Skeleton className="w-full h-full" />
           </Card>
 

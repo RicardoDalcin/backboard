@@ -2,7 +2,11 @@ import { VisualizationEngine } from '@/engine/Visualization';
 import { Shot } from '@/types';
 import { useEffect, useRef } from 'react';
 
-export const Court = ({ shots }: { shots: Shot[] }) => {
+export const Court = ({
+  shots,
+}: {
+  shots: Pick<Shot, 'locX' | 'locY' | 'shotMade'>[];
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const initialized = useRef(false);

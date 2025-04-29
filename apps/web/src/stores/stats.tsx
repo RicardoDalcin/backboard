@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useEffect, useMemo } from 'react';
 import { useFilters } from './filters';
 import { db, ShotColumn } from '@/server/db';
 import { Filter } from '@/types/filters';
@@ -20,13 +20,23 @@ function useShots<T extends ShotColumn[]>(
   count: number,
   filter: Filter,
 ) {
-  const { data, isLoading } = useSWR('/api/shots', () => {
+  const filterKey = useMemo(() => JSON.stringify(filter), [filter]);
+
+  const { data, isLoading, mutate } = useSWR(`/api/shots`, () => {
     return db.getShots(columns, count, {
-      teamId: filter.teams[0],
-      playerId: filter.players[0],
+      teamIds: filter.teams,
+      playerIds: filter.players,
       season: filter.season,
+      drtgRanking: filter.defensiveRatingRank,
+      ortgRanking: filter.offensiveRatingRank,
+      positions: filter.positions,
+      result: filter.result,
     });
   });
+
+  useEffect(() => {
+    mutate();
+  }, [filterKey, mutate]);
 
   return {
     data,
@@ -39,7 +49,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { data, isLoading } = useShots(
     ['locX', 'locY', 'shotMade'],
-    1_000,
+    1_000_000,
     currentFilter.filters,
   );
 

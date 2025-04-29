@@ -250,12 +250,12 @@ class NBADatabase {
   }
 
   private getFiltersQuery(
-    filters: Record<string, unknown>,
+    filters: Record<string, number | string | number[] | string[] | undefined>,
     filtersConfig: Record<
       string,
       {
         column: string;
-        type: 'INTEGER' | 'TEXT' | 'REAL';
+        type: 'INTEGER' | 'TEXT' | 'REAL' | 'INTEGER_ARRAY' | 'TEXT_ARRAY';
       }
     >,
   ) {
@@ -282,6 +282,14 @@ class NBADatabase {
         if (type === 'REAL') {
           return `${column} = ${value}`;
         }
+
+        if (type === 'INTEGER_ARRAY') {
+          return `${column} IN (${(value as number[]).join(',')})`;
+        }
+
+        if (type === 'TEXT_ARRAY') {
+          return `${column} IN (${(value as string[]).map((item) => `'${item}'`).join(',')})`;
+        }
       })
       .filter((item) => item !== '')
       .join(' AND ');
@@ -294,25 +302,54 @@ class NBADatabase {
     count?: number,
     filters?: {
       season?: number;
-      teamId?: number;
-      playerId?: number;
-      basicZone?: string;
+      drtgRanking?: [number, number];
+      ortgRanking?: [number, number];
+      teamIds?: number[];
+      playerIds?: number[];
+      positions?: string[];
+      result?: 'all' | 'wins' | 'losses';
     },
     signal?: AbortSignal,
   ) {
     const FILTERS = {
       season: { column: 'season', type: 'INTEGER' },
-      teamId: { column: 'team_id', type: 'INTEGER' },
-      playerId: { column: 'player_id', type: 'INTEGER' },
-      basicZone: { column: 'basic_zone', type: 'TEXT' },
+      drtgRanking: { column: 'def_rtg_rank', type: 'INTEGER_ARRAY' },
+      ortgRanking: { column: 'off_rtg_rank', type: 'INTEGER_ARRAY' },
+      teamIds: { column: 'team_id', type: 'INTEGER_ARRAY' },
+      playerIds: { column: 'player_id', type: 'INTEGER_ARRAY' },
+      positions: { column: 'position', type: 'TEXT_ARRAY' },
+      result: { column: 'game_won', type: 'INTEGER' },
     } as const;
+
+    const filterValues = {
+      season: filters?.season,
+      drtgRanking:
+        filters?.drtgRanking?.[0] === 1 && filters?.drtgRanking[1] === 30
+          ? undefined
+          : filters?.drtgRanking,
+      ortgRanking:
+        filters?.ortgRanking?.[0] === 1 && filters?.ortgRanking[1] === 30
+          ? undefined
+          : filters?.ortgRanking,
+      teamIds: filters?.teamIds?.length === 0 ? undefined : filters?.teamIds,
+      playerIds:
+        filters?.playerIds?.length === 0 ? undefined : filters?.playerIds,
+      positions:
+        filters?.positions?.length === 5 ? undefined : filters?.positions,
+      result:
+        !filters?.result || filters?.result === 'all'
+          ? undefined
+          : filters.result === 'wins'
+            ? 1
+            : 0,
+    };
 
     const sqlColumns = columns.map(
       (column) => `${SHOT_COLUMNS[column]} as ${column}`,
     );
 
     const query = `SELECT ${sqlColumns.join(',')} FROM shots 
-      ${filters ? this.getFiltersQuery(filters, FILTERS) : ''}
+      ${filters ? this.getFiltersQuery(filterValues, FILTERS) : ''}
       LIMIT ${count}`;
 
     console.log(query);

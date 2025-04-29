@@ -48,7 +48,7 @@ const COURT_ASPECT_RATIO = COURT_WIDTH_FT / COURT_LENGTH_FT;
 
 const THEME = {
   background: '#ffffff',
-  line: '#555555',
+  line: '#808080',
   paintedArea: '#353535',
 };
 
@@ -94,7 +94,7 @@ export class VisualizationEngine {
     return x + y * GRID_SIZE;
   }
 
-  setShots(shots: Shot[]) {
+  setShots(shots: Pick<Shot, 'locX' | 'locY' | 'shotMade'>[]) {
     this.shots.clear();
 
     for (const shot of shots) {
@@ -219,10 +219,11 @@ export class VisualizationEngine {
     this.ctx.lineWidth = lineWidth;
     this.ctx.strokeStyle = THEME.line;
 
-    this.ctx.save();
-    this.ctx.lineWidth = lineWidth * 2;
-    this.ctx.strokeRect(0, 0, this.size.width, this.size.height);
-    this.ctx.restore();
+    // this.ctx.save();
+    // this.ctx.lineWidth = lineWidth * 2;
+    // this.ctx.roundRect(0, 0, this.size.width, this.size.height, 12);
+    // this.ctx.stroke();
+    // this.ctx.restore();
 
     // Three-point line (two straight lines and one arc)
     this.ctx.beginPath();

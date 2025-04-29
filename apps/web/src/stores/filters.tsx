@@ -70,13 +70,14 @@ export const FiltersProvider = ({
   const saveFilter = useCallback(
     (newFilter: FilterItem) => {
       setFilters((filters) => {
-        const index = filters.findIndex((f) => f.id === newFilter.id);
+        const newFilters = [...filters];
+        const index = newFilters.findIndex((f) => f.id === newFilter.id);
         if (index === -1) {
-          filters.push(newFilter);
+          newFilters.push(newFilter);
         } else {
-          filters[index] = newFilter;
+          newFilters[index] = newFilter;
         }
-        return filters;
+        return newFilters;
       });
     },
     [setFilters],
