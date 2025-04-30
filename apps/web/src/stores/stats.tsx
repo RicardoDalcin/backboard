@@ -1,8 +1,14 @@
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useFilters } from './filters';
 import { db, ShotColumn } from '@/server/db';
 import { Filter } from '@/types/filters';
-import useSWR from 'swr';
 import { Shot } from '@/types';
 
 interface StatsStore {
@@ -17,31 +23,47 @@ const StatsStoreContext = createContext<StatsStore>({
   isValidating: false,
 });
 
-function useShots<T extends ShotColumn[]>(
+export function useShots<T extends ShotColumn[]>(
   columns: T,
   count: number,
   filter: Filter,
 ) {
   const filterKey = useMemo(() => JSON.stringify(filter), [filter]);
+  const [lastFilterKey, setLastFilterKey] = useState('');
+  const [shots, setShots] = useState<Pick<Shot, T[number]>[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isValidating, setIsValidating] = useState(false);
 
-  const { data, isLoading, isValidating, mutate } = useSWR(`/api/shots`, () => {
-    return db.getShots(columns, count, {
-      teamIds: filter.teams,
-      playerIds: filter.players,
-      season: filter.season,
-      drtgRanking: filter.defensiveRatingRank,
-      ortgRanking: filter.offensiveRatingRank,
-      positions: filter.positions,
-      result: filter.result,
-    });
-  });
+  const abortController = useRef(new AbortController());
 
   useEffect(() => {
-    mutate();
-  }, [filterKey, mutate]);
+    if (lastFilterKey === filterKey) {
+      return;
+    }
+
+    setLastFilterKey(filterKey);
+    setIsValidating(true);
+
+    const newAbortController = new AbortController();
+    const signal = newAbortController.signal;
+
+    abortController.current.abort();
+    abortController.current = newAbortController;
+
+    db.getShots(columns, count, filter)
+      .then((data) => {
+        if (signal.aborted) {
+          return;
+        }
+        setIsLoading(false);
+        setIsValidating(false);
+        setShots(data);
+      })
+      .catch(() => {});
+  }, [filterKey, columns, count, lastFilterKey, filter]);
 
   return {
-    data,
+    data: shots,
     isLoading,
     isValidating,
   };

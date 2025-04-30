@@ -25,7 +25,7 @@ export const DEFAULT_FILTER = {
   teams: [] as (typeof TEAMS)[number]['value'][],
   players: [] as (typeof TEAMS)[number]['value'][],
   positions: [...POSITIONS],
-  result: RESULTS[0],
+  result: RESULTS[0] as 'all' | 'wins' | 'losses',
 };
 
 export type Filter = typeof DEFAULT_FILTER;

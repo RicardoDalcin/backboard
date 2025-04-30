@@ -55,10 +55,10 @@ function Button({
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      disabled={disabled || loading}
+      disabled={disabled}
       {...props}
     >
-      <>
+      <div className="contents">
         {loading && (
           <svg
             width="24"
@@ -73,13 +73,13 @@ function Button({
                 cy="12"
                 r="9.5"
                 fill="none"
-                stroke-width="3"
+                strokeWidth="3"
               ></circle>
             </g>
           </svg>
         )}
         {children}
-      </>
+      </div>
     </Comp>
   );
 }

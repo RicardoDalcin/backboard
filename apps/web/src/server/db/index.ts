@@ -1,4 +1,5 @@
 import { Shot } from '@/types';
+import { Filter } from '@/types/filters';
 import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
 
 export type ShotColumn = keyof Shot;
@@ -141,27 +142,35 @@ class LocalDatabase {
     }
   }
 
-  async get<T = unknown, R = T>(query: string, transform?: (row: T) => R) {
+  reqId = 0;
+
+  async get<T = unknown, R = T>(query: string, signal?: AbortSignal) {
     const data: R[] = [];
 
-    await this.promiser('exec', {
-      dbId: this.databaseId,
-      sql: query,
-      callback: ({ row, rowNumber }) => {
-        if (row == null || rowNumber == null) {
-          return;
-        }
+    const requestId = this.reqId++;
 
-        if (transform) {
-          data.push(transform(row as T));
-        } else {
+    const promise = new Promise<R[]>((resolve, reject) => {
+      signal?.addEventListener('abort', () => {
+        reject(new Error('Request aborted'));
+      });
+
+      this.promiser('exec', {
+        dbId: this.databaseId,
+        sql: query,
+        callback: ({ row, rowNumber }) => {
+          console.count(requestId);
+
+          if (row == null || rowNumber == null || signal?.aborted) {
+            return;
+          }
+
           data.push(row as R);
-        }
-      },
-      rowMode: 'object',
+        },
+        rowMode: 'object',
+      }).then(() => resolve(data));
     });
 
-    return data;
+    return promise;
   }
 }
 
@@ -300,15 +309,7 @@ class NBADatabase {
   async getShots<T extends ShotColumn[]>(
     columns: T,
     count?: number,
-    filters?: {
-      season?: number;
-      drtgRanking?: [number, number];
-      ortgRanking?: [number, number];
-      teamIds?: number[];
-      playerIds?: number[];
-      positions?: string[];
-      result?: 'all' | 'wins' | 'losses';
-    },
+    filters?: Partial<Filter>,
     signal?: AbortSignal,
   ) {
     const FILTERS = {
@@ -324,16 +325,21 @@ class NBADatabase {
     const filterValues = {
       season: filters?.season,
       drtgRanking:
-        filters?.drtgRanking?.[0] === 1 && filters?.drtgRanking[1] === 30
+        !filters ||
+        !filters.defensiveRatingRank ||
+        (filters.defensiveRatingRank[0] === 1 &&
+          filters.defensiveRatingRank[1] === 30)
           ? undefined
-          : filters?.drtgRanking,
+          : filters?.defensiveRatingRank,
       ortgRanking:
-        filters?.ortgRanking?.[0] === 1 && filters?.ortgRanking[1] === 30
+        !filters ||
+        !filters.offensiveRatingRank ||
+        (filters.offensiveRatingRank[0] === 1 &&
+          filters.offensiveRatingRank[1] === 30)
           ? undefined
-          : filters?.ortgRanking,
-      teamIds: filters?.teamIds?.length === 0 ? undefined : filters?.teamIds,
-      playerIds:
-        filters?.playerIds?.length === 0 ? undefined : filters?.playerIds,
+          : filters?.offensiveRatingRank,
+      teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
+      playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
       positions:
         filters?.positions?.length === 5 ? undefined : filters?.positions,
       result:
@@ -355,12 +361,10 @@ class NBADatabase {
     console.log(query);
 
     return new Promise<Pick<Shot, T[number]>[]>((resolve, reject) => {
-      signal?.addEventListener('abort', () => {
-        console.log('Aborting request');
-        reject(new Error('Request aborted'));
-      });
-
-      this.db.get<Pick<Shot, T[number]>>(query).then(resolve).catch(reject);
+      this.db
+        .get<Pick<Shot, T[number]>>(query, signal)
+        .then(resolve)
+        .catch(reject);
     });
   }
 }
