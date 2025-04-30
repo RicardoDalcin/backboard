@@ -44,11 +44,8 @@ export function useShots<T extends ShotColumn[]>(
     setLastFilterKey(filterKey);
     setIsValidating(true);
 
-    const newAbortController = new AbortController();
-    const signal = newAbortController.signal;
-
-    abortController.current.abort();
-    abortController.current = newAbortController;
+    abortController.current = new AbortController();
+    const signal = abortController.current.signal;
 
     db.getShots(columns, count, filter)
       .then((data) => {
@@ -60,6 +57,10 @@ export function useShots<T extends ShotColumn[]>(
         setShots(data);
       })
       .catch(() => {});
+
+    return () => {
+      abortController.current.abort();
+    };
   }, [filterKey, columns, count, lastFilterKey, filter]);
 
   return {

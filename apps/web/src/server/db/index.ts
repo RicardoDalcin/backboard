@@ -1,6 +1,7 @@
 import { Shot } from '@/types';
 import { Filter } from '@/types/filters';
-import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+// import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+import { Promiser, sqlite3Worker1Promiser } from '@nba-viz/sqlite-wasm';
 
 export type ShotColumn = keyof Shot;
 
@@ -158,7 +159,9 @@ class LocalDatabase {
         dbId: this.databaseId,
         sql: query,
         callback: ({ row, rowNumber }) => {
-          console.count(requestId);
+          if (data.length % 10_000 === 0) {
+            console.count(requestId);
+          }
 
           if (row == null || rowNumber == null || signal?.aborted) {
             return;
