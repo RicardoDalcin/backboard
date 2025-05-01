@@ -11512,19 +11512,63 @@ var sqlite3InitModule = (() => {
               const theCallback = rc.callback;
               let rowNumber = 0;
               const hadColNames = !!rc.columnNames;
+              let list = [];
               if ('string' === typeof theCallback) {
                 if (!hadColNames) rc.columnNames = [];
 
                 rc.callback = function (row, stmt) {
-                  wState.post(
-                    {
-                      type: theCallback,
-                      columnNames: rc.columnNames,
-                      rowNumber: ++rowNumber,
-                      row: row,
-                    },
-                    wState.xfer,
-                  );
+                  // console.log('EXEC CALLBACK', row);
+                  // wState.post(
+                  //   {
+                  //     type: theCallback,
+                  //     columnNames: rc.columnNames,
+                  //     rowNumber: ++rowNumber,
+                  //     row: [row],
+                  //   },
+                  //   wState.xfer,
+                  // );
+                  if (!row) {
+                    console.log('row is null');
+                  }
+
+                  if (
+                    row == null ||
+                    (list.length > 0 && list.length % 100_000 === 0)
+                  ) {
+                    console.trace();
+                    console.log(
+                      'row is null or list is full',
+                      list.length,
+                      row,
+                    );
+                    if (list.length > 0) {
+                      console.log('POSTING LIST TO MAIN THREAD', list.length);
+                      rowNumber += list.length;
+                      wState.post(
+                        {
+                          type: theCallback,
+                          columnNames: rc.columnNames,
+                          rowNumber,
+                          row: list,
+                        },
+                        wState.xfer,
+                      );
+                      list = [];
+                    }
+                    if (row == null) {
+                      wState.post(
+                        {
+                          type: theCallback,
+                          columnNames: rc.columnNames,
+                          rowNumber: ++rowNumber,
+                          row: null,
+                        },
+                        wState.xfer,
+                      );
+                    }
+                    return;
+                  }
+                  list.push(row);
                 };
               }
               try {
@@ -11538,6 +11582,22 @@ var sqlite3InitModule = (() => {
                 }
                 if (rc.callback instanceof Function) {
                   rc.callback = theCallback;
+                  console.log('CALLBACK', rc, list.length);
+
+                  if (list.length > 0) {
+                    console.log('Flushing extra data', list.length);
+                    rowNumber += list.length;
+                    wState.post(
+                      {
+                        type: theCallback,
+                        columnNames: rc.columnNames,
+                        rowNumber,
+                        row: list,
+                      },
+                      wState.xfer,
+                    );
+                    list = [];
+                  }
 
                   wState.post({
                     type: theCallback,
@@ -11600,15 +11660,14 @@ var sqlite3InitModule = (() => {
                 wMsgHandler[evType] instanceof Function
               ) {
                 if (evType === 'exec') {
-                  console.log(
-                    'worker1API - WORKER SIDE',
-                    ev,
-                    sqlite3.capi.sqlite3_inte,
-                  );
-
-                  if (ev.messageId === 'exec#1') {
-                    wMsgHandler.interrupt(ev);
-                  }
+                  // console.log(
+                  //   'worker1API - WORKER SIDE',
+                  //   ev,
+                  //   sqlite3.capi.sqlite3_inte,
+                  // );
+                  // if (ev.messageId === 'exec#1') {
+                  //   wMsgHandler.interrupt(ev);
+                  // }
                 }
                 result = await wMsgHandler[evType](ev);
               } else {

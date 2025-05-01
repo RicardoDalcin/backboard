@@ -148,8 +148,6 @@ class LocalDatabase {
   async get<T = unknown, R = T>(query: string, signal?: AbortSignal) {
     const data: R[] = [];
 
-    const requestId = this.reqId++;
-
     const promise = new Promise<R[]>((resolve, reject) => {
       signal?.addEventListener('abort', () => {
         reject(new Error('Request aborted'));
@@ -159,15 +157,10 @@ class LocalDatabase {
         dbId: this.databaseId,
         sql: query,
         callback: ({ row, rowNumber }) => {
-          if (data.length % 10_000 === 0) {
-            console.count(requestId);
-          }
-
           if (row == null || rowNumber == null || signal?.aborted) {
             return;
           }
-
-          data.push(row as R);
+          data.push(...(row as R[]));
         },
         rowMode: 'object',
       }).then(() => resolve(data));
