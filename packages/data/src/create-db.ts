@@ -12,7 +12,7 @@ import { TEAMS_BY_NAME } from './league-utils';
 import { exit } from 'process';
 
 interface Player {
-  player_id: number;
+  id: number;
   name: string;
   height: string;
   weight: string;
@@ -69,41 +69,43 @@ async function createDb() {
       `CREATE TABLE IF NOT EXISTS shots (
         id INTEGER PRIMARY KEY,
         season INTEGER,
-        team_id INTEGER,
-        player_id INTEGER,
-        position_group TEXT,
+        teamId INTEGER,
+        playerId INTEGER,
+        positionGroup TEXT,
         position TEXT,
-        game_date TEXT,
-        game_id INTEGER,
-        home_team TEXT,
-        away_team TEXT,
-        event_type INTEGER,
-        shot_made INTEGER,
-        action_type INTEGER,
-        shot_type INTEGER,
-        basic_zone INTEGER,
-        zone_name INTEGER,
-        zone_abb INTEGER,
-        zone_range INTEGER,
-        loc_x REAL,
-        loc_y REAL,
-        shot_distance REAL,
+        gameDate TEXT,
+        gameId INTEGER,
+        homeTeam TEXT,
+        awayTeam TEXT,
+        eventType INTEGER,
+        shotMade INTEGER,
+        actionType INTEGER,
+        shotType INTEGER,
+        basicZone INTEGER,
+        zoneName INTEGER,
+        zoneAbb INTEGER,
+        zoneRange INTEGER,
+        locX REAL,
+        locY REAL,
+        shotDistance REAL,
         quarter INTEGER,
-        mins_left INTEGER,
-        secs_left INTEGER,
-        def_rtg REAL,
-        def_rtg_rank INTEGER,
-        off_rtg REAL,
-        off_rtg_rank INTEGER,
-        player_height REAL,
-        player_weight INTEGER,
-        game_won INTEGER
+        minsLeft INTEGER,
+        secsLeft INTEGER,
+        defRtg REAL,
+        defRtgRank INTEGER,
+        offRtg REAL,
+        offRtgRank INTEGER,
+        playerHeight REAL,
+        playerWeight INTEGER,
+        gameWon INTEGER
       ) WITHOUT ROWID`,
     );
 
-    db.run(`CREATE INDEX IF NOT EXISTS player_id_index on shots (player_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS playerId_index on shots (playerId)`);
     db.run(`CREATE INDEX IF NOT EXISTS season_index on shots (season)`);
-    db.run(`CREATE INDEX IF NOT EXISTS team_id_index on shots (team_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS teamId_index on shots (teamId)`);
+    db.run(`CREATE INDEX IF NOT EXISTS defRtgRank_index on shots (defRtgRank)`);
+    db.run(`CREATE INDEX IF NOT EXISTS offRtgRank_index on shots (offRtgRank)`);
   });
 
   return db;
@@ -137,7 +139,7 @@ class PlayerCache {
       return this.cache.get(playerId)!;
     }
 
-    const player = this.playersList.find((item) => item.player_id === numberId);
+    const player = this.playersList.find((item) => item.id === numberId);
 
     if (player) {
       this.cache.set(playerId, player);
@@ -207,11 +209,16 @@ async function createAndSeed() {
 
   let id = 1;
 
+  const LOCATION_CORRECTION_SEASONS = [20, 21, 22];
+  const COURT_PERCENT = 0.4;
+  const COURT_LENGTH = 94 * COURT_PERCENT;
+
   for (const file of files) {
     const records = await parseCsvFile<Row>(file);
 
     const dbRecords = records.map((record) => {
       const season = Number(record.SEASON_2.substring(5, 7));
+      const needCorrection = LOCATION_CORRECTION_SEASONS.includes(season);
       const day = Number(record.GAME_DATE.substring(3, 5));
       const month = Number(record.GAME_DATE.substring(0, 2));
       const year = record.GAME_DATE.substring(6, 11);
@@ -260,6 +267,15 @@ async function createAndSeed() {
 
       const playerHeight = roundTo(playerFt + playerIn / 12, 3);
 
+      const locX = Number(record.LOC_X);
+      const locY = Number(record.LOC_Y);
+
+      const correctedLocX = roundTo(needCorrection ? locX * 10 : locX, 2);
+      const correctedLocY = roundTo(
+        needCorrection ? locY * 10 - COURT_LENGTH * 1.4 : locY,
+        2,
+      );
+
       const shot = {
         id: id++,
         season,
@@ -279,8 +295,8 @@ async function createAndSeed() {
         zoneName: getOrCreateId(zoneNameMap, record.ZONE_NAME),
         zoneAbb: getOrCreateId(zoneAbbMap, record.ZONE_ABB),
         zoneRange: getOrCreateId(zoneRangeMap, record.ZONE_RANGE),
-        locX: String(roundTo(Number(record.LOC_X), 2)),
-        locY: String(roundTo(Number(record.LOC_Y), 2)),
+        locX: String(correctedLocX),
+        locY: String(correctedLocY),
         shotDistance: String(roundTo(Number(record.SHOT_DISTANCE), 2)),
         quarter: Number(record.QUARTER),
         minsLeft: Number(record.MINS_LEFT),
@@ -309,7 +325,7 @@ async function createAndSeed() {
     for (let i = 0; i < dbRecords.length; i += CHUNK_SIZE) {
       const chunk = dbRecords.slice(i, i + CHUNK_SIZE);
 
-      const sql = `insert into shots (id, season, team_id, player_id,position_group, position, game_date, game_id, home_team, away_team, event_type, shot_made, action_type, shot_type, basic_zone, zone_name, zone_abb, zone_range, loc_x, loc_y, shot_distance, quarter, mins_left, secs_left, def_rtg, def_rtg_rank, off_rtg, off_rtg_rank, player_height, player_weight, game_won) values
+      const sql = `insert into shots (id, season, teamId, playerId, positionGroup, position, gameDate, gameId, homeTeam, awayTeam, eventType, shotMade, actionType, shotType, basicZone, zoneName, zoneAbb, zoneRange, locX, locY, shotDistance, quarter, minsLeft, secsLeft, defRtg, defRtgRank, offRtg, offRtgRank, playerHeight, playerWeight, gameWon) values
         ${chunk.map((record) => `${toValues(record)}`).join(',')}`;
 
       try {
