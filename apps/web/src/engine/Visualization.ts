@@ -451,8 +451,12 @@ const colorInterpolate = (colorA: string, colorB: string, intval: number) => {
   const rgbA = getRgb(colorA);
   const rgbB = getRgb(colorB);
 
+  // Adjust the interval to fit the new lightness range where 60% is darkest and 25% is lightest
+  const adjustedIntval = (intval - 0.25) / (0.6 - 0.25);
+  const clampedIntval = Math.max(0, Math.min(1, adjustedIntval)); // Ensure the interval is within bounds
+
   const colorVal = (prop: 'r' | 'g' | 'b') =>
-    Math.round(rgbA[prop] * (1 - intval) + rgbB[prop] * intval);
+    Math.round(rgbA[prop] * (1 - clampedIntval) + rgbB[prop] * clampedIntval);
 
   return {
     r: colorVal('r'),

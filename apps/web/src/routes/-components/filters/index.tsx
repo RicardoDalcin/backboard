@@ -23,7 +23,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { Combobox } from '@/components/ui/combobox';
 import { MultiCombobox } from '@/components/ui/multi-combobox';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,14 +33,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
-import {
-  POSITIONS,
-  RESULTS,
-  SEASONS,
-  TEAMS,
-  PLAYERS,
-  Filter,
-} from '@/types/filters';
+import { POSITIONS, RESULTS, TEAMS, PLAYERS, Filter } from '@/types/filters';
 import { useCallback, useEffect, useState } from 'react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CreateFilterDialog } from './create-filter';
@@ -56,7 +48,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useStats } from '@/stores/stats';
 
 const schema = z.object({
-  season: z.number().min(4).max(24),
+  season: z.tuple([z.number().min(4).max(24), z.number().min(4).max(24)]),
   defensiveRatingRank: z.tuple([
     z.number().min(1).max(30),
     z.number().min(1).max(30),
@@ -287,13 +279,61 @@ export const Filters = ({ className }: { className?: string }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Season</FormLabel>
-                <Combobox
-                  {...field}
-                  options={SEASONS}
-                  onSelect={(value) =>
-                    form.setValue('season', value, { shouldDirty: true })
+                <RangeSlider
+                  min={4}
+                  max={24}
+                  step={1}
+                  value={field.value}
+                  label={(item) => item}
+                  onValueChange={(value) =>
+                    form.setValue('season', value as typeof field.value, {
+                      shouldDirty: true,
+                    })
                   }
                   className="w-full"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="teams"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Teams</FormLabel>
+
+                <MultiCombobox
+                  values={field.value}
+                  options={TEAMS}
+                  onSelect={(values) =>
+                    form.setValue('teams', values, { shouldDirty: true })
+                  }
+                  className="w-full"
+                  multiSelectedMessage="teams selected"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="players"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Players</FormLabel>
+
+                <MultiCombobox
+                  values={field.value}
+                  options={PLAYERS}
+                  maxOptions={50}
+                  onSelect={(values) =>
+                    form.setValue('players', values, { shouldDirty: true })
+                  }
+                  className="w-full"
+                  multiSelectedMessage="players selected"
                 />
                 <FormMessage />
               </FormItem>
@@ -376,49 +416,6 @@ export const Filters = ({ className }: { className?: string }) => {
                     )
                   }
                   className="w-full"
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="teams"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Teams</FormLabel>
-
-                <MultiCombobox
-                  values={field.value}
-                  options={TEAMS}
-                  onSelect={(values) =>
-                    form.setValue('teams', values, { shouldDirty: true })
-                  }
-                  className="w-full"
-                  multiSelectedMessage="teams selected"
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="players"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Players</FormLabel>
-
-                <MultiCombobox
-                  values={field.value}
-                  options={PLAYERS}
-                  maxOptions={50}
-                  onSelect={(values) =>
-                    form.setValue('players', values, { shouldDirty: true })
-                  }
-                  className="w-full"
-                  multiSelectedMessage="players selected"
                 />
                 <FormMessage />
               </FormItem>

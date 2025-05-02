@@ -271,7 +271,7 @@ class NBADatabase {
         }
 
         if (type === 'RANGE') {
-          return `${column} BETWEEN ${(value as [number, number])[0]} AND ${value as [number, number][1]}`;
+          return `${column} BETWEEN ${(value as [number, number])[0]} AND ${(value as [number, number])[1]}`;
         }
       })
       .filter((item) => item !== '')
@@ -287,7 +287,7 @@ class NBADatabase {
     signal?: AbortSignal,
   ) {
     const FILTERS = {
-      season: { column: 'season', type: 'INTEGER' },
+      season: { column: 'season', type: 'RANGE' },
       drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
       ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
       teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },

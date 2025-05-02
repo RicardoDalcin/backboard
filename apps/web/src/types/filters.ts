@@ -19,7 +19,7 @@ export const PLAYERS = PLAYERS_DATA.map((player) => ({
 }));
 
 export const DEFAULT_FILTER = {
-  season: SEASONS[0].value,
+  season: [24, 24] as [number, number],
   defensiveRatingRank: [1, 30] as [number, number],
   offensiveRatingRank: [1, 30] as [number, number],
   teams: [] as (typeof TEAMS)[number]['value'][],
