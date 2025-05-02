@@ -12,7 +12,19 @@ import { Filter } from '@/types/filters';
 import { Shot } from '@/types';
 
 interface StatsStore {
-  data: Array<Pick<Shot, 'locX' | 'locY' | 'shotMade'>>;
+  data: Array<
+    Pick<
+      Shot,
+      | 'locX'
+      | 'locY'
+      | 'shotMade'
+      | 'basicZone'
+      | 'shotType'
+      | 'quarter'
+      | 'minsLeft'
+      | 'secsLeft'
+    >
+  >;
   isLoading: boolean;
   isValidating: boolean;
 }
@@ -73,7 +85,16 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentFilter } = useFilters();
 
   const { data, isLoading, isValidating } = useShots(
-    ['locX', 'locY', 'shotMade'],
+    [
+      'locX',
+      'locY',
+      'shotMade',
+      'basicZone',
+      'shotType',
+      'quarter',
+      'minsLeft',
+      'secsLeft',
+    ],
     1_000_000,
     currentFilter.filters,
   );

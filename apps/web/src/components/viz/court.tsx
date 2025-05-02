@@ -37,8 +37,8 @@ export const Court = ({
   }, [shots]);
 
   return (
-    <div ref={containerRef} className="w-full h-full">
-      <canvas className="w-full h-full" ref={canvasRef}></canvas>
+    <div ref={containerRef} className="w-full h-min">
+      <canvas ref={canvasRef}></canvas>
     </div>
   );
 };

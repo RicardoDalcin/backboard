@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
   Line,
+  ResponsiveContainer,
 } from 'recharts';
 
 const roundTo = (num: number, precision: number) => {
@@ -37,23 +38,25 @@ export const ShotTypeLineChart = ({
   }, [data]);
 
   return (
-    <LineChart
-      cx={300}
-      cy={250}
-      outerRadius={150}
-      width={596}
-      height={434}
-      data={chartData}
-    >
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="minute" />
-      <YAxis domain={[0, 100]} />
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart
+        cx={300}
+        cy={250}
+        outerRadius={150}
+        width={596}
+        height={434}
+        data={chartData}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="minute" />
+        <YAxis domain={[0, 100]} />
 
-      <Line type="monotone" dataKey="twos" stroke="#82ca9d" name="FG%" />
-      <Line type="monotone" dataKey="threes" stroke="#8884d8" name="3P%" />
+        <Line type="monotone" dataKey="twos" stroke="#82ca9d" name="FG%" />
+        <Line type="monotone" dataKey="threes" stroke="#8884d8" name="3P%" />
 
-      <Tooltip />
-      <Legend />
-    </LineChart>
+        <Tooltip />
+        <Legend />
+      </LineChart>
+    </ResponsiveContainer>
   );
 };

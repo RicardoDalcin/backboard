@@ -1,42 +1,9 @@
 import { Shot } from '@/types';
 import { Filter } from '@/types/filters';
-import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+// import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+import { Promiser, sqlite3Worker1Promiser } from '@nba-viz/sqlite-wasm';
 
 export type ShotColumn = keyof Shot;
-
-export const SHOT_COLUMNS: Record<ShotColumn, string> = {
-  id: 'id',
-  season: 'season',
-  teamId: 'team_id',
-  playerId: 'player_id',
-  positionGroup: 'position_group',
-  position: 'position',
-  gameDate: 'game_date',
-  gameId: 'game_id',
-  homeTeam: 'home_team',
-  awayTeam: 'away_team',
-  eventType: 'event_type',
-  shotMade: 'shot_made',
-  actionType: 'action_type',
-  shotType: 'shot_type',
-  basicZone: 'basic_zone',
-  zoneName: 'zone_name',
-  zoneAbb: 'zone_abb',
-  zoneRange: 'zone_range',
-  locX: 'loc_x',
-  locY: 'loc_y',
-  shotDistance: 'shot_distance',
-  quarter: 'quarter',
-  minsLeft: 'mins_left',
-  secsLeft: 'secs_left',
-  defRtg: 'def_rtg',
-  defRtgRank: 'def_rtg_rank',
-  offRtg: 'off_rtg',
-  offRtgRank: 'off_rtg_rank',
-  playerHeight: 'player_height',
-  playerWeight: 'player_weight',
-  gameWon: 'game_won',
-};
 
 class FileSystem {
   private opfsRoot: FileSystemDirectoryHandle | null = null;
@@ -147,8 +114,6 @@ class LocalDatabase {
   async get<T = unknown, R = T>(query: string, signal?: AbortSignal) {
     const data: R[] = [];
 
-    const requestId = this.reqId++;
-
     const promise = new Promise<R[]>((resolve, reject) => {
       signal?.addEventListener('abort', () => {
         reject(new Error('Request aborted'));
@@ -158,13 +123,10 @@ class LocalDatabase {
         dbId: this.databaseId,
         sql: query,
         callback: ({ row, rowNumber }) => {
-          console.count(requestId);
-
           if (row == null || rowNumber == null || signal?.aborted) {
             return;
           }
-
-          data.push(row as R);
+          data.push(...(row as R[]));
         },
         rowMode: 'object',
       }).then(() => resolve(data));
@@ -175,9 +137,11 @@ class LocalDatabase {
 }
 
 class NBADatabase {
-  private readonly EXPECTED_DB_SIZE = 726249472;
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRL8KRHFuNuUEB7ijsFPhwrtCV9z6A3YWxQbf8';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRaBCOmu0lsZDq8Igcjn3Jtk9OL42UdxB7hNwF';
+
+  private readonly EXPECTED_DB_SIZE = 820256768;
+
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
   private fileSystem: FileSystem;
@@ -229,6 +193,14 @@ class NBADatabase {
 
     let writtenBytes = 0;
 
+    const trackProgress = (chunkSize: number) => {
+      writtenBytes = (writtenBytes || 0) + chunkSize;
+      return {
+        writtenBytes: writtenBytes,
+        totalBytes: this.EXPECTED_DB_SIZE,
+      };
+    };
+
     // Create a new stream with a transform for tracking progress
     const progressTrackingStream = new TransformStream({
       transform: (chunk, controller) => {
@@ -248,14 +220,6 @@ class NBADatabase {
     return decompressedStream
       .pipeThrough(progressTrackingStream)
       .pipeTo(writable);
-
-    function trackProgress(chunkSize: number) {
-      writtenBytes = (writtenBytes || 0) + chunkSize;
-      return {
-        writtenBytes: writtenBytes,
-        totalBytes: 726249472,
-      };
-    }
   }
 
   private getFiltersQuery(
@@ -264,7 +228,13 @@ class NBADatabase {
       string,
       {
         column: string;
-        type: 'INTEGER' | 'TEXT' | 'REAL' | 'INTEGER_ARRAY' | 'TEXT_ARRAY';
+        type:
+          | 'INTEGER'
+          | 'TEXT'
+          | 'REAL'
+          | 'INTEGER_ARRAY'
+          | 'TEXT_ARRAY'
+          | 'RANGE';
       }
     >,
   ) {
@@ -299,6 +269,10 @@ class NBADatabase {
         if (type === 'TEXT_ARRAY') {
           return `${column} IN (${(value as string[]).map((item) => `'${item}'`).join(',')})`;
         }
+
+        if (type === 'RANGE') {
+          return `${column} BETWEEN ${(value as [number, number])[0]} AND ${value as [number, number][1]}`;
+        }
       })
       .filter((item) => item !== '')
       .join(' AND ');
@@ -314,12 +288,12 @@ class NBADatabase {
   ) {
     const FILTERS = {
       season: { column: 'season', type: 'INTEGER' },
-      drtgRanking: { column: 'def_rtg_rank', type: 'INTEGER_ARRAY' },
-      ortgRanking: { column: 'off_rtg_rank', type: 'INTEGER_ARRAY' },
-      teamIds: { column: 'team_id', type: 'INTEGER_ARRAY' },
-      playerIds: { column: 'player_id', type: 'INTEGER_ARRAY' },
+      drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
+      ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
+      teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },
+      playerIds: { column: 'playerId', type: 'INTEGER_ARRAY' },
       positions: { column: 'position', type: 'TEXT_ARRAY' },
-      result: { column: 'game_won', type: 'INTEGER' },
+      result: { column: 'gameWon', type: 'INTEGER' },
     } as const;
 
     const filterValues = {
@@ -350,11 +324,7 @@ class NBADatabase {
             : 0,
     };
 
-    const sqlColumns = columns.map(
-      (column) => `${SHOT_COLUMNS[column]} as ${column}`,
-    );
-
-    const query = `SELECT ${sqlColumns.join(',')} FROM shots 
+    const query = `SELECT ${columns.join(',')} FROM shots 
       ${filters ? this.getFiltersQuery(filterValues, FILTERS) : ''}
       LIMIT ${count}`;
 

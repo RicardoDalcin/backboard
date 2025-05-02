@@ -77,9 +77,9 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="flex gap-6 h-full items-center">
+      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(0,1fr))] gap-6 h-full items-center">
         {panelsWithFilters.map((panel) => (
-          <Card key={panel.id} className="flex-1 h-full">
+          <Card key={panel.id} className="w-full h-full">
             {!panel.filter ? (
               <div className="h-full flex flex-col items-center gap-6 px-4 pt-[164px] pb-4">
                 <svg
@@ -132,7 +132,10 @@ function RouteComponent() {
                 </div>
               </div>
             ) : (
-              <FilterPanel filter={panel.filter} />
+              <FilterPanel
+                filter={panel.filter}
+                onChangeFilter={(id) => selectPanelFilter(panel.id, id)}
+              />
             )}
           </Card>
         ))}
