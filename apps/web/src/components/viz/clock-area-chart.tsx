@@ -5,6 +5,7 @@ import {
   AreaChart,
   CartesianGrid,
   Legend,
+  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -20,37 +21,32 @@ export const ClockAreaChart = ({ data }: { data: ClockSummary[] }) => {
   }, [data]);
 
   return (
-    <AreaChart
-      cx={300}
-      cy={250}
-      outerRadius={150}
-      width={700}
-      height={500}
-      data={chartData}
-    >
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="minute" />
-      <YAxis />
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart cx={300} cy={250} outerRadius={150} data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="minute" />
+        <YAxis />
 
-      <Area
-        type="linear"
-        dataKey="total"
-        stackId={1}
-        stroke="#000000"
-        fill="#000000"
-        name="Total Shots"
-      />
-      <Area
-        type="linear"
-        dataKey="made"
-        stackId={2}
-        stroke="#4ADE80"
-        fill="#4ADE80"
-        name="Made Shots"
-      />
+        <Area
+          type="linear"
+          dataKey="total"
+          stackId={1}
+          stroke="#000000"
+          fill="#000000"
+          name="Total Shots"
+        />
+        <Area
+          type="linear"
+          dataKey="made"
+          stackId={2}
+          stroke="#4ADE80"
+          fill="#4ADE80"
+          name="Made Shots"
+        />
 
-      <Tooltip />
-      <Legend />
-    </AreaChart>
+        <Tooltip />
+        <Legend />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 };

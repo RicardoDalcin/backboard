@@ -9,14 +9,14 @@ export interface Shot {
   gameId: number;
   homeTeam: string;
   awayTeam: string;
-  eventType: string;
+  eventType: number;
   shotMade: number;
-  actionType: string;
-  shotType: string;
-  basicZone: string;
-  zoneName: string;
-  zoneAbb: string;
-  zoneRange: string;
+  actionType: number;
+  shotType: number;
+  basicZone: number;
+  zoneName: number;
+  zoneAbb: number;
+  zoneRange: number;
   locX: number;
   locY: number;
   shotDistance: number;
@@ -33,7 +33,7 @@ export interface Shot {
 }
 
 export interface Zone {
-  key: string;
+  key: number;
   count: number;
   totalMade: number;
   totalMissed: number;

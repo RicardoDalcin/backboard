@@ -417,14 +417,16 @@ export class VisualizationEngine {
   }
 
   private bindEvents() {
-    window.addEventListener(
-      'resize',
-      () => {
-        this.onResize();
-        this.draw();
-      },
-      { signal: this.abortController.signal },
-    );
+    const resizeObserver = new ResizeObserver(() => {
+      console.log('resize');
+      this.onResize();
+      this.draw();
+    });
+
+    resizeObserver.observe(this.container);
+    this.abortController.signal.addEventListener('abort', () => {
+      resizeObserver.unobserve(this.container);
+    });
   }
 
   private feetToPixels(feet: number) {

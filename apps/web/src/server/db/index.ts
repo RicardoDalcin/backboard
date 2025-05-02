@@ -288,12 +288,12 @@ class NBADatabase {
   ) {
     const FILTERS = {
       season: { column: 'season', type: 'INTEGER' },
-      drtgRanking: { column: 'def_rtg_rank', type: 'RANGE' },
-      ortgRanking: { column: 'off_rtg_rank', type: 'RANGE' },
-      teamIds: { column: 'team_id', type: 'INTEGER_ARRAY' },
-      playerIds: { column: 'player_id', type: 'INTEGER_ARRAY' },
+      drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
+      ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
+      teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },
+      playerIds: { column: 'playerId', type: 'INTEGER_ARRAY' },
       positions: { column: 'position', type: 'TEXT_ARRAY' },
-      result: { column: 'game_won', type: 'INTEGER' },
+      result: { column: 'gameWon', type: 'INTEGER' },
     } as const;
 
     const filterValues = {
