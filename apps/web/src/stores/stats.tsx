@@ -62,7 +62,7 @@ export function useShots<T extends ShotColumn[]>(
     abortController.current.abort();
     abortController.current = newAbortController;
 
-    db.getShots(columns, count, filter)
+    db.getShots(columns, count, filter, signal)
       .then((data) => {
         if (signal.aborted) {
           return;

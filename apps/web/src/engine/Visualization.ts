@@ -418,7 +418,6 @@ export class VisualizationEngine {
 
   private bindEvents() {
     const resizeObserver = new ResizeObserver(() => {
-      console.log('resize');
       this.onResize();
       this.draw();
     });

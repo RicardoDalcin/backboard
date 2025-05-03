@@ -30,32 +30,32 @@ export class DBClient {
       message: 'init',
       filePath: this.filePath,
     });
-    console.log(
-      'sqlite3-wasm initialized with version',
-      response.version.libVersion,
-    );
-  }
-
-  private interrupt() {
-    if (this.abortFlag != null) {
-      Atomics.store(this.abortFlag, 0, 1);
-      Atomics.notify(this.abortFlag, 0);
-      this.abortFlag = null;
+    if (import.meta.env.DEV) {
+      console.log(
+        'sqlite3-wasm initialized with version',
+        response.version.libVersion,
+      );
     }
   }
 
-  async exec(sql: string, signal?: AbortSignal) {
-    const abortListener = () => {
-      this.interrupt();
-    };
+  async exec<Row = unknown>(sql: string, signal?: AbortSignal) {
+    let abortFlag: Int32Array | null = null;
 
     let sharedBuffer: SharedArrayBuffer | null = null;
 
     if (signal) {
-      signal.addEventListener('abort', abortListener);
       sharedBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT);
-      this.abortFlag = new Int32Array(sharedBuffer);
+      abortFlag = new Int32Array(sharedBuffer);
     }
+
+    const abortListener = () => {
+      if (abortFlag) {
+        Atomics.store(abortFlag, 0, 1);
+        Atomics.notify(abortFlag, 0);
+      }
+    };
+
+    signal?.addEventListener('abort', abortListener);
 
     const response = await this.request({
       message: 'exec',
@@ -64,11 +64,10 @@ export class DBClient {
     });
 
     if (signal) {
-      this.abortFlag = null;
       signal.removeEventListener('abort', abortListener);
     }
 
-    return response;
+    return response.rows as Row[];
   }
 
   private async request<T extends WorkerRequest>(

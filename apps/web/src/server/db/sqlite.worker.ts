@@ -47,9 +47,12 @@ class WorkerHandler {
         ? new Int32Array(request.sharedBuffer)
         : null;
 
-    const data = await this.db.exec(request.sql, {
-      callback: (row) => {
-        if (Number(row.id) % 1_000 === 0) {
+    let rowNumber = 0;
+
+    const data = this.db.exec(request.sql, {
+      callback: () => {
+        rowNumber++;
+        if (Number(rowNumber) % 5_000 === 0) {
           if (abortFlag != null && Atomics.load(abortFlag, 0) === 1) {
             this.interrupt();
             return;
@@ -86,8 +89,7 @@ class WorkerHandler {
         }
         case 'exec': {
           const result = await this.exec(data);
-          console.log('exec data', result);
-          this.respond(data, { rows: [] });
+          this.respond(data, { rows: result });
           break;
         }
         default:

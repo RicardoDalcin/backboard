@@ -115,8 +115,6 @@ function Index() {
       zone.frequency = zone.count / data.length;
     });
 
-    console.log(clocks2pt);
-
     return {
       twos: Array.from(clocks2pt.values()).sort((a, b) => a.id - b.id),
       threes: Array.from(clocks3pt.values()).sort((a, b) => a.id - b.id),
