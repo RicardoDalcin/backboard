@@ -1,6 +1,7 @@
-import { VisualizationEngine } from '@/engine/Visualization';
+import { HoverCallbackData, VisualizationEngine } from '@/engine/Visualization';
 import { Shot } from '@/types';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { CourtTooltip } from './court-tooltip';
 
 export const Court = ({
   shots,
@@ -11,6 +12,8 @@ export const Court = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const initialized = useRef(false);
   const engine = useRef<VisualizationEngine | null>(null);
+
+  const [hoveringData, setHoveringData] = useState<HoverCallbackData>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,7 +27,11 @@ export const Court = ({
       engine.current.destroy();
     }
 
-    engine.current = new VisualizationEngine(canvas, container);
+    engine.current = new VisualizationEngine(canvas, container, {
+      onHover: (data) => {
+        setHoveringData(data);
+      },
+    });
     initialized.current = true;
   }, []);
 
@@ -37,8 +44,10 @@ export const Court = ({
   }, [shots]);
 
   return (
-    <div ref={containerRef} className="w-full h-min">
-      <canvas ref={canvasRef}></canvas>
+    <div ref={containerRef} className="w-full h-min relative">
+      <canvas ref={canvasRef} className="rounded-xl"></canvas>
+
+      <CourtTooltip shot={hoveringData} container={containerRef} />
     </div>
   );
 };

@@ -145,9 +145,9 @@ function Index() {
         <Filters />
 
         <div className="grid grid-cols-12 gap-6 flex-1">
-          <Card className="col-span-12 xl:col-span-7 py-0 overflow-hidden">
+          <Card className="col-span-12 xl:col-span-7 py-0">
             {isLoading ? (
-              <Skeleton className="w-full aspect-[541/406.83]" />
+              <Skeleton className="w-full aspect-[541/406.83] rounded-xl" />
             ) : (
               <Court shots={data} />
             )}

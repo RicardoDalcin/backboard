@@ -64,6 +64,19 @@ interface ShotSection {
   totalMissed: number;
 }
 
+export type HoverCallbackData = {
+  totalShots: number;
+  madeShots: number;
+  position: {
+    x: number;
+    y: number;
+  };
+} | null;
+
+export interface EngineCallbacks {
+  onHover: (data: HoverCallbackData) => void;
+}
+
 export class VisualizationEngine {
   private ctx: CanvasRenderingContext2D;
   private size = { width: 0, height: 0, sectionSize: 0 };
@@ -75,6 +88,7 @@ export class VisualizationEngine {
   constructor(
     private canvas: HTMLCanvasElement,
     private container: HTMLDivElement,
+    private callbacks: EngineCallbacks,
   ) {
     const ctx = this.canvas.getContext('2d');
 
@@ -137,7 +151,9 @@ export class VisualizationEngine {
     this.draw();
   }
 
-  destroy() {}
+  destroy() {
+    this.abortController.abort();
+  }
 
   private draw() {
     this.drawCourt();
@@ -418,7 +434,6 @@ export class VisualizationEngine {
 
   private bindEvents() {
     const resizeObserver = new ResizeObserver(() => {
-      console.log('resize');
       this.onResize();
       this.draw();
     });
@@ -427,6 +442,38 @@ export class VisualizationEngine {
     this.abortController.signal.addEventListener('abort', () => {
       resizeObserver.unobserve(this.container);
     });
+
+    this.canvas.addEventListener(
+      'mousemove',
+      (event) => {
+        const { x, y } = this.positionToSection(event.offsetX, event.offsetY);
+        const key = this.getShotKey(x, y);
+        const shot = this.shots.get(key);
+
+        const { x: posX, y: posY } = this.sectionToPosition(x, y);
+
+        this.callbacks.onHover({
+          totalShots: shot?.quantity ?? 0,
+          madeShots: shot?.totalMade ?? 0,
+          position: {
+            x: posX,
+            y: posY,
+          },
+        });
+        this.draw();
+        return;
+      },
+      { signal: this.abortController.signal },
+    );
+
+    this.canvas.addEventListener(
+      'mouseleave',
+      () => {
+        this.callbacks.onHover(null);
+        this.draw();
+      },
+      { signal: this.abortController.signal },
+    );
   }
 
   private feetToPixels(feet: number) {
