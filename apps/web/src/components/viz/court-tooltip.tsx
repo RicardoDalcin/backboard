@@ -1,6 +1,10 @@
 import { HoverCallbackData } from '@/engine/Visualization';
 import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 
+const roundTo = (num: number, precision: number) => {
+  return Math.round(num * 10 ** precision) / 10 ** precision;
+};
+
 function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -22,6 +26,22 @@ function useDebounce<T>(value: T, delay: number) {
   return debouncedValue;
 }
 
+function useLastNonNull<T>(
+  value: T,
+  isNull: (value: T) => boolean = (value) => value == null,
+) {
+  const [nonNullValue, setNonNullValue] = useState(value);
+
+  useEffect(() => {
+    if (!isNull(value)) {
+      setNonNullValue(value);
+      return;
+    }
+  }, [value, isNull]);
+
+  return nonNullValue;
+}
+
 const WIDTH = 160;
 const HEIGHT = 70;
 const PADDING = 12;
@@ -34,6 +54,10 @@ export const CourtTooltip = ({
   container: RefObject<HTMLDivElement | null>;
 }) => {
   const shot = useDebounce(hoveredShot, 500);
+  const nonNullShot = useLastNonNull(
+    shot,
+    (s) => s == null || s.totalShots === 0,
+  );
 
   const getX = useCallback(
     (shot: NonNullable<HoverCallbackData>) => {
@@ -83,22 +107,40 @@ export const CourtTooltip = ({
 
   return (
     <>
-      <div
-        className="absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20 transition-all"
-        style={{
-          width: `${WIDTH}px`,
-          height: `${HEIGHT}px`,
-          top: `${position.y}px`,
-          left: `${position.x}px`,
-          opacity: shot && shot.totalShots > 0 ? 1 : 0,
-        }}
-      >
-        {shot && (
-          <div className="w-full h-full px-4 py-2 flex flex-col gap-2">
-            {shot.madeShots}/{shot.totalShots} shots
-          </div>
-        )}
-      </div>
+      {shot != null && (
+        <div
+          className="absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20 transition-all"
+          style={{
+            width: `${WIDTH}px`,
+            height: `${HEIGHT}px`,
+            top: `${position.y}px`,
+            left: `${position.x}px`,
+            opacity: shot && shot.totalShots > 0 ? 1 : 0,
+          }}
+        >
+          {shot && nonNullShot && (
+            <div className="w-full h-full px-4 py-2 flex flex-col justify-between">
+              <div className="text-sm">
+                <span className="font-bold">
+                  {nonNullShot.madeShots}/{nonNullShot.totalShots}
+                </span>{' '}
+                shots
+              </div>
+
+              <div className="text-sm">
+                <span className="font-bold">
+                  {roundTo(
+                    (nonNullShot.madeShots / nonNullShot.totalShots) * 100,
+                    1,
+                  )}
+                  %
+                </span>{' '}
+                FG%
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 };

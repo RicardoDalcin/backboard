@@ -50,6 +50,7 @@ const THEME = {
   background: '#ffffff',
   line: '#808080',
   paintedArea: '#353535',
+  hoveredShot: '#00ff00',
 };
 
 interface ShotSection {
@@ -67,6 +68,10 @@ interface ShotSection {
 export type HoverCallbackData = {
   totalShots: number;
   madeShots: number;
+  section: {
+    x: number;
+    y: number;
+  };
   position: {
     x: number;
     y: number;
@@ -84,6 +89,8 @@ export class VisualizationEngine {
   private shots = new Map<number, ShotSection>();
 
   private mostShots = 0;
+
+  private hoveredShot: HoverCallbackData = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -163,6 +170,24 @@ export class VisualizationEngine {
     // this.ctx.filter = 'blur(2px)'; // Adjust the pixel value to control the blur amount
     this.ctx.save();
     this.drawShots();
+    this.drawHoveredShot();
+  }
+
+  private drawHoveredShot() {
+    if (!this.hoveredShot || this.hoveredShot.totalShots === 0) {
+      return;
+    }
+
+    const { x, y } = this.sectionToPosition(
+      this.hoveredShot.section.x,
+      this.hoveredShot.section.y,
+    );
+
+    this.ctx.strokeStyle = THEME.hoveredShot;
+    this.ctx.beginPath();
+    this.ctx.roundRect(x, y, this.size.sectionSize, this.size.sectionSize, 2);
+    this.ctx.closePath();
+    this.ctx.stroke();
   }
 
   private positionToSection(x: number, y: number) {
@@ -452,14 +477,22 @@ export class VisualizationEngine {
 
         const { x: posX, y: posY } = this.sectionToPosition(x, y);
 
-        this.callbacks.onHover({
+        if (
+          this.hoveredShot &&
+          this.hoveredShot.section.x === x &&
+          this.hoveredShot.section.y === y
+        ) {
+          return;
+        }
+
+        this.hoveredShot = {
           totalShots: shot?.quantity ?? 0,
           madeShots: shot?.totalMade ?? 0,
-          position: {
-            x: posX,
-            y: posY,
-          },
-        });
+          section: { x, y },
+          position: { x: posX, y: posY },
+        };
+
+        this.callbacks.onHover(this.hoveredShot);
         this.draw();
         return;
       },
