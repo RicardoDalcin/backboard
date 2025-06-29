@@ -86,8 +86,7 @@ class WorkerHandler {
         }
         case 'exec': {
           const result = await this.exec(data);
-          console.log('exec data', result);
-          this.respond(data, { rows: [] });
+          this.respond(data, { rows: result });
           break;
         }
         default:

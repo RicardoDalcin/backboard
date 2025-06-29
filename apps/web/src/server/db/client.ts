@@ -44,7 +44,7 @@ export class DBClient {
     }
   }
 
-  async exec(sql: string, signal?: AbortSignal) {
+  async exec<T = unknown>(sql: string, signal?: AbortSignal) {
     const abortListener = () => {
       this.interrupt();
     };
@@ -68,7 +68,7 @@ export class DBClient {
       signal.removeEventListener('abort', abortListener);
     }
 
-    return response;
+    return response.rows as T[];
   }
 
   private async request<T extends WorkerRequest>(

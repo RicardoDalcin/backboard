@@ -1,78 +1,9 @@
 import { Shot } from '@/types';
 import { Filter } from '@/types/filters';
-// import { Promiser, sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
-import { Promiser, sqlite3Worker1Promiser } from '@nba-viz/sqlite-wasm';
 import { FileSystem } from './file-system';
+import { DBClient } from './client';
 
 export type ShotColumn = keyof Shot;
-
-class LocalDatabase {
-  private databaseId = '';
-  private promiser!: Promiser;
-
-  constructor(private readonly filePath: string) {}
-
-  async init() {
-    if (this.databaseId) {
-      return;
-    }
-
-    this.promiser = await new Promise((resolve) => {
-      const _promiser = sqlite3Worker1Promiser({
-        onready: () => resolve(_promiser),
-      });
-    });
-
-    const configResponse = await this.promiser('config-get', {});
-
-    if (import.meta.env.DEV) {
-      console.log(
-        'Running SQLite3 version',
-        configResponse.result.version.libVersion,
-      );
-    }
-
-    const openResponse = await this.promiser('open', {
-      filename: `file:${this.filePath}?vfs=opfs`,
-    });
-
-    const { dbId } = openResponse;
-    this.databaseId = dbId;
-
-    if (import.meta.env.DEV) {
-      console.log(
-        'OPFS is available, created persisted database at',
-        openResponse.result.filename.replace(/^file:(.*?)\?vfs=opfs$/, '$1'),
-      );
-    }
-  }
-
-  reqId = 0;
-
-  async get<T = unknown, R = T>(query: string, signal?: AbortSignal) {
-    const data: R[] = [];
-
-    const promise = new Promise<R[]>((resolve, reject) => {
-      signal?.addEventListener('abort', () => {
-        reject(new Error('Request aborted'));
-      });
-
-      this.promiser('exec', {
-        dbId: this.databaseId,
-        sql: query,
-        callback: ({ row, rowNumber }) => {
-          if (row == null || rowNumber == null || signal?.aborted) {
-            return;
-          }
-          data.push(...(row as R[]));
-        },
-        rowMode: 'object',
-      }).then(() => resolve(data));
-    });
-
-    return promise;
-  }
-}
 
 class NBADatabase {
   private readonly DATABASE_REMOTE_URL =
@@ -83,13 +14,13 @@ class NBADatabase {
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
   private fileSystem: FileSystem;
-  private db: LocalDatabase;
+  private db: DBClient;
 
   private progressCallbacks: Set<(progress: number) => void> = new Set();
 
   constructor() {
     this.fileSystem = new FileSystem();
-    this.db = new LocalDatabase(this.DATABASE_OPFS_PATH);
+    this.db = new DBClient(this.DATABASE_OPFS_PATH);
   }
 
   async load() {
@@ -224,8 +155,6 @@ class NBADatabase {
     filters?: Partial<Filter>,
     signal?: AbortSignal,
   ) {
-    return new Promise((resolve) => resolve([]));
-
     const FILTERS = {
       season: { column: 'season', type: 'RANGE' },
       drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
@@ -272,8 +201,10 @@ class NBADatabase {
 
     return new Promise<Pick<Shot, T[number]>[]>((resolve, reject) => {
       this.db
-        .get<Pick<Shot, T[number]>>(query, signal)
-        .then(resolve)
+        .exec<Pick<Shot, T[number]>>(query, signal)
+        .then((res) => {
+          resolve(res);
+        })
         .catch(reject);
     });
   }
