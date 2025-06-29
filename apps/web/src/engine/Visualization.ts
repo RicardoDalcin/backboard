@@ -457,6 +457,46 @@ export class VisualizationEngine {
     this.ctx.scale(devicePixelRatio, devicePixelRatio);
   }
 
+  private clearHoveredShot() {
+    this.hoveredShot = null;
+    this.callbacks.onHover(null);
+    this.draw();
+  }
+
+  private onHover({ x, y }: { x: number; y: number }) {
+    const key = this.getShotKey(x, y);
+    const shot = this.shots.get(key);
+
+    const { x: posX, y: posY } = this.sectionToPosition(x, y);
+
+    if (
+      this.hoveredShot &&
+      this.hoveredShot.section.x === x &&
+      this.hoveredShot.section.y === y
+    ) {
+      return;
+    }
+
+    this.hoveredShot = {
+      totalShots: shot?.quantity ?? 0,
+      madeShots: shot?.totalMade ?? 0,
+      section: { x, y },
+      position: { x: posX, y: posY },
+    };
+
+    this.callbacks.onHover(this.hoveredShot);
+    this.draw();
+  }
+
+  setHoveredShot(hoveredShot: { x: number; y: number } | null) {
+    if (hoveredShot == null) {
+      this.clearHoveredShot();
+      return;
+    }
+
+    this.onHover(hoveredShot);
+  }
+
   private bindEvents() {
     const resizeObserver = new ResizeObserver(() => {
       this.onResize();
@@ -472,29 +512,7 @@ export class VisualizationEngine {
       'mousemove',
       (event) => {
         const { x, y } = this.positionToSection(event.offsetX, event.offsetY);
-        const key = this.getShotKey(x, y);
-        const shot = this.shots.get(key);
-
-        const { x: posX, y: posY } = this.sectionToPosition(x, y);
-
-        if (
-          this.hoveredShot &&
-          this.hoveredShot.section.x === x &&
-          this.hoveredShot.section.y === y
-        ) {
-          return;
-        }
-
-        this.hoveredShot = {
-          totalShots: shot?.quantity ?? 0,
-          madeShots: shot?.totalMade ?? 0,
-          section: { x, y },
-          position: { x: posX, y: posY },
-        };
-
-        this.callbacks.onHover(this.hoveredShot);
-        this.draw();
-        return;
+        this.onHover({ x, y });
       },
       { signal: this.abortController.signal },
     );
@@ -502,8 +520,7 @@ export class VisualizationEngine {
     this.canvas.addEventListener(
       'mouseleave',
       () => {
-        this.callbacks.onHover(null);
-        this.draw();
+        this.clearHoveredShot();
       },
       { signal: this.abortController.signal },
     );

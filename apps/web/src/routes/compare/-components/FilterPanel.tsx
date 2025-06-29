@@ -16,9 +16,13 @@ const schema = z.object({
 export const FilterPanel = ({
   filter,
   onChangeFilter,
+  hoveredSection,
+  onChangeHoveredSection,
 }: {
   filter: FilterItem;
   onChangeFilter: (id: number) => void;
+  hoveredSection: { x: number; y: number } | null;
+  onChangeHoveredSection: (section: { x: number; y: number } | null) => void;
 }) => {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -62,7 +66,11 @@ export const FilterPanel = ({
         </form>
       </Form>
 
-      <Court shots={shots} />
+      <Court
+        shots={shots}
+        onChangeHoveredSection={onChangeHoveredSection}
+        hoveredSection={hoveredSection}
+      />
     </div>
   );
 };

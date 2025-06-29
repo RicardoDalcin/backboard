@@ -5,11 +5,15 @@ const roundTo = (num: number, precision: number) => {
   return Math.round(num * 10 ** precision) / 10 ** precision;
 };
 
-function useDebounce<T>(value: T, delay: number) {
+function useDebounce<T>(
+  value: T,
+  delay: number,
+  isNull: (value: T) => boolean,
+) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    if (value != null) {
+    if (!isNull(value)) {
       setDebouncedValue(value);
       return;
     }
@@ -21,7 +25,7 @@ function useDebounce<T>(value: T, delay: number) {
     return () => {
       clearTimeout(handler);
     };
-  }, [value, delay, debouncedValue]);
+  }, [value, delay, isNull]);
 
   return debouncedValue;
 }
@@ -53,7 +57,7 @@ export const CourtTooltip = ({
   shot: HoverCallbackData;
   container: RefObject<HTMLDivElement | null>;
 }) => {
-  const shot = useDebounce(hoveredShot, 500);
+  const shot = useDebounce(hoveredShot, 200, (s) => s?.totalShots === 0);
   const nonNullShot = useLastNonNull(
     shot,
     (s) => s == null || s.totalShots === 0,
