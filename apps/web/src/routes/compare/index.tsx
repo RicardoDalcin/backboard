@@ -28,6 +28,7 @@ function RouteComponent() {
     endX: number;
     endY: number;
   } | null>(null);
+
   const { filters } = useFilters();
   const [panels, setPanels] = useLocalStorage('backboard.compare.panels', [
     {
