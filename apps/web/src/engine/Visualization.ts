@@ -203,7 +203,7 @@ export class VisualizationEngine {
 
     this.ctx.strokeStyle = THEME.hoveredShot;
     this.ctx.beginPath();
-    this.ctx.roundRect(minX, minY, width, height, 2);
+    this.ctx.rect(minX, minY, width, height);
     this.ctx.closePath();
     this.ctx.stroke();
     this.ctx.fillStyle = THEME.hoveredShot;
