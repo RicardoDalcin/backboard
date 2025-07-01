@@ -31,6 +31,9 @@ export const Court = ({
 
   const [hoveringData, setHoveringData] = useState<HoverCallbackData>(null);
 
+  const isMouseOver = useRef(false);
+  const abortController = useRef(new AbortController());
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -41,11 +44,18 @@ export const Court = ({
 
     if (engine.current) {
       engine.current.destroy();
+      abortController.current.abort();
     }
+
+    abortController.current = new AbortController();
 
     engine.current = new VisualizationEngine(canvas, container, {
       onHover: (data) => {
         setHoveringData(data);
+
+        if (!isMouseOver.current) {
+          return;
+        }
 
         if (!data) {
           onChangeHoveredSection(null);
@@ -56,32 +66,43 @@ export const Court = ({
           return;
         }
 
-        if (data.length === 1) {
-          const { x, y } = data[0]?.section ?? { x: 0, y: 0 };
-          onChangeHoveredSection({
-            startX: x,
-            startY: y,
-            endX: x,
-            endY: y,
-          });
-          return;
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        for (const shot of data) {
+          minX = Math.min(minX, shot.section.x);
+          maxX = Math.max(maxX, shot.section.x);
+          minY = Math.min(minY, shot.section.y);
+          maxY = Math.max(maxY, shot.section.y);
         }
 
-        const { x: startX, y: startY } = data[0]?.section ?? { x: 0, y: 0 };
-        const { x: endX, y: endY } = data[data.length - 1]?.section ?? {
-          x: 0,
-          y: 0,
-        };
-
         onChangeHoveredSection({
-          startX,
-          startY,
-          endX,
-          endY,
+          startX: minX,
+          startY: minY,
+          endX: maxX,
+          endY: maxY,
         });
       },
     });
     initialized.current = true;
+
+    canvas.addEventListener(
+      'mouseover',
+      () => {
+        isMouseOver.current = true;
+      },
+      { signal: abortController.current.signal },
+    );
+
+    canvas.addEventListener(
+      'mouseleave',
+      () => {
+        isMouseOver.current = false;
+      },
+      { signal: abortController.current.signal },
+    );
   }, [onChangeHoveredSection]);
 
   useEffect(() => {
@@ -93,7 +114,11 @@ export const Court = ({
   }, [shots]);
 
   useEffect(() => {
-    if (!engine.current || hoveredSection === undefined) {
+    if (
+      !engine.current ||
+      hoveredSection === undefined ||
+      isMouseOver.current
+    ) {
       return;
     }
 
@@ -119,8 +144,10 @@ export const Court = ({
       return;
     }
 
+    console.log('Setting hovered section', hoveredSection, isMouseOver.current);
     engine.current.setHoveredShot(hoveredSection);
-  }, [hoveredSection, hoveringData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hoveredSection]);
 
   return (
     <div ref={containerRef} className="w-full h-min relative">

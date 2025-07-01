@@ -1,7 +1,4 @@
-import {
-  HighlightCallbackData,
-  HoverCallbackData,
-} from '@/engine/Visualization';
+import { HoverCallbackData } from '@/engine/Visualization';
 import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 
 const roundTo = (num: number, precision: number) => {
@@ -76,12 +73,12 @@ export const CourtTooltip = ({
   );
 
   const getX = useCallback(
-    (shot: HighlightCallbackData) => {
+    (shotX: number) => {
       if (!container.current) {
         return 0;
       }
 
-      const x = shot.position.x - WIDTH / 2;
+      const x = shotX - WIDTH / 2;
       const minX = PADDING;
       const maxX = container.current.clientWidth - PADDING - WIDTH;
 
@@ -91,13 +88,13 @@ export const CourtTooltip = ({
   );
 
   const getY = useCallback(
-    (shot: HighlightCallbackData) => {
+    (shotY: number) => {
       if (!container.current) {
         return 0;
       }
 
-      const underY = shot.position.y + PADDING;
-      const overY = shot.position.y - HEIGHT;
+      const underY = shotY + PADDING;
+      const overY = shotY - HEIGHT;
 
       const maxY = container.current.clientHeight - HEIGHT - PADDING;
 
@@ -115,10 +112,11 @@ export const CourtTooltip = ({
       return { x: 0, y: 0 };
     }
 
-    const shot = shots[shots.length - 1];
+    const maxX = Math.max(...shots.map((shot) => shot.position.x));
+    const maxY = Math.max(...shots.map((shot) => shot.position.y));
 
-    const x = getX(shot);
-    const y = getY(shot);
+    const x = getX(maxX);
+    const y = getY(maxY);
 
     return { x, y };
   }, [getX, getY, shots]);
