@@ -50,7 +50,7 @@ const THEME = {
   background: '#ffffff',
   line: '#808080',
   paintedArea: '#353535',
-  hoveredShot: '#00ff00',
+  hoveredShot: '#61d0ff',
 };
 
 interface ShotSection {
@@ -65,7 +65,7 @@ interface ShotSection {
   totalMissed: number;
 }
 
-export type HoverCallbackData = {
+export type HighlightCallbackData = {
   totalShots: number;
   madeShots: number;
   section: {
@@ -76,10 +76,12 @@ export type HoverCallbackData = {
     x: number;
     y: number;
   };
-} | null;
+};
+
+export type HoverCallbackData = HighlightCallbackData[] | null;
 
 export interface EngineCallbacks {
-  onHover: (data: HoverCallbackData) => void;
+  onHover: (data: HighlightCallbackData[] | null) => void;
 }
 
 export class VisualizationEngine {
@@ -90,7 +92,9 @@ export class VisualizationEngine {
 
   private mostShots = 0;
 
-  private hoveredShot: HoverCallbackData = null;
+  private startHighlightShot: HighlightCallbackData | null = null;
+  private endHighlightShot: HighlightCallbackData | null = null;
+  private isMouseDown = false;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -174,20 +178,39 @@ export class VisualizationEngine {
   }
 
   private drawHoveredShot() {
-    if (!this.hoveredShot || this.hoveredShot.totalShots === 0) {
+    if (!this.startHighlightShot || !this.endHighlightShot) {
       return;
     }
 
-    const { x, y } = this.sectionToPosition(
-      this.hoveredShot.section.x,
-      this.hoveredShot.section.y,
+    const { x: startX, y: startY } = this.sectionToPosition(
+      this.startHighlightShot.section.x,
+      this.startHighlightShot.section.y,
     );
+
+    const { x, y } = this.sectionToPosition(
+      this.endHighlightShot.section.x,
+      this.endHighlightShot.section.y,
+    );
+
+    const endX = x + this.size.sectionSize;
+    const endY = y + this.size.sectionSize;
+
+    const width = Math.abs(endX - startX);
+    const height = Math.abs(endY - startY);
+
+    const minX = Math.min(startX, endX);
+    const minY = Math.min(startY, endY);
 
     this.ctx.strokeStyle = THEME.hoveredShot;
     this.ctx.beginPath();
-    this.ctx.roundRect(x, y, this.size.sectionSize, this.size.sectionSize, 2);
+    this.ctx.roundRect(minX, minY, width, height, 2);
     this.ctx.closePath();
     this.ctx.stroke();
+    this.ctx.fillStyle = THEME.hoveredShot;
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.2;
+    this.ctx.fillRect(minX, minY, width, height);
+    this.ctx.restore();
   }
 
   private positionToSection(x: number, y: number) {
@@ -458,43 +481,145 @@ export class VisualizationEngine {
   }
 
   private clearHoveredShot() {
-    this.hoveredShot = null;
+    this.startHighlightShot = null;
+    this.endHighlightShot = null;
     this.callbacks.onHover(null);
     this.draw();
   }
 
   private onHover({ x, y }: { x: number; y: number }) {
+    const currentHighlight = this.isMouseDown
+      ? this.endHighlightShot
+      : this.startHighlightShot;
+
     const key = this.getShotKey(x, y);
     const shot = this.shots.get(key);
 
     const { x: posX, y: posY } = this.sectionToPosition(x, y);
 
     if (
-      this.hoveredShot &&
-      this.hoveredShot.section.x === x &&
-      this.hoveredShot.section.y === y
+      currentHighlight &&
+      currentHighlight.section.x === x &&
+      currentHighlight.section.y === y
     ) {
       return;
     }
 
-    this.hoveredShot = {
+    const newShot = {
       totalShots: shot?.quantity ?? 0,
       madeShots: shot?.totalMade ?? 0,
       section: { x, y },
       position: { x: posX, y: posY },
     };
 
-    this.callbacks.onHover(this.hoveredShot);
+    if (!this.isMouseDown) {
+      this.startHighlightShot = newShot;
+      this.endHighlightShot = newShot;
+    } else {
+      this.endHighlightShot = newShot;
+    }
+
+    const shots: HighlightCallbackData[] = [];
+
+    const startSection = this.startHighlightShot!.section;
+    const endSection = this.endHighlightShot!.section;
+
+    const minX = Math.min(startSection.x, endSection.x);
+    const maxX = Math.max(startSection.x, endSection.x);
+    const minY = Math.min(startSection.y, endSection.y);
+    const maxY = Math.max(startSection.y, endSection.y);
+
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        const key = this.getShotKey(x, y);
+        const shot = this.shots.get(key);
+
+        if (shot) {
+          shots.push({
+            totalShots: shot.quantity,
+            madeShots: shot.totalMade,
+            section: { x, y },
+            position: this.sectionToPosition(x, y),
+          });
+        }
+      }
+    }
+
+    if (shots.length > 0) {
+      this.callbacks.onHover(shots);
+    }
     this.draw();
   }
 
-  setHoveredShot(hoveredShot: { x: number; y: number } | null) {
+  setHoveredShot(
+    hoveredShot: {
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
+    } | null,
+  ) {
     if (hoveredShot == null) {
       this.clearHoveredShot();
       return;
     }
 
-    this.onHover(hoveredShot);
+    const { startX, startY, endX, endY } = hoveredShot;
+
+    const startKey = this.getShotKey(startX, startY);
+    const startShot = this.shots.get(startKey);
+
+    const endKey = this.getShotKey(endX, endY);
+    const endShot = this.shots.get(endKey);
+
+    const { x: startPosX, y: startPosY } = this.sectionToPosition(
+      startX,
+      startY,
+    );
+    const { x: endPosX, y: endPosY } = this.sectionToPosition(endX, endY);
+
+    const newStartShot = {
+      totalShots: startShot?.quantity ?? 0,
+      madeShots: startShot?.totalMade ?? 0,
+      section: { x: startX, y: startY },
+      position: { x: startPosX, y: startPosY },
+    };
+
+    const newEndShot = {
+      totalShots: endShot?.quantity ?? 0,
+      madeShots: endShot?.totalMade ?? 0,
+      section: { x: endX, y: endY },
+      position: { x: endPosX, y: endPosY },
+    };
+
+    this.startHighlightShot = newStartShot;
+    this.endHighlightShot = newEndShot;
+
+    const shots: HighlightCallbackData[] = [];
+
+    const startSection = newStartShot.section;
+    const endSection = newEndShot.section;
+
+    for (let x = startSection.x; x <= endSection.x; x++) {
+      for (let y = startSection.y; y <= endSection.y; y++) {
+        const key = this.getShotKey(x, y);
+        const shot = this.shots.get(key);
+
+        if (shot) {
+          shots.push({
+            totalShots: shot.quantity,
+            madeShots: shot.totalMade,
+            section: { x, y },
+            position: this.sectionToPosition(x, y),
+          });
+        }
+      }
+    }
+
+    if (shots.length > 0) {
+      this.callbacks.onHover(shots);
+    }
+    this.draw();
   }
 
   private bindEvents() {
@@ -506,6 +631,16 @@ export class VisualizationEngine {
     resizeObserver.observe(this.container);
     this.abortController.signal.addEventListener('abort', () => {
       resizeObserver.unobserve(this.container);
+    });
+
+    this.canvas.addEventListener('mousedown', () => {
+      this.isMouseDown = true;
+    });
+
+    this.canvas.addEventListener('mouseup', () => {
+      this.startHighlightShot = this.endHighlightShot;
+      this.isMouseDown = false;
+      this.draw();
     });
 
     this.canvas.addEventListener(

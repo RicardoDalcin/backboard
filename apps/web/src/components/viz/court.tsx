@@ -9,8 +9,20 @@ export const Court = ({
   onChangeHoveredSection = () => {},
 }: {
   shots: Pick<Shot, 'locX' | 'locY' | 'shotMade'>[];
-  hoveredSection?: { x: number; y: number } | null;
-  onChangeHoveredSection?: (section: { x: number; y: number } | null) => void;
+  hoveredSection?: {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+  } | null;
+  onChangeHoveredSection?: (
+    section: {
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
+    } | null,
+  ) => void;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,7 +46,39 @@ export const Court = ({
     engine.current = new VisualizationEngine(canvas, container, {
       onHover: (data) => {
         setHoveringData(data);
-        onChangeHoveredSection(data?.section ?? null);
+
+        if (!data) {
+          onChangeHoveredSection(null);
+          return;
+        }
+
+        if (data.length === 0) {
+          return;
+        }
+
+        if (data.length === 1) {
+          const { x, y } = data[0]?.section ?? { x: 0, y: 0 };
+          onChangeHoveredSection({
+            startX: x,
+            startY: y,
+            endX: x,
+            endY: y,
+          });
+          return;
+        }
+
+        const { x: startX, y: startY } = data[0]?.section ?? { x: 0, y: 0 };
+        const { x: endX, y: endY } = data[data.length - 1]?.section ?? {
+          x: 0,
+          y: 0,
+        };
+
+        onChangeHoveredSection({
+          startX,
+          startY,
+          endX,
+          endY,
+        });
       },
     });
     initialized.current = true;
@@ -53,12 +97,24 @@ export const Court = ({
       return;
     }
 
+    const { x: startX, y: startY } = hoveringData?.[0]?.section ?? {
+      x: 0,
+      y: 0,
+    };
+    const { x: endX, y: endY } = hoveringData?.[hoveringData.length - 1]
+      ?.section ?? {
+      x: 0,
+      y: 0,
+    };
+
     if (
       (!hoveredSection && !hoveringData) ||
       (hoveredSection &&
         hoveringData &&
-        hoveredSection.x === hoveringData.section.x &&
-        hoveredSection.y === hoveringData.section.y)
+        hoveredSection.startX === startX &&
+        hoveredSection.startY === startY &&
+        hoveredSection.endX === endX &&
+        hoveredSection.endY === endY)
     ) {
       return;
     }
@@ -70,7 +126,7 @@ export const Court = ({
     <div ref={containerRef} className="w-full h-min relative">
       <canvas ref={canvasRef} className="rounded-xl"></canvas>
 
-      <CourtTooltip shot={hoveringData} container={containerRef} />
+      <CourtTooltip shots={hoveringData} container={containerRef} />
     </div>
   );
 };

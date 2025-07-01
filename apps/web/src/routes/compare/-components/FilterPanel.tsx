@@ -24,8 +24,20 @@ export const FilterPanel = ({
 }: {
   filter: FilterItem;
   onChangeFilter: (id: number) => void;
-  hoveredSection: { x: number; y: number } | null;
-  onChangeHoveredSection: (section: { x: number; y: number } | null) => void;
+  hoveredSection: {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+  } | null;
+  onChangeHoveredSection: (
+    section: {
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
+    } | null,
+  ) => void;
   onClosePanel: () => void;
 }) => {
   const form = useForm<z.infer<typeof schema>>({

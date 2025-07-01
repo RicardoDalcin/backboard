@@ -23,8 +23,10 @@ export const Route = createFileRoute('/compare/')({
 
 function RouteComponent() {
   const [hoveredSection, setHoveredSection] = useState<{
-    x: number;
-    y: number;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
   } | null>(null);
   const { filters } = useFilters();
   const [panels, setPanels] = useLocalStorage('backboard.compare.panels', [
@@ -139,7 +141,9 @@ function RouteComponent() {
               <FilterPanel
                 filter={panel.filter}
                 onChangeFilter={(id) => selectPanelFilter(panel.id, id)}
-                onChangeHoveredSection={(section) => setHoveredSection(section)}
+                onChangeHoveredSection={(section) => {
+                  setHoveredSection(section);
+                }}
                 hoveredSection={hoveredSection}
                 onClosePanel={() => removePanel(panel.id)}
               />

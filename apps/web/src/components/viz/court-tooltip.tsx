@@ -1,4 +1,7 @@
-import { HoverCallbackData } from '@/engine/Visualization';
+import {
+  HighlightCallbackData,
+  HoverCallbackData,
+} from '@/engine/Visualization';
 import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 
 const roundTo = (num: number, precision: number) => {
@@ -51,20 +54,29 @@ const HEIGHT = 70;
 const PADDING = 12;
 
 export const CourtTooltip = ({
-  shot: hoveredShot,
+  shots: hoveredShot,
   container,
 }: {
-  shot: HoverCallbackData;
+  shots: HoverCallbackData;
   container: RefObject<HTMLDivElement | null>;
 }) => {
-  const shot = useDebounce(hoveredShot, 200, (s) => s?.totalShots === 0);
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+  });
+
+  const shots = useDebounce(
+    hoveredShot,
+    200,
+    (s) => s?.every((s) => s.totalShots === 0) ?? false,
+  );
+
   const nonNullShot = useLastNonNull(
-    shot,
-    (s) => s == null || s.totalShots === 0,
+    shots,
+    (s) => s == null || s.every((s) => s.totalShots === 0),
   );
 
   const getX = useCallback(
-    (shot: NonNullable<HoverCallbackData>) => {
+    (shot: HighlightCallbackData) => {
       if (!container.current) {
         return 0;
       }
@@ -79,7 +91,7 @@ export const CourtTooltip = ({
   );
 
   const getY = useCallback(
-    (shot: NonNullable<HoverCallbackData>) => {
+    (shot: HighlightCallbackData) => {
       if (!container.current) {
         return 0;
       }
@@ -99,19 +111,33 @@ export const CourtTooltip = ({
   );
 
   const position = useMemo(() => {
-    if (!shot) {
+    if (shots == null || shots.length === 0) {
       return { x: 0, y: 0 };
     }
+
+    const shot = shots[shots.length - 1];
 
     const x = getX(shot);
     const y = getY(shot);
 
     return { x, y };
-  }, [getX, getY, shot]);
+  }, [getX, getY, shots]);
+
+  const average = useMemo(() => {
+    const totalShots =
+      nonNullShot?.reduce((acc, shot) => acc + shot.totalShots, 0) ?? 0;
+    const madeShots =
+      nonNullShot?.reduce((acc, shot) => acc + shot.madeShots, 0) ?? 0;
+
+    return {
+      totalShots,
+      madeShots,
+    };
+  }, [nonNullShot]);
 
   return (
     <>
-      {shot != null && (
+      {shots != null && (
         <div
           className="absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20 transition-all duration-100"
           style={{
@@ -119,25 +145,22 @@ export const CourtTooltip = ({
             height: `${HEIGHT}px`,
             top: `${position.y}px`,
             left: `${position.x}px`,
-            opacity: shot && shot.totalShots > 0 ? 1 : 0,
+            opacity: average.totalShots > 0 ? 1 : 0,
           }}
         >
-          {shot && nonNullShot && (
+          {average.totalShots > 0 && (
             <div className="w-full h-full px-4 py-2 flex flex-col justify-between">
               <div className="text-sm">
                 <span className="font-bold">
-                  {nonNullShot.madeShots}/{nonNullShot.totalShots}
+                  {formatter.format(average.madeShots)}/
+                  {formatter.format(average.totalShots)}
                 </span>{' '}
                 shots
               </div>
 
               <div className="text-sm">
                 <span className="font-bold">
-                  {roundTo(
-                    (nonNullShot.madeShots / nonNullShot.totalShots) * 100,
-                    1,
-                  )}
-                  %
+                  {roundTo((average.madeShots / average.totalShots) * 100, 1)}%
                 </span>{' '}
                 FG%
               </div>
