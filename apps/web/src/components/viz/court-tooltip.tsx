@@ -113,7 +113,7 @@ export const CourtTooltip = ({
     <>
       {shot != null && (
         <div
-          className="absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20 transition-all"
+          className="absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20 transition-all duration-100"
           style={{
             width: `${WIDTH}px`,
             height: `${HEIGHT}px`,

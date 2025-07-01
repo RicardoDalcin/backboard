@@ -83,7 +83,7 @@ function RouteComponent() {
 
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(0,1fr))] gap-6 h-full items-center">
         {panelsWithFilters.map((panel) => (
-          <Card key={panel.id} className="w-full h-full">
+          <Card key={panel.id} className="w-full h-full !py-0">
             {!panel.filter ? (
               <div className="h-full flex flex-col items-center gap-6 px-4 pt-[164px] pb-4">
                 <svg
@@ -141,6 +141,7 @@ function RouteComponent() {
                 onChangeFilter={(id) => selectPanelFilter(panel.id, id)}
                 onChangeHoveredSection={(section) => setHoveredSection(section)}
                 hoveredSection={hoveredSection}
+                onClosePanel={() => removePanel(panel.id)}
               />
             )}
           </Card>
