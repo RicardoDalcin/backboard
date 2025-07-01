@@ -1,7 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
 import { Form, FormField } from '@/components/ui/form';
+import { ClockAreaChart } from '@/components/viz/clock-area-chart';
 import { Court } from '@/components/viz/court';
+import { ShotTypeLineChart } from '@/components/viz/shot-type-line-chart';
+import { useClockSummary } from '@/components/viz/useClockSummary';
+import { useShotTypeSummary } from '@/components/viz/useShotTypeSummary';
 import { useFilters } from '@/stores/filters';
 import { useShots } from '@/stores/stats';
 import { FilterItem } from '@/types/filters';
@@ -46,7 +50,16 @@ export const FilterPanel = ({
   });
 
   const { data } = useShots(
-    ['locX', 'locY', 'shotMade'],
+    [
+      'locX',
+      'locY',
+      'shotMade',
+      'basicZone',
+      'shotType',
+      'quarter',
+      'minsLeft',
+      'secsLeft',
+    ],
     1_000_000,
     filter.filters,
   );
@@ -59,6 +72,9 @@ export const FilterPanel = ({
   );
 
   const shots = useMemo(() => data ?? [], [data]);
+
+  const { clockSummary } = useClockSummary(data);
+  const { shotTypeSummary } = useShotTypeSummary(data);
 
   return (
     <div className="h-full max-w-full flex flex-col items-center px-4 py-4 gap-6">
@@ -97,6 +113,10 @@ export const FilterPanel = ({
         onChangeHoveredSection={onChangeHoveredSection}
         hoveredSection={hoveredSection}
       />
+
+      <ClockAreaChart data={clockSummary} />
+
+      <ShotTypeLineChart data={shotTypeSummary} />
     </div>
   );
 };

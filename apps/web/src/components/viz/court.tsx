@@ -144,7 +144,6 @@ export const Court = ({
       return;
     }
 
-    console.log('Setting hovered section', hoveredSection, isMouseOver.current);
     engine.current.setHoveredShot(hoveredSection);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredSection]);

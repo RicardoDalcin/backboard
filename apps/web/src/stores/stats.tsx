@@ -102,7 +102,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       'minsLeft',
       'secsLeft',
     ],
-    1_000,
+    1_000_000,
     currentFilter.filters,
     routerState.location.pathname === '/',
   );
