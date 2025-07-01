@@ -50,6 +50,7 @@ const THEME = {
   background: '#ffffff',
   line: '#808080',
   paintedArea: '#353535',
+  hoveredShot: '#00ff00',
 };
 
 interface ShotSection {
@@ -64,6 +65,23 @@ interface ShotSection {
   totalMissed: number;
 }
 
+export type HoverCallbackData = {
+  totalShots: number;
+  madeShots: number;
+  section: {
+    x: number;
+    y: number;
+  };
+  position: {
+    x: number;
+    y: number;
+  };
+} | null;
+
+export interface EngineCallbacks {
+  onHover: (data: HoverCallbackData) => void;
+}
+
 export class VisualizationEngine {
   private ctx: CanvasRenderingContext2D;
   private size = { width: 0, height: 0, sectionSize: 0 };
@@ -72,9 +90,12 @@ export class VisualizationEngine {
 
   private mostShots = 0;
 
+  private hoveredShot: HoverCallbackData = null;
+
   constructor(
     private canvas: HTMLCanvasElement,
     private container: HTMLDivElement,
+    private callbacks: EngineCallbacks,
   ) {
     const ctx = this.canvas.getContext('2d');
 
@@ -137,7 +158,9 @@ export class VisualizationEngine {
     this.draw();
   }
 
-  destroy() {}
+  destroy() {
+    this.abortController.abort();
+  }
 
   private draw() {
     this.drawCourt();
@@ -147,6 +170,24 @@ export class VisualizationEngine {
     // this.ctx.filter = 'blur(2px)'; // Adjust the pixel value to control the blur amount
     this.ctx.save();
     this.drawShots();
+    this.drawHoveredShot();
+  }
+
+  private drawHoveredShot() {
+    if (!this.hoveredShot || this.hoveredShot.totalShots === 0) {
+      return;
+    }
+
+    const { x, y } = this.sectionToPosition(
+      this.hoveredShot.section.x,
+      this.hoveredShot.section.y,
+    );
+
+    this.ctx.strokeStyle = THEME.hoveredShot;
+    this.ctx.beginPath();
+    this.ctx.roundRect(x, y, this.size.sectionSize, this.size.sectionSize, 2);
+    this.ctx.closePath();
+    this.ctx.stroke();
   }
 
   private positionToSection(x: number, y: number) {
@@ -416,6 +457,46 @@ export class VisualizationEngine {
     this.ctx.scale(devicePixelRatio, devicePixelRatio);
   }
 
+  private clearHoveredShot() {
+    this.hoveredShot = null;
+    this.callbacks.onHover(null);
+    this.draw();
+  }
+
+  private onHover({ x, y }: { x: number; y: number }) {
+    const key = this.getShotKey(x, y);
+    const shot = this.shots.get(key);
+
+    const { x: posX, y: posY } = this.sectionToPosition(x, y);
+
+    if (
+      this.hoveredShot &&
+      this.hoveredShot.section.x === x &&
+      this.hoveredShot.section.y === y
+    ) {
+      return;
+    }
+
+    this.hoveredShot = {
+      totalShots: shot?.quantity ?? 0,
+      madeShots: shot?.totalMade ?? 0,
+      section: { x, y },
+      position: { x: posX, y: posY },
+    };
+
+    this.callbacks.onHover(this.hoveredShot);
+    this.draw();
+  }
+
+  setHoveredShot(hoveredShot: { x: number; y: number } | null) {
+    if (hoveredShot == null) {
+      this.clearHoveredShot();
+      return;
+    }
+
+    this.onHover(hoveredShot);
+  }
+
   private bindEvents() {
     const resizeObserver = new ResizeObserver(() => {
       this.onResize();
@@ -426,6 +507,23 @@ export class VisualizationEngine {
     this.abortController.signal.addEventListener('abort', () => {
       resizeObserver.unobserve(this.container);
     });
+
+    this.canvas.addEventListener(
+      'mousemove',
+      (event) => {
+        const { x, y } = this.positionToSection(event.offsetX, event.offsetY);
+        this.onHover({ x, y });
+      },
+      { signal: this.abortController.signal },
+    );
+
+    this.canvas.addEventListener(
+      'mouseleave',
+      () => {
+        this.clearHoveredShot();
+      },
+      { signal: this.abortController.signal },
+    );
   }
 
   private feetToPixels(feet: number) {

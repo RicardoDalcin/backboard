@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useFilters } from '@/stores/filters';
 import { FilterPanel } from './-components/FilterPanel';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 export const Route = createFileRoute('/compare/')({
   component: RouteComponent,
@@ -22,6 +22,10 @@ export const Route = createFileRoute('/compare/')({
 });
 
 function RouteComponent() {
+  const [hoveredSection, setHoveredSection] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const { filters } = useFilters();
   const [panels, setPanels] = useLocalStorage('backboard.compare.panels', [
     {
@@ -135,6 +139,8 @@ function RouteComponent() {
               <FilterPanel
                 filter={panel.filter}
                 onChangeFilter={(id) => selectPanelFilter(panel.id, id)}
+                onChangeHoveredSection={(section) => setHoveredSection(section)}
+                hoveredSection={hoveredSection}
               />
             )}
           </Card>

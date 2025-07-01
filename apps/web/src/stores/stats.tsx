@@ -10,6 +10,7 @@ import { useFilters } from './filters';
 import { db, ShotColumn } from '@/server/db';
 import { Filter } from '@/types/filters';
 import { Shot } from '@/types';
+import { useRouterState } from '@tanstack/react-router';
 
 interface StatsStore {
   data: Array<
@@ -39,21 +40,22 @@ export function useShots<T extends ShotColumn[]>(
   columns: T,
   count: number,
   filter: Filter,
+  isEnabled = true,
 ) {
   const filterKey = useMemo(() => JSON.stringify(filter), [filter]);
-  const [lastFilterKey, setLastFilterKey] = useState('');
   const [shots, setShots] = useState<Pick<Shot, T[number]>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
 
   const abortController = useRef(new AbortController());
+  const lastFilterKey = useRef('');
 
   useEffect(() => {
-    if (lastFilterKey === filterKey) {
+    if (!isEnabled || lastFilterKey.current === filterKey) {
       return;
     }
 
-    setLastFilterKey(filterKey);
+    lastFilterKey.current = filterKey;
     setIsValidating(true);
 
     const newAbortController = new AbortController();
@@ -61,6 +63,10 @@ export function useShots<T extends ShotColumn[]>(
 
     abortController.current.abort();
     abortController.current = newAbortController;
+
+    // const filterChecksum = JSON.stringify(filter)
+    //   .split('')
+    //   .reduce((acc, filter) => acc + filter.charCodeAt(0), 0);
 
     db.getShots(columns, count, filter, signal)
       .then((data) => {
@@ -72,7 +78,7 @@ export function useShots<T extends ShotColumn[]>(
         setShots(data);
       })
       .catch(() => {});
-  }, [filterKey, columns, count, lastFilterKey, filter]);
+  }, [isEnabled, filterKey, columns, count, lastFilterKey, filter]);
 
   return {
     data: shots,
@@ -83,6 +89,7 @@ export function useShots<T extends ShotColumn[]>(
 
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentFilter } = useFilters();
+  const routerState = useRouterState();
 
   const { data, isLoading, isValidating } = useShots(
     [
@@ -97,6 +104,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     ],
     1_000_000,
     currentFilter.filters,
+    routerState.location.pathname === '/',
   );
 
   const dataList = useMemo(() => data ?? [], [data]);
