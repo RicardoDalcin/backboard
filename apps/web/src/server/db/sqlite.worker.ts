@@ -47,9 +47,11 @@ class WorkerHandler {
         ? new Int32Array(request.sharedBuffer)
         : null;
 
+    let rows = 0;
     const data = await this.db.exec(request.sql, {
-      callback: (row) => {
-        if (Number(row.id) % 1_000 === 0) {
+      callback: () => {
+        rows++;
+        if (rows % 1_000 === 0) {
           if (abortFlag != null && Atomics.load(abortFlag, 0) === 1) {
             this.interrupt();
             return;

@@ -10,7 +10,7 @@ export const Court = ({
 }: {
   shots: Pick<Shot, 'locX' | 'locY' | 'shotMade'>[];
   hoveredSection?: { x: number; y: number } | null;
-  onChangeHoveredSection: (section: { x: number; y: number } | null) => void;
+  onChangeHoveredSection?: (section: { x: number; y: number } | null) => void;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
