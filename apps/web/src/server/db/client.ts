@@ -13,7 +13,6 @@ export class DBClient {
   private requestId = 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private pendingRequests = new Map<number, PromiseCell<any>>();
-  private abortFlag: Int32Array | null = null;
 
   constructor(private readonly filePath: string) {
     this.worker.onmessage = (event) => {

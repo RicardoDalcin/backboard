@@ -52,7 +52,7 @@ class WorkerHandler {
     const data = this.db.exec(request.sql, {
       callback: () => {
         rowNumber++;
-        if (Number(rowNumber) % 5_000 === 0) {
+        if (rowNumber % 5_000 === 0) {
           if (abortFlag != null && Atomics.load(abortFlag, 0) === 1) {
             this.interrupt();
             return;
