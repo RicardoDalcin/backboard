@@ -150,6 +150,8 @@ export class VisualizationEngine {
       }
     }
 
+    this.mostShots = 0;
+
     this.shots.forEach((section) => {
       section.quantity = section.totalMade + section.totalMissed;
       section.fieldGoalPercentage = section.totalMade / section.quantity;
