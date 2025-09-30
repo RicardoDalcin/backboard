@@ -201,12 +201,72 @@ class NBADatabase {
       console.log(query);
     }
 
-    return new Promise<Pick<Shot, T[number]>[]>((resolve, reject) => {
-      this.db
-        .exec<Pick<Shot, T[number]>>(query, signal)
-        .then(resolve)
-        .catch(reject);
-    });
+    // return new Promise<Pick<Shot, T[number]>[]>((resolve, reject) => {
+    //   this.db
+    //     .exec<Pick<Shot, T[number]>>(query, signal)
+    //     .then(resolve)
+    //     .catch(reject);
+    // });
+    return [];
+  }
+
+  async test(filters?: Partial<Filter>) {
+    const FILTERS = {
+      season: { column: 'season', type: 'RANGE' },
+      drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
+      ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
+      teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },
+      playerIds: { column: 'playerId', type: 'INTEGER_ARRAY' },
+      positions: { column: 'position', type: 'TEXT_ARRAY' },
+      result: { column: 'gameWon', type: 'INTEGER' },
+    } as const;
+
+    const filterValues = {
+      season: filters?.season,
+      drtgRanking:
+        !filters ||
+        !filters.defensiveRatingRank ||
+        (filters.defensiveRatingRank[0] === 1 &&
+          filters.defensiveRatingRank[1] === 30)
+          ? undefined
+          : filters?.defensiveRatingRank,
+      ortgRanking:
+        !filters ||
+        !filters.offensiveRatingRank ||
+        (filters.offensiveRatingRank[0] === 1 &&
+          filters.offensiveRatingRank[1] === 30)
+          ? undefined
+          : filters?.offensiveRatingRank,
+      teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
+      playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
+      positions:
+        filters?.positions?.length === 5 ? undefined : filters?.positions,
+      result:
+        !filters?.result || filters?.result === 'all'
+          ? undefined
+          : filters.result === 'wins'
+            ? 1
+            : 0,
+    };
+
+    const sql = `
+      WITH limited_shots AS (
+        SELECT *
+        FROM shots
+        ${filters ? this.getFiltersQuery(filterValues, FILTERS) : ''}
+        LIMIT 1000000
+      )
+      SELECT
+        CAST((locX + 25) AS INTEGER) AS bin_x,
+        CAST(locY / 2 AS INTEGER) AS bin_y,
+        COUNT(*) AS shot_count,
+        SUM(CASE WHEN shotMade = 1 THEN 1 ELSE 0 END) AS made_count
+      FROM limited_shots
+      GROUP BY bin_x, bin_y
+      ORDER BY bin_y DESC, bin_x;
+    `;
+    console.log(sql);
+    return this.db.exec(sql);
   }
 }
 

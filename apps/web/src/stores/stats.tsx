@@ -68,16 +68,28 @@ export function useShots<T extends ShotColumn[]>(
     //   .split('')
     //   .reduce((acc, filter) => acc + filter.charCodeAt(0), 0);
 
-    db.getShots(columns, count, filter, signal)
+    const perf = performance.now();
+    db.test(filter)
       .then((data) => {
-        if (signal.aborted) {
-          return;
-        }
-        setIsLoading(false);
-        setIsValidating(false);
-        setShots(data);
+        console.log(data);
+        console.log('test perf: ', performance.now() - perf);
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // const perf = performance.now();
+    // db.getShots(columns, count, filter, signal)
+    //   .then((data) => {
+    //     if (signal.aborted) {
+    //       return;
+    //     }
+    //     console.log(performance.now() - perf);
+    //     setIsLoading(false);
+    //     setIsValidating(false);
+    //     setShots(data);
+    //   })
+    //   .catch(() => {});
   }, [isEnabled, filterKey, columns, count, lastFilterKey, filter]);
 
   return {
