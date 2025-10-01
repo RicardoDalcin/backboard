@@ -55,6 +55,9 @@ interface Row {
 const FOLDER_PATH = './output';
 const DB_PATH = `${FOLDER_PATH}/nba.sqlite3`;
 
+const clamp = (num: number, min: number, max: number) =>
+  Math.max(min, Math.min(num, max));
+
 async function createDb() {
   if (!existsSync(FOLDER_PATH)) {
     await mkdir(FOLDER_PATH);
@@ -85,8 +88,8 @@ async function createDb() {
         zoneName INTEGER,
         zoneAbb INTEGER,
         zoneRange INTEGER,
-        locX REAL,
-        locY REAL,
+        locX INTEGER,
+        locY INTEGER,
         shotDistance REAL,
         quarter INTEGER,
         minsLeft INTEGER,
@@ -106,6 +109,7 @@ async function createDb() {
     db.run(`CREATE INDEX IF NOT EXISTS teamId_index on shots (teamId)`);
     db.run(`CREATE INDEX IF NOT EXISTS defRtgRank_index on shots (defRtgRank)`);
     db.run(`CREATE INDEX IF NOT EXISTS offRtgRank_index on shots (offRtgRank)`);
+    db.run(`CREATE INDEX IF NOT EXISTS position_index on shots (locX, locY)`);
   });
 
   return db;
@@ -270,10 +274,14 @@ async function createAndSeed() {
       const locX = Number(record.LOC_X);
       const locY = Number(record.LOC_Y);
 
-      const correctedLocX = roundTo(needCorrection ? locX * 10 : locX, 2);
+      const correctedLocX = clamp(
+        roundTo(needCorrection ? locX * 10 : locX, 0),
+        -25,
+        25,
+      );
       const correctedLocY = roundTo(
         needCorrection ? locY * 10 - COURT_LENGTH * 1.4 : locY,
-        2,
+        0,
       );
 
       const shot = {
@@ -321,6 +329,10 @@ async function createAndSeed() {
       `(${obj.id}, ${obj.season}, ${obj.teamId}, ${obj.playerId}, "${obj.positionGroup}", "${obj.position}", "${obj.gameDate}", ${obj.gameId}, "${obj.homeTeam}", "${obj.awayTeam}", ${obj.eventType}, ${obj.shotMade ? 1 : 0}, ${obj.actionType}, ${obj.shotType}, ${obj.basicZone}, ${obj.zoneName}, ${obj.zoneAbb}, ${obj.zoneRange}, ${obj.locX}, ${obj.locY}, ${obj.shotDistance}, ${obj.quarter}, ${obj.minsLeft}, ${obj.secsLeft}, ${obj.defRtg}, ${obj.defRtgRank}, ${obj.offRtg}, ${obj.offRtgRank}, ${obj.playerHeight}, ${obj.playerWeight}, ${obj.gameWon ? 1 : 0})`;
 
     const CHUNK_SIZE = 1_000;
+
+    console.log(
+      `Starting to insert chunks for ${file.split('/').pop() ?? 'NO_FILE_NAME'}`,
+    );
 
     for (let i = 0; i < dbRecords.length; i += CHUNK_SIZE) {
       const chunk = dbRecords.slice(i, i + CHUNK_SIZE);

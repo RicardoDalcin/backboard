@@ -7,9 +7,9 @@ export type ShotColumn = keyof Shot;
 
 class NBADatabase {
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRaBCOmu0lsZDq8Igcjn3Jtk9OL42UdxB7hNwF';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRTtXi3s6HPe4tUi60lOnwKQGLzcdv12MF8IoJ';
 
-  private readonly EXPECTED_DB_SIZE = 820256768;
+  private readonly EXPECTED_DB_SIZE = 816889856;
 
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
@@ -250,23 +250,18 @@ class NBADatabase {
     };
 
     const sql = `
-      WITH limited_shots AS (
-        SELECT *
-        FROM shots
-        ${filters ? this.getFiltersQuery(filterValues, FILTERS) : ''}
-        LIMIT 1000000
-      )
       SELECT
-        CAST((locX + 25) AS INTEGER) AS bin_x,
-        CAST(locY / 2 AS INTEGER) AS bin_y,
-        COUNT(*) AS shot_count,
-        SUM(CASE WHEN shotMade = 1 THEN 1 ELSE 0 END) AS made_count
-      FROM limited_shots
-      GROUP BY bin_x, bin_y
-      ORDER BY bin_y DESC, bin_x;
-    `;
+      locX,
+      locY
+      FROM test_shots
+      ${filters ? this.getFiltersQuery(filterValues, FILTERS) : ''}
+      GROUP BY locX, locY;
+      `;
     console.log(sql);
-    return this.db.exec(sql);
+    const startTime = performance.now();
+    const data = await this.db.exec(sql);
+    console.log('test perf: ', performance.now() - startTime);
+    return data;
   }
 }
 
