@@ -6,4 +6,4 @@
 
 #
 
-Backboard is a offline-first, open-source data visualization tool applied to NBA shots from the 2004-2024 seasons. Create filters, explore data and compare trends across millions of shots over decades.
+Backboard is an offline-first, open-source data visualization tool applied to NBA shots from the 2004-2024 seasons. Create filters, explore data and compare trends across millions of shots over decades.
