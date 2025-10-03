@@ -8,10 +8,6 @@ import { Filters } from './-components/filters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useStats } from '@/stores/stats';
 import { Court } from '@/components/viz/court';
-import { ClockAreaChart } from '@/components/viz/clock-area-chart';
-import { ShotTypeLineChart } from '@/components/viz/shot-type-line-chart';
-import { useClockSummary } from '@/components/viz/useClockSummary';
-import { useShotTypeSummary } from '@/components/viz/useShotTypeSummary';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -20,23 +16,13 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
-  const { data, isLoading } = useStats();
-
-  const formatter = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-
-  const { clockSummary } = useClockSummary(data);
-  const { shotTypeSummary } = useShotTypeSummary(data);
+  const { courtShotData, isLoading } = useStats();
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between w-full">
         <h2 className="text-3xl font-bold">
-          {isLoading
-            ? `Loading shots...`
-            : `Exploring ${formatter.format(data.length)} shots`}
+          {isLoading ? `Loading shots...` : `Exploring ___ shots`}
         </h2>
 
         <div className="flex items-center gap-4">
@@ -56,11 +42,11 @@ function Index() {
             {isLoading ? (
               <Skeleton className="w-full aspect-[541/406.83] rounded-xl" />
             ) : (
-              <Court shots={data} />
+              <Court data={courtShotData} />
             )}
           </Card>
 
-          <Card className="col-span-12 xl:col-span-5 py-0 overflow-hidden">
+          {/* <Card className="col-span-12 xl:col-span-5 py-0 overflow-hidden">
             {isLoading ? (
               <Skeleton className="w-full h-full" />
             ) : (
@@ -78,7 +64,7 @@ function Index() {
                 <ShotTypeLineChart data={shotTypeSummary} />
               </div>
             )}
-          </Card>
+          </Card> */}
 
           <Card className="col-span-12 h-[600px] xl:col-span-7 py-0 overflow-hidden">
             <Skeleton className="w-full h-full" />

@@ -32,26 +32,7 @@ class WorkerHandler {
     }
 
     this.sqlite3 = await sqlite3InitModule({ print: log, printErr: error });
-    this.db = new this.sqlite3.oo1.OpfsDb(request.filePath, 'rw');
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS test_shots (
-        id INTEGER PRIMARY KEY,
-        shotMade INTEGER,
-        locX INTEGER,
-        locY INTEGER
-      ) WITHOUT ROWID;
-
-      -- CREATE INDEX IF NOT EXISTS playerId_index on test_shots (playerId);
-      -- CREATE INDEX IF NOT EXISTS season_index on test_shots (season);
-      -- CREATE INDEX IF NOT EXISTS teamId_index on test_shots (teamId);
-      -- CREATE INDEX IF NOT EXISTS defRtgRank_index on test_shots (defRtgRank);
-      -- CREATE INDEX IF NOT EXISTS offRtgRank_index on test_shots (offRtgRank);
-
-      CREATE INDEX IF NOT EXISTS position_index on test_shots (locX, locY);
-
-      INSERT INTO test_shots (id, shotMade, locX, locY) select id, shotMade, locX, locY from shots;
-    `);
+    this.db = new this.sqlite3.oo1.OpfsDb(request.filePath, 'r');
 
     return this.sqlite3.version;
   }

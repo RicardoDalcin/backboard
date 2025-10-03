@@ -7,9 +7,9 @@ export type ShotColumn = keyof Shot;
 
 class NBADatabase {
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRTtXi3s6HPe4tUi60lOnwKQGLzcdv12MF8IoJ';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRUoleQSmzrTWBYfPRlMnkh4QoHStZ5FxDdLv3';
 
-  private readonly EXPECTED_DB_SIZE = 816889856;
+  private readonly EXPECTED_DB_SIZE = 693919744;
 
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
@@ -149,118 +149,100 @@ class NBADatabase {
     return `WHERE ${filtersQuery}`;
   }
 
+  private getShotsTableFilters(filters: Partial<Filter>) {
+    const FILTERS = {
+      season: { column: 'season', type: 'RANGE' },
+      drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
+      ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
+      teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },
+      playerIds: { column: 'playerId', type: 'INTEGER_ARRAY' },
+      positions: { column: 'position', type: 'TEXT_ARRAY' },
+      result: { column: 'gameWon', type: 'INTEGER' },
+    } as const;
+
+    const filterValues = {
+      season: filters?.season,
+      drtgRanking:
+        !filters ||
+        !filters.defensiveRatingRank ||
+        (filters.defensiveRatingRank[0] === 1 &&
+          filters.defensiveRatingRank[1] === 30)
+          ? undefined
+          : filters?.defensiveRatingRank,
+      ortgRanking:
+        !filters ||
+        !filters.offensiveRatingRank ||
+        (filters.offensiveRatingRank[0] === 1 &&
+          filters.offensiveRatingRank[1] === 30)
+          ? undefined
+          : filters?.offensiveRatingRank,
+      teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
+      playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
+      positions:
+        filters?.positions?.length === 5 ? undefined : filters?.positions,
+      result:
+        !filters?.result || filters?.result === 'all'
+          ? undefined
+          : filters.result === 'wins'
+            ? 1
+            : 0,
+    };
+
+    return this.getFiltersQuery(filterValues, FILTERS);
+  }
+
   async getShots<T extends ShotColumn[]>(
     columns: T,
     count?: number,
     filters?: Partial<Filter>,
     signal?: AbortSignal,
   ) {
-    const FILTERS = {
-      season: { column: 'season', type: 'RANGE' },
-      drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
-      ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
-      teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },
-      playerIds: { column: 'playerId', type: 'INTEGER_ARRAY' },
-      positions: { column: 'position', type: 'TEXT_ARRAY' },
-      result: { column: 'gameWon', type: 'INTEGER' },
-    } as const;
-
-    const filterValues = {
-      season: filters?.season,
-      drtgRanking:
-        !filters ||
-        !filters.defensiveRatingRank ||
-        (filters.defensiveRatingRank[0] === 1 &&
-          filters.defensiveRatingRank[1] === 30)
-          ? undefined
-          : filters?.defensiveRatingRank,
-      ortgRanking:
-        !filters ||
-        !filters.offensiveRatingRank ||
-        (filters.offensiveRatingRank[0] === 1 &&
-          filters.offensiveRatingRank[1] === 30)
-          ? undefined
-          : filters?.offensiveRatingRank,
-      teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
-      playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
-      positions:
-        filters?.positions?.length === 5 ? undefined : filters?.positions,
-      result:
-        !filters?.result || filters?.result === 'all'
-          ? undefined
-          : filters.result === 'wins'
-            ? 1
-            : 0,
-    };
-
     const query = `SELECT ${columns.join(',')} FROM shots 
-      ${filters ? this.getFiltersQuery(filterValues, FILTERS) : ''}
+      ${filters ? this.getShotsTableFilters(filters) : ''}
       LIMIT ${count}`;
 
     if (import.meta.env.DEV) {
       console.log(query);
     }
 
-    // return new Promise<Pick<Shot, T[number]>[]>((resolve, reject) => {
-    //   this.db
-    //     .exec<Pick<Shot, T[number]>>(query, signal)
-    //     .then(resolve)
-    //     .catch(reject);
-    // });
-    return [];
+    return new Promise<Pick<Shot, T[number]>[]>((resolve, reject) => {
+      this.db
+        .exec<Pick<Shot, T[number]>>(query, signal)
+        .then(resolve)
+        .catch(reject);
+    });
   }
 
-  async test(filters?: Partial<Filter>) {
-    const FILTERS = {
-      season: { column: 'season', type: 'RANGE' },
-      drtgRanking: { column: 'defRtgRank', type: 'RANGE' },
-      ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
-      teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },
-      playerIds: { column: 'playerId', type: 'INTEGER_ARRAY' },
-      positions: { column: 'position', type: 'TEXT_ARRAY' },
-      result: { column: 'gameWon', type: 'INTEGER' },
-    } as const;
-
-    const filterValues = {
-      season: filters?.season,
-      drtgRanking:
-        !filters ||
-        !filters.defensiveRatingRank ||
-        (filters.defensiveRatingRank[0] === 1 &&
-          filters.defensiveRatingRank[1] === 30)
-          ? undefined
-          : filters?.defensiveRatingRank,
-      ortgRanking:
-        !filters ||
-        !filters.offensiveRatingRank ||
-        (filters.offensiveRatingRank[0] === 1 &&
-          filters.offensiveRatingRank[1] === 30)
-          ? undefined
-          : filters?.offensiveRatingRank,
-      teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
-      playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
-      positions:
-        filters?.positions?.length === 5 ? undefined : filters?.positions,
-      result:
-        !filters?.result || filters?.result === 'all'
-          ? undefined
-          : filters.result === 'wins'
-            ? 1
-            : 0,
-    };
-
-    const sql = `
+  async getCourtShotData(filters?: Partial<Filter>) {
+    const query = `
       SELECT
       locX,
-      locY
-      FROM test_shots
-      ${filters ? this.getFiltersQuery(filterValues, FILTERS) : ''}
+      locY,
+      count(*) as totalShots,
+      SUM(CASE WHEN shotMade = 1 THEN 1 ELSE 0 END) as totalMade
+      FROM shots
+      ${filters ? this.getShotsTableFilters(filters) : ''}
       GROUP BY locX, locY;
       `;
-    console.log(sql);
+
+    if (import.meta.env.DEV) {
+      console.log(query);
+    }
+
     const startTime = performance.now();
-    const data = await this.db.exec(sql);
-    console.log('test perf: ', performance.now() - startTime);
+    const data = await this.db.exec<{
+      locX: number;
+      locY: number;
+      totalShots: number;
+      totalMade: number;
+    }>(query);
+
+    if (import.meta.env.DEV) {
+      console.log(
+        `Court shot data: time elapsed ${performance.now() - startTime}s`,
+      );
+    }
+
     return data;
   }
 }

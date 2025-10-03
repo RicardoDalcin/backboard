@@ -7,43 +7,34 @@ import {
   useState,
 } from 'react';
 import { useFilters } from './filters';
-import { db, ShotColumn } from '@/server/db';
+import { db } from '@/server/db';
 import { Filter } from '@/types/filters';
-import { Shot } from '@/types';
 import { useRouterState } from '@tanstack/react-router';
 
 interface StatsStore {
-  data: Array<
-    Pick<
-      Shot,
-      | 'locX'
-      | 'locY'
-      | 'shotMade'
-      | 'basicZone'
-      | 'shotType'
-      | 'quarter'
-      | 'minsLeft'
-      | 'secsLeft'
-    >
-  >;
+  courtShotData: {
+    locX: number;
+    locY: number;
+    totalShots: number;
+    totalMade: number;
+  }[];
   isLoading: boolean;
   isValidating: boolean;
 }
 
 const StatsStoreContext = createContext<StatsStore>({
-  data: [],
+  // data: [],
+  courtShotData: [],
   isLoading: false,
   isValidating: false,
 });
 
-export function useShots<T extends ShotColumn[]>(
-  columns: T,
-  count: number,
-  filter: Filter,
-  isEnabled = true,
-) {
+export function useShots(filter: Filter, isEnabled = true) {
   const filterKey = useMemo(() => JSON.stringify(filter), [filter]);
-  const [shots, setShots] = useState<Pick<Shot, T[number]>[]>([]);
+  const [courtShotData, setCourtShotData] = useState<
+    { locX: number; locY: number; totalShots: number; totalMade: number }[]
+  >([]);
+  // const [shots, setShots] = useState<Pick<Shot, T[number]>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
 
@@ -68,32 +59,23 @@ export function useShots<T extends ShotColumn[]>(
     //   .split('')
     //   .reduce((acc, filter) => acc + filter.charCodeAt(0), 0);
 
-    const perf = performance.now();
-    db.test(filter)
+    db.getCourtShotData(filter)
       .then((data) => {
-        console.log(data);
-        console.log('test perf: ', performance.now() - perf);
+        if (signal.aborted) {
+          return;
+        }
+        setIsLoading(false);
+        setIsValidating(false);
+        setCourtShotData(data);
       })
       .catch((error) => {
         console.error(error);
       });
-
-    // const perf = performance.now();
-    // db.getShots(columns, count, filter, signal)
-    //   .then((data) => {
-    //     if (signal.aborted) {
-    //       return;
-    //     }
-    //     console.log(performance.now() - perf);
-    //     setIsLoading(false);
-    //     setIsValidating(false);
-    //     setShots(data);
-    //   })
-    //   .catch(() => {});
-  }, [isEnabled, filterKey, columns, count, lastFilterKey, filter]);
+  }, [isEnabled, filterKey, lastFilterKey, filter]);
 
   return {
-    data: shots,
+    // data: shots,
+    courtShotData,
     isLoading,
     isValidating,
   };
@@ -103,27 +85,14 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentFilter } = useFilters();
   const routerState = useRouterState();
 
-  const { data, isLoading, isValidating } = useShots(
-    [
-      'locX',
-      'locY',
-      'shotMade',
-      'basicZone',
-      'shotType',
-      'quarter',
-      'minsLeft',
-      'secsLeft',
-    ],
-    1_000_000,
+  const { courtShotData, isLoading, isValidating } = useShots(
     currentFilter.filters,
     routerState.location.pathname === '/',
   );
 
-  const dataList = useMemo(() => data ?? [], [data]);
-
   return (
     <StatsStoreContext.Provider
-      value={{ data: dataList, isLoading, isValidating }}
+      value={{ courtShotData, isLoading, isValidating }}
     >
       {children}
     </StatsStoreContext.Provider>

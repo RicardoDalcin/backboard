@@ -74,12 +74,12 @@ async function createDb() {
         season INTEGER,
         teamId INTEGER,
         playerId INTEGER,
-        positionGroup TEXT,
-        position TEXT,
-        gameDate TEXT,
+        positionGroup INTEGER,
+        position INTEGER,
+        gameDate INTEGER,
         gameId INTEGER,
-        homeTeam TEXT,
-        awayTeam TEXT,
+        homeTeam INTEGER,
+        awayTeam INTEGER,
         eventType INTEGER,
         shotMade INTEGER,
         actionType INTEGER,
@@ -94,9 +94,9 @@ async function createDb() {
         quarter INTEGER,
         minsLeft INTEGER,
         secsLeft INTEGER,
-        defRtg REAL,
+        -- defRtg REAL,
         defRtgRank INTEGER,
-        offRtg REAL,
+        -- offRtg REAL,
         offRtgRank INTEGER,
         playerHeight REAL,
         playerWeight INTEGER,
@@ -202,6 +202,9 @@ async function createAndSeed() {
   const zoneNameMap = new Map<string, number>();
   const zoneAbbMap = new Map<string, number>();
   const zoneRangeMap = new Map<string, number>();
+  const teamMap = new Map<string, number>();
+  const positionMap = new Map<string, number>();
+  const positionGroupMap = new Map<string, number>();
 
   // Helper function to get or create map entries
   const getOrCreateId = (map: Map<string, number>, value: string) => {
@@ -274,27 +277,36 @@ async function createAndSeed() {
       const locX = Number(record.LOC_X);
       const locY = Number(record.LOC_Y);
 
+      const _correctedLocX = needCorrection ? locX * 10 : locX;
+
       const correctedLocX = clamp(
-        roundTo(needCorrection ? locX * 10 : locX, 0),
+        _correctedLocX < 0
+          ? Math.floor(_correctedLocX)
+          : _correctedLocX < 1
+            ? Math.round(_correctedLocX)
+            : Math.ceil(_correctedLocX),
         -25,
         25,
       );
+
       const correctedLocY = roundTo(
         needCorrection ? locY * 10 - COURT_LENGTH * 1.4 : locY,
         0,
       );
+
+      const gameDate = new Date(`${year}-${monthString}-${dayString}`);
 
       const shot = {
         id: id++,
         season,
         teamId: Number(record.TEAM_ID),
         playerId: Number(record.PLAYER_ID),
-        positionGroup: record.POSITION_GROUP,
-        position: record.POSITION,
-        gameDate: `${year}-${monthString}-${dayString}`,
+        positionGroup: getOrCreateId(positionGroupMap, record.POSITION_GROUP),
+        position: getOrCreateId(positionMap, record.POSITION),
+        gameDate: gameDate.getTime(),
         gameId: Number(record.GAME_ID),
-        homeTeam: record.HOME_TEAM,
-        awayTeam: record.AWAY_TEAM,
+        homeTeam: getOrCreateId(teamMap, record.HOME_TEAM),
+        awayTeam: getOrCreateId(teamMap, record.AWAY_TEAM),
         eventType: getOrCreateId(eventTypeMap, record.EVENT_TYPE),
         shotMade: record.SHOT_MADE === 'TRUE',
         actionType: getOrCreateId(actionTypeMap, record.ACTION_TYPE),
@@ -303,19 +315,19 @@ async function createAndSeed() {
         zoneName: getOrCreateId(zoneNameMap, record.ZONE_NAME),
         zoneAbb: getOrCreateId(zoneAbbMap, record.ZONE_ABB),
         zoneRange: getOrCreateId(zoneRangeMap, record.ZONE_RANGE),
-        locX: String(correctedLocX),
-        locY: String(correctedLocY),
+        locX: correctedLocX,
+        locY: correctedLocY,
         shotDistance: String(roundTo(Number(record.SHOT_DISTANCE), 2)),
         quarter: Number(record.QUARTER),
         minsLeft: Number(record.MINS_LEFT),
         secsLeft: Number(record.SECS_LEFT),
-        defRtg: defensiveRanking?.stat
-          ? String(roundTo(defensiveRanking.stat, 2))
-          : '0',
+        // defRtg: defensiveRanking?.stat
+        //   ? String(roundTo(defensiveRanking.stat, 2))
+        //   : '0',
         defRtgRank: defensiveRanking?.rank ?? 0,
-        offRtg: offensiveRanking?.stat
-          ? String(roundTo(offensiveRanking.stat, 2))
-          : '0',
+        // offRtg: offensiveRanking?.stat
+        //   ? String(roundTo(offensiveRanking.stat, 2))
+        //   : '0',
         offRtgRank: offensiveRanking?.rank ?? 0,
         playerHeight: player.height ? String(playerHeight) : '0',
         playerWeight: player.weight ? Number(player.weight) : 0,
@@ -326,7 +338,37 @@ async function createAndSeed() {
     });
 
     const toValues = (obj: (typeof dbRecords)[number]) =>
-      `(${obj.id}, ${obj.season}, ${obj.teamId}, ${obj.playerId}, "${obj.positionGroup}", "${obj.position}", "${obj.gameDate}", ${obj.gameId}, "${obj.homeTeam}", "${obj.awayTeam}", ${obj.eventType}, ${obj.shotMade ? 1 : 0}, ${obj.actionType}, ${obj.shotType}, ${obj.basicZone}, ${obj.zoneName}, ${obj.zoneAbb}, ${obj.zoneRange}, ${obj.locX}, ${obj.locY}, ${obj.shotDistance}, ${obj.quarter}, ${obj.minsLeft}, ${obj.secsLeft}, ${obj.defRtg}, ${obj.defRtgRank}, ${obj.offRtg}, ${obj.offRtgRank}, ${obj.playerHeight}, ${obj.playerWeight}, ${obj.gameWon ? 1 : 0})`;
+      `(
+        ${obj.id},
+        ${obj.season},
+        ${obj.teamId},
+        ${obj.playerId},
+        "${obj.positionGroup}",
+        "${obj.position}",
+        "${obj.gameDate}",
+        ${obj.gameId},
+        "${obj.homeTeam}",
+        "${obj.awayTeam}",
+        ${obj.eventType},
+        ${obj.shotMade ? 1 : 0},
+        ${obj.actionType},
+        ${obj.shotType},
+        ${obj.basicZone},
+        ${obj.zoneName},
+        ${obj.zoneAbb},
+        ${obj.zoneRange},
+        ${obj.locX},
+        ${obj.locY},
+        ${obj.shotDistance},
+        ${obj.quarter},
+        ${obj.minsLeft},
+        ${obj.secsLeft},
+        ${obj.defRtgRank},
+        ${obj.offRtgRank},
+        ${obj.playerHeight},
+        ${obj.playerWeight},
+        ${obj.gameWon ? 1 : 0}
+      )`;
 
     const CHUNK_SIZE = 1_000;
 
@@ -337,7 +379,39 @@ async function createAndSeed() {
     for (let i = 0; i < dbRecords.length; i += CHUNK_SIZE) {
       const chunk = dbRecords.slice(i, i + CHUNK_SIZE);
 
-      const sql = `insert into shots (id, season, teamId, playerId, positionGroup, position, gameDate, gameId, homeTeam, awayTeam, eventType, shotMade, actionType, shotType, basicZone, zoneName, zoneAbb, zoneRange, locX, locY, shotDistance, quarter, minsLeft, secsLeft, defRtg, defRtgRank, offRtg, offRtgRank, playerHeight, playerWeight, gameWon) values
+      const sql = `insert into shots (
+          id,
+          season,
+          teamId,
+          playerId,
+          positionGroup,
+          position,
+          gameDate,
+          gameId,
+          homeTeam,
+          awayTeam,
+          eventType,
+          shotMade,
+          actionType,
+          shotType,
+          basicZone,
+          zoneName,
+          zoneAbb,
+          zoneRange,
+          locX,
+          locY,
+          shotDistance,
+          quarter,
+          minsLeft,
+          secsLeft,
+          -- defRtg,
+          defRtgRank,
+          -- offRtg,
+          offRtgRank,
+          playerHeight,
+          playerWeight,
+          gameWon
+        ) values
         ${chunk.map((record) => `${toValues(record)}`).join(',')}`;
 
       try {
@@ -369,6 +443,9 @@ async function createAndSeed() {
     zoneName: invertMap(zoneNameMap),
     zoneAbb: invertMap(zoneAbbMap),
     zoneRange: invertMap(zoneRangeMap),
+    team: invertMap(teamMap),
+    position: invertMap(positionMap),
+    positionGroup: invertMap(positionGroupMap),
   };
 
   await writeFile(
