@@ -512,8 +512,12 @@ export class VisualizationEngine {
 
     const shots: HighlightCallbackData[] = [];
 
-    const startSection = this.startHighlightShot!.section;
-    const endSection = this.endHighlightShot!.section;
+    if (!this.startHighlightShot || !this.endHighlightShot) {
+      return;
+    }
+
+    const startSection = this.startHighlightShot.section;
+    const endSection = this.endHighlightShot.section;
 
     const minX = Math.min(startSection.x, endSection.x);
     const maxX = Math.max(startSection.x, endSection.x);

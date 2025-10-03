@@ -7,9 +7,9 @@ export type ShotColumn = keyof Shot;
 
 class NBADatabase {
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRUoleQSmzrTWBYfPRlMnkh4QoHStZ5FxDdLv3';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRou1jCoYBSsc0ZiGh9NqdutPonb8j2yYL46Xa';
 
-  private readonly EXPECTED_DB_SIZE = 693919744;
+  private readonly EXPECTED_DB_SIZE = 693084160;
 
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
@@ -162,6 +162,16 @@ class NBADatabase {
 
     const filterValues = {
       season: filters?.season,
+      teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
+      playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
+      positions:
+        filters?.positions?.length === 5 ? undefined : filters?.positions,
+      result:
+        !filters?.result || filters?.result === 'all'
+          ? undefined
+          : filters.result === 'wins'
+            ? 1
+            : 0,
       drtgRanking:
         !filters ||
         !filters.defensiveRatingRank ||
@@ -176,16 +186,6 @@ class NBADatabase {
           filters.offensiveRatingRank[1] === 30)
           ? undefined
           : filters?.offensiveRatingRank,
-      teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
-      playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
-      positions:
-        filters?.positions?.length === 5 ? undefined : filters?.positions,
-      result:
-        !filters?.result || filters?.result === 'all'
-          ? undefined
-          : filters.result === 'wins'
-            ? 1
-            : 0,
     };
 
     return this.getFiltersQuery(filterValues, FILTERS);
@@ -239,7 +239,7 @@ class NBADatabase {
 
     if (import.meta.env.DEV) {
       console.log(
-        `Court shot data: time elapsed ${performance.now() - startTime}s`,
+        `Court shot data: time elapsed ${(Number(performance.now() - startTime) / 1000).toFixed(2)}s`,
       );
     }
 

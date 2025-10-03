@@ -18,11 +18,23 @@ export const Route = createFileRoute('/')({
 function Index() {
   const { courtShotData, isLoading } = useStats();
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+  const totalShots = courtShotData.reduce(
+    (acc, shot) => acc + shot.totalShots,
+    0,
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between w-full">
         <h2 className="text-3xl font-bold">
-          {isLoading ? `Loading shots...` : `Exploring ___ shots`}
+          {isLoading
+            ? `Loading shots...`
+            : `Exploring ${formatter.format(totalShots)} shots`}
         </h2>
 
         <div className="flex items-center gap-4">

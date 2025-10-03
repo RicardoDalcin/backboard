@@ -220,6 +220,9 @@ async function createAndSeed() {
   const COURT_PERCENT = 0.4;
   const COURT_LENGTH = 94 * COURT_PERCENT;
 
+  const COURT_CENTER_LEFT = -2;
+  const COURT_CENTER_RIGHT = 1;
+
   for (const file of files) {
     const records = await parseCsvFile<Row>(file);
 
@@ -280,13 +283,13 @@ async function createAndSeed() {
       const _correctedLocX = needCorrection ? locX * 10 : locX;
 
       const correctedLocX = clamp(
-        _correctedLocX < 0
+        _correctedLocX < COURT_CENTER_LEFT
           ? Math.floor(_correctedLocX)
-          : _correctedLocX < 1
-            ? Math.round(_correctedLocX)
-            : Math.ceil(_correctedLocX),
+          : _correctedLocX > COURT_CENTER_RIGHT
+            ? Math.floor(_correctedLocX)
+            : Math.round(_correctedLocX),
         -25,
-        25,
+        24,
       );
 
       const correctedLocY = roundTo(
