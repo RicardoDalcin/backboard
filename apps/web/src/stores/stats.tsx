@@ -87,7 +87,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { courtShotData, isLoading, isValidating } = useShots(
     currentFilter.filters,
-    routerState.location.pathname === '/',
+    routerState.location.pathname === '/' && routerState.status !== 'pending',
   );
 
   return (
