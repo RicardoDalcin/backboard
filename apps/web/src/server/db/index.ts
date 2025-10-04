@@ -140,7 +140,13 @@ class NBADatabase {
         }
 
         if (type === 'RANGE') {
-          return `${column} BETWEEN ${(value as [number, number])[0]} AND ${(value as [number, number])[1]}`;
+          const range = value as [number, number];
+
+          if (range[0] === range[1]) {
+            return `${column} = ${range[0]}`;
+          }
+
+          return `${column} BETWEEN ${range[0]} AND ${range[1]}`;
         }
       })
       .filter((item) => item !== '')
@@ -219,8 +225,8 @@ class NBADatabase {
       locX,
       locY,
       count(*) as totalShots,
-      SUM(CASE WHEN shotMade = 1 THEN 1 ELSE 0 END) as totalMade
-      FROM shots
+      SUM(shotMade) as totalMade
+      FROM mem.shots
       ${filters ? this.getShotsTableFilters(filters) : ''}
       GROUP BY locX, locY;
       `;

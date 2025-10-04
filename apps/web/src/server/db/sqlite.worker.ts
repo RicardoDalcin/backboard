@@ -32,7 +32,19 @@ class WorkerHandler {
     }
 
     this.sqlite3 = await sqlite3InitModule({ print: log, printErr: error });
-    this.db = new this.sqlite3.oo1.OpfsDb(request.filePath, 'r');
+    this.db = new this.sqlite3.oo1.OpfsDb(request.filePath, 'rw');
+    const start = performance.now();
+    this.db.exec('ATTACH DATABASE ":memory:" as mem');
+    this.db.exec(
+      'CREATE TABLE IF NOT EXISTS mem.shots AS SELECT * FROM main.shots',
+    );
+    const end = performance.now();
+
+    if (import.meta.env.DEV) {
+      console.log(
+        `Memory DB creation time: ${((end - start) / 1000).toFixed(2)}s`,
+      );
+    }
 
     return this.sqlite3.version;
   }
