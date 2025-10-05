@@ -1,7 +1,5 @@
 // All units are in feet
 
-import { Shot } from '@/types';
-
 // 50mm (0.16 ft)
 const LINE_WIDTH = 0.16;
 
@@ -119,35 +117,26 @@ export class VisualizationEngine {
     return x + y * GRID_SIZE;
   }
 
-  setShots(shots: Pick<Shot, 'locX' | 'locY' | 'shotMade'>[]) {
+  setShotData(
+    shots: {
+      locX: number;
+      locY: number;
+      totalShots: number;
+      totalMade: number;
+    }[],
+  ) {
     this.shots.clear();
 
     for (const shot of shots) {
-      const { x, y } = this.positionToSection(
-        this.size.width / 2 - (this.size.width / 2) * (Number(shot.locX) / 25),
-        this.feetToPixels(Number(shot.locY)),
-      );
-
-      const key = this.getShotKey(x, y);
-
-      const section = this.shots.get(key);
-
-      if (section) {
-        if (shot.shotMade) {
-          section.totalMade++;
-        } else {
-          section.totalMissed++;
-        }
-      } else {
-        this.shots.set(key, {
-          x,
-          y,
-          quantity: 0,
-          fieldGoalPercentage: 0,
-          totalMade: Number(shot.shotMade),
-          totalMissed: Number(shot.shotMade) === 0 ? 1 : 0,
-        });
-      }
+      const key = this.getShotKey(shot.locX + 25, shot.locY);
+      this.shots.set(key, {
+        x: shot.locX + 25,
+        y: shot.locY,
+        quantity: 0,
+        fieldGoalPercentage: 0,
+        totalMade: shot.totalMade,
+        totalMissed: shot.totalShots - shot.totalMade,
+      });
     }
 
     this.mostShots = 0;
@@ -523,8 +512,12 @@ export class VisualizationEngine {
 
     const shots: HighlightCallbackData[] = [];
 
-    const startSection = this.startHighlightShot!.section;
-    const endSection = this.endHighlightShot!.section;
+    if (!this.startHighlightShot || !this.endHighlightShot) {
+      return;
+    }
+
+    const startSection = this.startHighlightShot.section;
+    const endSection = this.endHighlightShot.section;
 
     const minX = Math.min(startSection.x, endSection.x);
     const maxX = Math.max(startSection.x, endSection.x);

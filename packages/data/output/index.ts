@@ -7,6 +7,9 @@ const BASIC_ZONES = dictionary.basicZone;
 const ZONE_NAMES = dictionary.zoneName;
 const ZONE_ABBS = dictionary.zoneAbb;
 const ZONE_RANGES = dictionary.zoneRange;
+const POSITIONS = dictionary.position;
+const POSITION_GROUPS = dictionary.positionGroup;
+const TEAMS = dictionary.team;
 
 export {
   ACTION_TYPES,
@@ -16,4 +19,7 @@ export {
   ZONE_NAMES,
   ZONE_ABBS,
   ZONE_RANGES,
+  POSITIONS,
+  POSITION_GROUPS,
+  TEAMS,
 };

@@ -1,14 +1,13 @@
 import { HoverCallbackData, VisualizationEngine } from '@/engine/Visualization';
-import { Shot } from '@/types';
 import { useEffect, useRef, useState } from 'react';
 import { CourtTooltip } from './court-tooltip';
 
 export const Court = ({
-  shots,
+  data,
   hoveredSection,
   onChangeHoveredSection = () => {},
 }: {
-  shots: Pick<Shot, 'locX' | 'locY' | 'shotMade'>[];
+  data: { locX: number; locY: number; totalShots: number; totalMade: number }[];
   hoveredSection?: {
     startX: number;
     startY: number;
@@ -110,8 +109,8 @@ export const Court = ({
       return;
     }
 
-    engine.current.setShots(shots);
-  }, [shots]);
+    engine.current.setShotData(data);
+  }, [data]);
 
   useEffect(() => {
     if (
