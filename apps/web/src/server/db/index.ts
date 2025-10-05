@@ -17,6 +17,10 @@ class NBADatabase {
   private db: DBClient;
 
   private progressCallbacks: Set<(progress: number) => void> = new Set();
+  private phaseCallbacks: Set<(phase: 'downloading' | 'initializing') => void> =
+    new Set();
+  private initPhase: 'downloading' | 'initializing' = 'downloading';
+  private initProgress = 0;
 
   constructor() {
     this.fileSystem = new FileSystem();
@@ -28,6 +32,9 @@ class NBADatabase {
     const fileSize = await this.fileSystem.getFileSize(this.DATABASE_OPFS_PATH);
 
     if (!dbExists || fileSize != this.EXPECTED_DB_SIZE) {
+      this.initPhase = 'downloading';
+      this.phaseCallbacks.forEach((callback) => callback('downloading'));
+
       if (dbExists) {
         await this.fileSystem.deleteFile(this.DATABASE_OPFS_PATH);
       }
@@ -35,13 +42,33 @@ class NBADatabase {
       await this.downloadDatabase();
     }
 
+    this.initProgress = 1;
+    this.initPhase = 'initializing';
+    this.phaseCallbacks.forEach((callback) => callback('initializing'));
     await this.db.init();
   }
 
   subscribeLoadProgress(callback: (progress: number) => void) {
+    if (this.initProgress > 0) {
+      callback(this.initProgress);
+    }
+
     this.progressCallbacks.add(callback);
     return () => {
       this.progressCallbacks.delete(callback);
+    };
+  }
+
+  subscribeLoadPhase(
+    callback: (phase: 'downloading' | 'initializing') => void,
+  ) {
+    if (this.initPhase === 'initializing') {
+      callback('initializing');
+    }
+
+    this.phaseCallbacks.add(callback);
+    return () => {
+      this.phaseCallbacks.delete(callback);
     };
   }
 

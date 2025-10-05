@@ -73,7 +73,7 @@ function RouteComponent() {
   );
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4 h-full w-full">
       <div className="flex items-center justify-between w-full">
         <h2 className="text-3xl font-bold">Compare</h2>
 

@@ -220,3 +220,16 @@
     stroke-dashoffset: -59;
   }
 }
+
+@keyframes beam {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-beam {
+  animation: beam 2s ease-in-out infinite;
+}

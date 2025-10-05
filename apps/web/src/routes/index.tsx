@@ -29,7 +29,7 @@ function Index() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 w-full">
       <div className="flex items-center justify-between w-full">
         <h2 className="text-3xl font-bold">
           {isLoading
