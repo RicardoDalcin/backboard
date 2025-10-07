@@ -659,6 +659,48 @@ export class VisualizationEngine {
   private feetToPixels(feet: number) {
     return feet * (this.size.width / COURT_WIDTH_FT);
   }
+
+  private isThreePointer(sectionX: number, sectionY: number) {
+    const { x, y } = this.sectionToPosition(sectionX, sectionY);
+    const courtMiddle = this.size.width / 2;
+
+    const courtInfoInPixels = {
+      straightLength: this.feetToPixels(THREE_POINT_LINE_STRAIGHT_LENGTH),
+      radius: this.feetToPixels(THREE_POINT_LINE_RADIUS + 1.1),
+      distanceToSideline: this.feetToPixels(THREE_POINT_LINE_DISTANCE),
+      distanceToBackline: this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE),
+    };
+
+    const posX = x + this.size.sectionSize / 2;
+    const posY = y + this.size.sectionSize / 2;
+
+    const isInStraight =
+      y < courtInfoInPixels.straightLength + this.size.sectionSize;
+
+    if (isInStraight) {
+      return (
+        x + this.size.sectionSize <= courtInfoInPixels.distanceToSideline ||
+        x >= this.size.width - courtInfoInPixels.distanceToSideline
+      );
+    }
+
+    const isInMiddleFew =
+      posX >= courtMiddle - this.size.sectionSize * 6 &&
+      posX <= courtMiddle + this.size.sectionSize * 6;
+
+    if (isInMiddleFew) {
+      return (
+        y > courtInfoInPixels.radius + courtInfoInPixels.distanceToBackline
+      );
+    }
+
+    return (
+      Math.sqrt(
+        Math.pow(posX - this.size.width / 2, 2) +
+          Math.pow(posY - courtInfoInPixels.distanceToBackline, 2),
+      ) > courtInfoInPixels.radius
+    );
+  }
 }
 
 const getRgb = (color: string) => {
