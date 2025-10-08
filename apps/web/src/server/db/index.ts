@@ -48,6 +48,10 @@ class NBADatabase {
     await this.db.init();
   }
 
+  async getStorageSize() {
+    return this.fileSystem.getFileSize(this.DATABASE_OPFS_PATH);
+  }
+
   subscribeLoadProgress(callback: (progress: number) => void) {
     if (this.initProgress > 0) {
       callback(this.initProgress);

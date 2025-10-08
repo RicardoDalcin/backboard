@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChartSyncProvider } from '@/stores/chart-sync';
 import { FiltersProvider } from '@/stores/filters';
 import { StatsProvider } from '@/stores/stats';
+import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 import {
   createRootRoute,
   Link,
@@ -11,6 +12,7 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { SettingsDialog } from './-components/settings-dialog';
 
 function Root() {
   return (
@@ -74,6 +76,12 @@ function Root() {
                     </svg>
                   </a>
                 </Button>
+
+                <SettingsDialog>
+                  <Button variant="ghost" className="size-10">
+                    <Cog6ToothIcon className="size-6" />
+                  </Button>
+                </SettingsDialog>
               </div>
             </header>
 
