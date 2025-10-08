@@ -3,7 +3,7 @@ import { db } from '@/server/db';
 import { useEffect, useMemo, useState } from 'react';
 
 export const Loader = () => {
-  const [progress, setProgress] = useState(100);
+  const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<'downloading' | 'initializing'>(
     'downloading',
   );
