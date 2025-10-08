@@ -35,6 +35,10 @@ function RouteComponent() {
       id: 1,
       filterId: null,
     },
+    {
+      id: 2,
+      filterId: null,
+    },
   ] as Array<{
     id: number;
     filterId: number | null;
@@ -86,7 +90,7 @@ function RouteComponent() {
 
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(0,1fr))] gap-6 h-full items-center">
         {panelsWithFilters.map((panel) => (
-          <Card key={panel.id} className="w-full h-full !py-0">
+          <Card key={panel.id} className="w-full max-w-3xl h-full !py-0">
             {!panel.filter ? (
               <div className="h-full flex flex-col items-center gap-6 px-4 pt-[164px] pb-4">
                 <svg
@@ -130,12 +134,14 @@ function RouteComponent() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <Button
-                    variant="outline"
-                    onClick={() => removePanel(panel.id)}
-                  >
-                    Close panel
-                  </Button>
+                  {panels.length > 2 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => removePanel(panel.id)}
+                    >
+                      Close panel
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : (

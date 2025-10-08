@@ -10,104 +10,123 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as AboutImport } from './routes/about'
-import { Route as IndexImport } from './routes/index'
-import { Route as CompareIndexImport } from './routes/compare/index'
+import { Route as rootRoute } from './routes/__root';
+import { Route as WelcomeImport } from './routes/welcome';
+import { Route as AboutImport } from './routes/about';
+import { Route as IndexImport } from './routes/index';
+import { Route as CompareIndexImport } from './routes/compare/index';
 
 // Create/Update Routes
+
+const WelcomeRoute = WelcomeImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRoute,
+} as any);
 
 const AboutRoute = AboutImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const CompareIndexRoute = CompareIndexImport.update({
   id: '/compare/',
   path: '/compare/',
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexImport;
+      parentRoute: typeof rootRoute;
+    };
     '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/about';
+      path: '/about';
+      fullPath: '/about';
+      preLoaderRoute: typeof AboutImport;
+      parentRoute: typeof rootRoute;
+    };
+    '/welcome': {
+      id: '/welcome';
+      path: '/welcome';
+      fullPath: '/welcome';
+      preLoaderRoute: typeof WelcomeImport;
+      parentRoute: typeof rootRoute;
+    };
     '/compare/': {
-      id: '/compare/'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareIndexImport
-      parentRoute: typeof rootRoute
-    }
+      id: '/compare/';
+      path: '/compare';
+      fullPath: '/compare';
+      preLoaderRoute: typeof CompareIndexImport;
+      parentRoute: typeof rootRoute;
+    };
   }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/compare': typeof CompareIndexRoute
+  '/': typeof IndexRoute;
+  '/about': typeof AboutRoute;
+  '/welcome': typeof WelcomeRoute;
+  '/compare': typeof CompareIndexRoute;
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/compare': typeof CompareIndexRoute
+  '/': typeof IndexRoute;
+  '/about': typeof AboutRoute;
+  '/welcome': typeof WelcomeRoute;
+  '/compare': typeof CompareIndexRoute;
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/compare/': typeof CompareIndexRoute
+  __root__: typeof rootRoute;
+  '/': typeof IndexRoute;
+  '/about': typeof AboutRoute;
+  '/welcome': typeof WelcomeRoute;
+  '/compare/': typeof CompareIndexRoute;
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/compare'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/compare'
-  id: '__root__' | '/' | '/about' | '/compare/'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: '/' | '/about' | '/welcome' | '/compare';
+  fileRoutesByTo: FileRoutesByTo;
+  to: '/' | '/about' | '/welcome' | '/compare';
+  id: '__root__' | '/' | '/about' | '/welcome' | '/compare/';
+  fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  CompareIndexRoute: typeof CompareIndexRoute
+  IndexRoute: typeof IndexRoute;
+  AboutRoute: typeof AboutRoute;
+  WelcomeRoute: typeof WelcomeRoute;
+  CompareIndexRoute: typeof CompareIndexRoute;
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  WelcomeRoute: WelcomeRoute,
   CompareIndexRoute: CompareIndexRoute,
-}
+};
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
 /* ROUTE_MANIFEST_START
 {
@@ -117,6 +136,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
+        "/welcome",
         "/compare/"
       ]
     },
@@ -125,6 +145,9 @@ export const routeTree = rootRoute
     },
     "/about": {
       "filePath": "about.tsx"
+    },
+    "/welcome": {
+      "filePath": "welcome.tsx"
     },
     "/compare/": {
       "filePath": "compare/index.tsx"

@@ -4,11 +4,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChartSyncProvider } from '@/stores/chart-sync';
 import { FiltersProvider } from '@/stores/filters';
 import { StatsProvider } from '@/stores/stats';
-import { createRootRoute, Link, Outlet } from '@tanstack/react-router';
+import {
+  createRootRoute,
+  Link,
+  Outlet,
+  redirect,
+} from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
-export const Route = createRootRoute({
-  component: () => (
+function Root() {
+  return (
     <ChartSyncProvider>
       <FiltersProvider>
         <StatsProvider>
@@ -76,6 +81,7 @@ export const Route = createRootRoute({
               <div className="flex min-h-screen pt-[var(--nav-height)]">
                 <section className="px-8 pt-4 pb-8 flex-1 w-full flex">
                   <Outlet />
+
                   <TanStackRouterDevtools />
                 </section>
               </div>
@@ -84,5 +90,27 @@ export const Route = createRootRoute({
         </StatsProvider>
       </FiltersProvider>
     </ChartSyncProvider>
-  ),
+  );
+}
+
+export const Route = createRootRoute({
+  component: Root,
+  beforeLoad: (ctx) => {
+    const hasOptedIn =
+      typeof window !== 'undefined'
+        ? JSON.parse(
+            window.localStorage.getItem('backboard.hasOptedIn') || 'false',
+          )
+        : false;
+
+    const isWelcome = ctx.location.pathname === '/welcome';
+
+    if (!hasOptedIn && !isWelcome) {
+      throw redirect({ to: '/welcome' });
+    }
+
+    if (hasOptedIn && isWelcome) {
+      throw redirect({ to: '/' });
+    }
+  },
 });
