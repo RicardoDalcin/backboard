@@ -1,5 +1,5 @@
 import { Shot } from '@/types';
-import { Filter } from '@/types/filters';
+import { Filter, POSITIONS_SIMPLIFIED } from '@/types/filters';
 import { FileSystem } from './file-system';
 import { DBClient } from './client';
 
@@ -186,6 +186,14 @@ class NBADatabase {
     return `WHERE ${filtersQuery}`;
   }
 
+  private getPositionsFilter(positions: string[]) {
+    const allPositions = positions.flatMap((pos) => {
+      const position = POSITIONS_SIMPLIFIED.find((p) => p.label === pos);
+      return position?.values || [];
+    });
+    return allPositions;
+  }
+
   private getShotsTableFilters(filters: Partial<Filter>) {
     const FILTERS = {
       season: { column: 'season', type: 'RANGE' },
@@ -193,7 +201,7 @@ class NBADatabase {
       ortgRanking: { column: 'offRtgRank', type: 'RANGE' },
       teamIds: { column: 'teamId', type: 'INTEGER_ARRAY' },
       playerIds: { column: 'playerId', type: 'INTEGER_ARRAY' },
-      positions: { column: 'position', type: 'TEXT_ARRAY' },
+      positions: { column: 'position', type: 'INTEGER_ARRAY' },
       result: { column: 'gameWon', type: 'INTEGER' },
     } as const;
 
@@ -202,7 +210,9 @@ class NBADatabase {
       teamIds: filters?.teams?.length === 0 ? undefined : filters?.teams,
       playerIds: filters?.players?.length === 0 ? undefined : filters?.players,
       positions:
-        filters?.positions?.length === 5 ? undefined : filters?.positions,
+        !filters?.positions || filters?.positions?.length === 5
+          ? undefined
+          : this.getPositionsFilter(filters?.positions),
       result:
         !filters?.result || filters?.result === 'all'
           ? undefined

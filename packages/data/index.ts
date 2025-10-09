@@ -1,6 +1,6 @@
 import { ALL_TEAMS, SEASONS as SEASONS_DATA } from './src/league-utils';
 import PLAYERS_LIST from './src/players/players_2003_2024.json';
-import { POSITION_GROUPS, BASIC_ZONES } from './output';
+import { POSITION_GROUPS, BASIC_ZONES, POSITIONS } from './output';
 
 interface Team {
   id: number;
@@ -30,5 +30,5 @@ interface Player {
 
 const PLAYERS = PLAYERS_LIST as Player[];
 
-export { TEAMS, SEASONS, PLAYERS, POSITION_GROUPS, BASIC_ZONES };
+export { TEAMS, SEASONS, PLAYERS, POSITION_GROUPS, BASIC_ZONES, POSITIONS };
 export type { Team, Season, Player };

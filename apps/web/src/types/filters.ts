@@ -2,6 +2,7 @@ import {
   TEAMS as TEAMS_DATA,
   SEASONS as SEASONS_DATA,
   PLAYERS as PLAYERS_DATA,
+  POSITIONS as POSITIONS_DATA,
 } from '@nba-viz/data';
 
 export const SEASONS = SEASONS_DATA.sort((a, b) => b.value - a.value);
@@ -11,6 +12,26 @@ export const TEAMS = TEAMS_DATA.map((team) => ({
 }));
 
 export const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'] as const;
+
+const getPositionSimplified = (basePosition: string) => {
+  return {
+    label: basePosition,
+    values: Object.entries(POSITIONS_DATA).reduce((acc, [id, value]) => {
+      if (value.includes(basePosition)) {
+        acc.push(Number(id));
+      }
+      return acc;
+    }, [] as number[]),
+  };
+};
+
+export const POSITIONS_SIMPLIFIED = [
+  getPositionSimplified('PG'),
+  getPositionSimplified('SG'),
+  getPositionSimplified('SF'),
+  getPositionSimplified('PF'),
+  getPositionSimplified('C'),
+];
 export const RESULTS = ['all', 'wins', 'losses'] as const;
 
 export const PLAYERS = PLAYERS_DATA.map((player) => ({
