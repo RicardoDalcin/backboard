@@ -282,6 +282,37 @@ class NBADatabase {
 
     return data;
   }
+
+  async getStatSummary(filters: Partial<Filter>) {
+    const query = `
+      SELECT
+      basicZone,
+      SUM(shotMade) as totalMade,
+      COUNT(*) as totalShots
+      FROM mem.shots
+      ${filters ? this.getShotsTableFilters(filters) : ''}
+      GROUP BY basicZone
+    `;
+
+    if (import.meta.env.DEV) {
+      console.log(query);
+    }
+
+    const startTime = performance.now();
+    const data = await this.db.exec<{
+      basicZone: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+      totalMade: number;
+      totalShots: number;
+    }>(query);
+
+    if (import.meta.env.DEV) {
+      console.log(
+        `Stat summary: time elapsed ${(Number(performance.now() - startTime) / 1000).toFixed(2)}s`,
+      );
+    }
+
+    return data;
+  }
 }
 
 const db = new NBADatabase();

@@ -8,6 +8,7 @@ import { Filters } from './-components/filters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useStats } from '@/stores/stats';
 import { Court } from '@/components/viz/court';
+import { BASIC_ZONES } from '@nba-viz/data';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -16,7 +17,8 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
-  const { courtShotData, isLoading } = useStats();
+  const { courtShotData, isLoading, isValidatingStats, statSummary } =
+    useStats();
 
   const formatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
@@ -58,28 +60,20 @@ function Index() {
             )}
           </Card>
 
-          {/* <Card className="col-span-12 xl:col-span-5 py-0 overflow-hidden">
-            {isLoading ? (
+          <Card className="col-span-12 xl:col-span-5 py-0 overflow-hidden">
+            {isValidatingStats ? (
               <Skeleton className="w-full h-full" />
             ) : (
               <div className="py-4 px-4 size-full">
-                <ClockAreaChart data={clockSummary} />
+                {statSummary.map((zone) => (
+                  <div key={zone.basicZone}>
+                    {BASIC_ZONES[zone.basicZone]} - {zone.totalShots} with{' '}
+                    {((zone.totalMade / zone.totalShots) * 100).toFixed(2)}%
+                    accuracy
+                  </div>
+                ))}
               </div>
             )}
-          </Card>
-
-          <Card className="col-span-12 h-[600px] xl:col-span-5 py-0 overflow-hidden">
-            {isLoading ? (
-              <Skeleton className="w-full h-full" />
-            ) : (
-              <div className="py-4 px-4 size-full">
-                <ShotTypeLineChart data={shotTypeSummary} />
-              </div>
-            )}
-          </Card> */}
-
-          <Card className="col-span-12 h-[600px] xl:col-span-7 py-0 overflow-hidden">
-            <Skeleton className="w-full h-full" />
           </Card>
         </div>
       </div>

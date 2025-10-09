@@ -11,15 +11,16 @@ import { db } from '@/server/db';
 import { Filter } from '@/types/filters';
 import { useRouterState } from '@tanstack/react-router';
 
+type CourtShotData = Awaited<ReturnType<typeof db.getCourtShotData>>;
+type StatSummary = Awaited<ReturnType<typeof db.getStatSummary>>;
+
 interface StatsStore {
-  courtShotData: {
-    locX: number;
-    locY: number;
-    totalShots: number;
-    totalMade: number;
-  }[];
+  courtShotData: CourtShotData;
   isLoading: boolean;
   isValidating: boolean;
+  statSummary: StatSummary;
+  isLoadingStats: boolean;
+  isValidatingStats: boolean;
 }
 
 const StatsStoreContext = createContext<StatsStore>({
@@ -27,16 +28,21 @@ const StatsStoreContext = createContext<StatsStore>({
   courtShotData: [],
   isLoading: false,
   isValidating: false,
+  statSummary: [],
+  isLoadingStats: false,
+  isValidatingStats: false,
 });
 
 export function useShots(filter: Filter, isEnabled = true) {
   const filterKey = useMemo(() => JSON.stringify(filter), [filter]);
-  const [courtShotData, setCourtShotData] = useState<
-    { locX: number; locY: number; totalShots: number; totalMade: number }[]
-  >([]);
+  const [courtShotData, setCourtShotData] = useState<CourtShotData>([]);
+  const [statSummary, setStatSummary] = useState<StatSummary>([]);
+
   // const [shots, setShots] = useState<Pick<Shot, T[number]>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [isValidatingStats, setIsValidatingStats] = useState(false);
 
   const abortController = useRef(new AbortController());
   const lastFilterKey = useRef('');
@@ -48,6 +54,7 @@ export function useShots(filter: Filter, isEnabled = true) {
 
     lastFilterKey.current = filterKey;
     setIsValidating(true);
+    setIsValidatingStats(true);
 
     const newAbortController = new AbortController();
     const signal = newAbortController.signal;
@@ -71,6 +78,16 @@ export function useShots(filter: Filter, isEnabled = true) {
       .catch((error) => {
         console.error(error);
       });
+
+    db.getStatSummary(filter).then((data) => {
+      if (signal.aborted) {
+        return;
+      }
+
+      setIsLoadingStats(false);
+      setIsValidatingStats(false);
+      setStatSummary(data);
+    });
   }, [isEnabled, filterKey, lastFilterKey, filter]);
 
   return {
@@ -78,6 +95,9 @@ export function useShots(filter: Filter, isEnabled = true) {
     courtShotData,
     isLoading,
     isValidating,
+    statSummary,
+    isLoadingStats,
+    isValidatingStats,
   };
 }
 
@@ -85,14 +105,28 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentFilter } = useFilters();
   const routerState = useRouterState();
 
-  const { courtShotData, isLoading, isValidating } = useShots(
+  const {
+    courtShotData,
+    isLoading,
+    isValidating,
+    statSummary,
+    isLoadingStats,
+    isValidatingStats,
+  } = useShots(
     currentFilter.filters,
     routerState.location.pathname === '/' && routerState.status !== 'pending',
   );
 
   return (
     <StatsStoreContext.Provider
-      value={{ courtShotData, isLoading, isValidating }}
+      value={{
+        courtShotData,
+        isLoading,
+        isValidating,
+        statSummary,
+        isLoadingStats,
+        isValidatingStats,
+      }}
     >
       {children}
     </StatsStoreContext.Provider>
