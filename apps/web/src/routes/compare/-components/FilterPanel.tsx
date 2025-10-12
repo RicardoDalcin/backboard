@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
 import { Form, FormField } from '@/components/ui/form';
 import { Court } from '@/components/viz/court';
+import { ShotRegionChart } from '@/components/viz/shot-region-chart';
 import { useFilters } from '@/stores/filters';
 import { useShots } from '@/stores/stats';
 import { FilterItem } from '@/types/filters';
@@ -19,6 +20,7 @@ export const FilterPanel = ({
   filter,
   onChangeFilter,
   hoveredSection,
+  canRemovePanel,
   onChangeHoveredSection,
   onClosePanel,
 }: {
@@ -30,6 +32,7 @@ export const FilterPanel = ({
     endX: number;
     endY: number;
   } | null;
+  canRemovePanel: boolean;
   onChangeHoveredSection: (
     section: {
       startX: number;
@@ -45,7 +48,7 @@ export const FilterPanel = ({
     defaultValues: { filterId: filter.id },
   });
 
-  const { courtShotData } = useShots(filter.filters);
+  const { courtShotData, statSummary } = useShots(filter.filters);
 
   const { filters } = useFilters();
 
@@ -53,9 +56,6 @@ export const FilterPanel = ({
     () => filters.map((item) => ({ label: item.name, value: item.id })),
     [filters],
   );
-
-  // const { clockSummary } = useClockSummary(data);
-  // const { shotTypeSummary } = useShotTypeSummary(data);
 
   return (
     <div className="h-full max-w-full flex flex-col items-center px-4 py-4 gap-6">
@@ -80,13 +80,15 @@ export const FilterPanel = ({
           </form>
         </Form>
 
-        <Button
-          variant="outline"
-          className="!aspect-square !px-0"
-          onClick={onClosePanel}
-        >
-          <XMarkIcon className="size-4" />
-        </Button>
+        {canRemovePanel && (
+          <Button
+            variant="outline"
+            className="!aspect-square !px-0"
+            onClick={onClosePanel}
+          >
+            <XMarkIcon className="size-4" />
+          </Button>
+        )}
       </div>
 
       <Court
@@ -95,9 +97,7 @@ export const FilterPanel = ({
         hoveredSection={hoveredSection}
       />
 
-      {/* <ClockAreaChart data={clockSummary} /> */}
-
-      {/* <ShotTypeLineChart data={shotTypeSummary} /> */}
+      <ShotRegionChart data={statSummary} />
     </div>
   );
 };

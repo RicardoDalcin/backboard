@@ -152,6 +152,7 @@ function RouteComponent() {
                   setHoveredSection(section);
                 }}
                 hoveredSection={hoveredSection}
+                canRemovePanel={panels.length > 2}
                 onClosePanel={() => removePanel(panel.id)}
               />
             )}

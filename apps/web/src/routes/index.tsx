@@ -8,7 +8,7 @@ import { Filters } from './-components/filters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useStats } from '@/stores/stats';
 import { Court } from '@/components/viz/court';
-import { BASIC_ZONES } from '@nba-viz/data';
+import { ShotRegionChart } from '@/components/viz/shot-region-chart';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -17,8 +17,7 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
-  const { courtShotData, isLoading, isValidatingStats, statSummary } =
-    useStats();
+  const { courtShotData, isLoading, statSummary } = useStats();
 
   const formatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
@@ -52,7 +51,7 @@ function Index() {
         <Filters />
 
         <div className="grid grid-cols-12 gap-6 flex-1">
-          <Card className="col-span-12 xl:col-span-7 py-0">
+          <Card className="col-span-12 xl:col-span-7 xl:h-min py-0">
             {isLoading ? (
               <Skeleton className="w-full aspect-[541/406.83] rounded-xl" />
             ) : (
@@ -60,18 +59,12 @@ function Index() {
             )}
           </Card>
 
-          <Card className="col-span-12 xl:col-span-5 py-0 overflow-hidden">
-            {isValidatingStats ? (
+          <Card className="col-span-12 xl:col-span-5 xl:h-min py-0 px-4 overflow-hidden">
+            {isLoading ? (
               <Skeleton className="w-full h-full" />
             ) : (
-              <div className="py-4 px-4 size-full">
-                {statSummary.map((zone) => (
-                  <div key={zone.basicZone}>
-                    {BASIC_ZONES[zone.basicZone]} - {zone.totalShots} with{' '}
-                    {((zone.totalMade / zone.totalShots) * 100).toFixed(2)}%
-                    accuracy
-                  </div>
-                ))}
+              <div className="pt-8">
+                <ShotRegionChart data={statSummary} />
               </div>
             )}
           </Card>
