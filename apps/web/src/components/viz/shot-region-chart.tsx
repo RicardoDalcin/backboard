@@ -1,6 +1,7 @@
+import { useChartSync } from '@/stores/chart-sync';
 import { useStats } from '@/stores/stats';
 import { BASIC_ZONES } from '@nba-viz/data';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -43,11 +44,28 @@ const CustomTooltip = ({
   return null;
 };
 
+type CategoricalChartWrapper = {
+  container: HTMLDivElement;
+  state: {
+    activeLabel: number | null;
+    prevData: {
+      regionIndex: number;
+      region: string;
+      total: number;
+      made: number;
+      accuracy: number;
+    }[];
+  };
+};
+
 export const ShotRegionChart = ({
   data,
 }: {
   data: ReturnType<typeof useStats>['statSummary'];
 }) => {
+  const chartRef = useRef<CategoricalChartWrapper | null>(null);
+  const { activeIndex, setActiveIndex } = useChartSync('clock-area');
+
   const chartData = useMemo(() => {
     return data
       .filter((item) => item.basicZone !== 7)
@@ -88,9 +106,59 @@ export const ShotRegionChart = ({
   const threePointStats = useMemo(() => getStats([1, 4, 6, 7]), [getStats]);
   const twoPointStats = useMemo(() => getStats([2, 3, 5]), [getStats]);
 
+  const index = useMemo(() => {
+    if (!chartRef.current || activeIndex === undefined) {
+      return undefined;
+    }
+
+    if (activeIndex === null) {
+      return null;
+    }
+
+    const idx = chartRef.current.state.prevData.findIndex(
+      (item) => item.region === activeIndex,
+    );
+
+    if (idx === -1) {
+      return null;
+    }
+
+    return idx;
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (!chartRef.current || chartData.length === 0) {
+      return;
+    }
+
+    const abortController = new AbortController();
+
+    chartRef.current.container.addEventListener(
+      'mousemove',
+      () => {
+        setActiveIndex(chartRef.current?.state.activeLabel ?? null);
+      },
+      { signal: abortController.signal },
+    );
+
+    chartRef.current.container.addEventListener(
+      'mouseleave',
+      () => {
+        setActiveIndex(null);
+      },
+      { signal: abortController.signal },
+    );
+
+    setActiveIndex(null);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [chartData, setActiveIndex]);
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[repeat(2,minmax(auto,200px))] justify-center px-4 gap-4 w-full">
+      <div className="grid grid-rows-2 @xs:grid-cols-[repeat(2,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full">
         <Stat
           label="3PT shots"
           total={threePointStats.total}
@@ -104,7 +172,14 @@ export const ShotRegionChart = ({
       </div>
 
       <ResponsiveContainer width="100%" height={320}>
-        <RadarChart cx="50%" cy="50%" outerRadius="60%" data={chartData}>
+        <RadarChart
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ref={chartRef as any}
+          cx="50%"
+          cy="50%"
+          outerRadius="60%"
+          data={chartData}
+        >
           <PolarGrid />
           <PolarAngleAxis dataKey="region" fontSize="80%" />
           <PolarRadiusAxis tick={false} />
@@ -115,7 +190,11 @@ export const ShotRegionChart = ({
             fill="#8884d8"
             fillOpacity={0.6}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip
+            active={index !== null}
+            defaultIndex={index ?? undefined}
+            content={<CustomTooltip />}
+          />
         </RadarChart>
       </ResponsiveContainer>
     </div>

@@ -58,7 +58,7 @@ export const FilterPanel = ({
   );
 
   return (
-    <div className="h-full max-w-full flex flex-col items-center px-4 py-4 gap-6">
+    <div className="@container h-full max-w-full flex flex-col items-center px-4 py-4 gap-6">
       <div className="flex items-center gap-2 w-full">
         <Form {...form}>
           <form onSubmit={(e) => e.preventDefault()} className="w-full">

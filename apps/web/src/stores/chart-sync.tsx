@@ -6,9 +6,9 @@ import {
   useState,
 } from 'react';
 
-interface ChartSyncStore {
-  getData: (name: string) => number | null;
-  updateData: (name: string, index: number | null) => void;
+interface ChartSyncStore<T = number | string> {
+  getData: (name: string) => T | null;
+  updateData: (name: string, index: T | null) => void;
 }
 
 const ChartSyncStoreContext = createContext<ChartSyncStore>({
@@ -22,7 +22,7 @@ export const ChartSyncProvider = ({
   children: React.ReactNode;
 }) => {
   const [activeDataMap, setActiveDataMap] = useState<
-    Map<string, number | null>
+    Map<string, number | string | null>
   >(new Map());
 
   const getData = useCallback(
@@ -32,13 +32,16 @@ export const ChartSyncProvider = ({
     [activeDataMap],
   );
 
-  const updateData = useCallback((name: string, index: number | null) => {
-    setActiveDataMap((map) => {
-      const data = new Map(map);
-      data.set(name, index);
-      return data;
-    });
-  }, []);
+  const updateData = useCallback(
+    (name: string, index: number | string | null) => {
+      setActiveDataMap((map) => {
+        const data = new Map(map);
+        data.set(name, index);
+        return data;
+      });
+    },
+    [],
+  );
 
   return (
     <ChartSyncStoreContext.Provider value={{ getData, updateData }}>
@@ -62,7 +65,7 @@ export function useChartSync(name: string) {
   }, [getData, name]);
 
   const setActiveIndex = useCallback(
-    (index: number | null) => {
+    (index: number | string | null) => {
       updateData(name, index);
     },
     [updateData, name],
