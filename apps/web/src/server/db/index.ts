@@ -323,6 +323,11 @@ class NBADatabase {
 
     return data;
   }
+
+  async deleteData() {
+    await this.db.close();
+    await this.fileSystem.deleteFile(this.DATABASE_OPFS_PATH);
+  }
 }
 
 const db = new NBADatabase();

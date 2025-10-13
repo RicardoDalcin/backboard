@@ -89,6 +89,16 @@ class WorkerHandler {
     return;
   }
 
+  private async close() {
+    if (this.sqlite3 == null || this.db == null) {
+      throw new Error('sqlite3 not initialized');
+    }
+
+    this.db.close();
+    this.sqlite3 = null;
+    this.db = null;
+  }
+
   private async handleMessage(event: MessageEvent<WorkerRequestMessage>) {
     const { data } = event;
 
@@ -102,6 +112,11 @@ class WorkerHandler {
         case 'exec': {
           const result = await this.exec(data);
           this.respond(data, { rows: result });
+          break;
+        }
+        case 'close': {
+          await this.close();
+          this.respond(data, { result: 'success' });
           break;
         }
         default:

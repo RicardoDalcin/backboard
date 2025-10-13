@@ -13,8 +13,11 @@ import {
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { SettingsDialog } from './-components/settings-dialog';
+import { useState } from 'react';
 
 function Root() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   return (
     <ChartSyncProvider>
       <FiltersProvider>
@@ -77,7 +80,10 @@ function Root() {
                   </a>
                 </Button>
 
-                <SettingsDialog>
+                <SettingsDialog
+                  isOpen={isSettingsOpen}
+                  onOpenChange={setIsSettingsOpen}
+                >
                   <Button variant="ghost" className="size-10">
                     <Cog6ToothIcon className="size-6" />
                   </Button>

@@ -101,4 +101,10 @@ export class DBClient {
     this.pendingRequests.delete(data.requestId);
     promise.resolve(data.data);
   }
+
+  async close() {
+    await this.request({
+      message: 'close',
+    });
+  }
 }
