@@ -540,9 +540,7 @@ export class VisualizationEngine {
       }
     }
 
-    if (shots.length > 0) {
-      this.callbacks.onHover(shots);
-    }
+    this.callbacks.onHover(shots);
     this.draw();
   }
 

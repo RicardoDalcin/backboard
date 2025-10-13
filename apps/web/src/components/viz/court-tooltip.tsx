@@ -1,9 +1,22 @@
 import { HoverCallbackData } from '@/engine/Visualization';
+import { cn } from '@/lib/utils';
 import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 
 const roundTo = (num: number, precision: number) => {
   return Math.round(num * 10 ** precision) / 10 ** precision;
 };
+
+function usePrevious<T>(value: T) {
+  const [current, setCurrent] = useState(value);
+  const [previous, setPrevious] = useState<T | null>(null);
+
+  if (value !== current) {
+    setPrevious(current);
+    setCurrent(value);
+  }
+
+  return previous;
+}
 
 function useDebounce<T>(
   value: T,
@@ -29,23 +42,6 @@ function useDebounce<T>(
 
   return debouncedValue;
 }
-
-function useLastNonNull<T>(
-  value: T,
-  isNull: (value: T) => boolean = (value) => value == null,
-) {
-  const [nonNullValue, setNonNullValue] = useState(value);
-
-  useEffect(() => {
-    if (!isNull(value)) {
-      setNonNullValue(value);
-      return;
-    }
-  }, [value, isNull]);
-
-  return nonNullValue;
-}
-
 const WIDTH = 160;
 const HEIGHT = 70;
 const PADDING = 12;
@@ -65,11 +61,6 @@ export const CourtTooltip = ({
     hoveredShot,
     200,
     (s) => s?.every((s) => s.totalShots === 0) ?? false,
-  );
-
-  const nonNullShot = useLastNonNull(
-    shots,
-    (s) => s == null || s.every((s) => s.totalShots === 0),
   );
 
   const getX = useCallback(
@@ -121,23 +112,41 @@ export const CourtTooltip = ({
     return { x, y };
   }, [getX, getY, shots]);
 
+  const previousPosition = usePrevious(position);
+
   const average = useMemo(() => {
+    if (hoveredShot?.length === 0) {
+      return {
+        totalShots: 0,
+        madeShots: 0,
+      };
+    }
+
     const totalShots =
-      nonNullShot?.reduce((acc, shot) => acc + shot.totalShots, 0) ?? 0;
+      hoveredShot?.reduce((acc, shot) => acc + shot.totalShots, 0) ?? 0;
     const madeShots =
-      nonNullShot?.reduce((acc, shot) => acc + shot.madeShots, 0) ?? 0;
+      hoveredShot?.reduce((acc, shot) => acc + shot.madeShots, 0) ?? 0;
 
     return {
       totalShots,
       madeShots,
     };
-  }, [nonNullShot]);
+  }, [hoveredShot]);
 
   return (
     <>
       {shots != null && (
         <div
-          className="absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20 transition-all duration-100"
+          className={cn(
+            'absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20',
+            [
+              previousPosition &&
+              previousPosition.x !== 0 &&
+              previousPosition.y !== 0
+                ? 'transition-all duration-100'
+                : 'transition-opacity duration-100',
+            ],
+          )}
           style={{
             width: `${WIDTH}px`,
             height: `${HEIGHT}px`,
@@ -146,24 +155,22 @@ export const CourtTooltip = ({
             opacity: average.totalShots > 0 ? 1 : 0,
           }}
         >
-          {average.totalShots > 0 && (
-            <div className="w-full h-full px-4 py-2 flex flex-col justify-between">
-              <div className="text-sm">
-                <span className="font-bold">
-                  {formatter.format(average.madeShots)}/
-                  {formatter.format(average.totalShots)}
-                </span>{' '}
-                shots
-              </div>
-
-              <div className="text-sm">
-                <span className="font-bold">
-                  {roundTo((average.madeShots / average.totalShots) * 100, 1)}%
-                </span>{' '}
-                FG%
-              </div>
+          <div className="w-full h-full px-4 py-2 flex flex-col justify-between">
+            <div className="text-sm">
+              <span className="font-bold">
+                {formatter.format(average.madeShots)}/
+                {formatter.format(average.totalShots)}
+              </span>{' '}
+              shots
             </div>
-          )}
+
+            <div className="text-sm">
+              <span className="font-bold">
+                {roundTo((average.madeShots / average.totalShots) * 100, 1)}%
+              </span>{' '}
+              FG%
+            </div>
+          </div>
         </div>
       )}
     </>
