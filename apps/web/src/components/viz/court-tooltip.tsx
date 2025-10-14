@@ -138,12 +138,12 @@ export const CourtTooltip = ({
       {shots != null && (
         <div
           className={cn(
-            'absolute rounded-md text-background bg-primary/60 touch-none pointer-events-none z-20',
+            'absolute rounded-md text-primary bg-white/80 border backdrop-blur-sm touch-none pointer-events-none z-20',
             [
               previousPosition &&
               previousPosition.x !== 0 &&
               previousPosition.y !== 0
-                ? 'transition-all duration-100'
+                ? 'transition-all duration-50 ease-in-out'
                 : 'transition-opacity duration-100',
             ],
           )}

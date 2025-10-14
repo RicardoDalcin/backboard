@@ -3,6 +3,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { Form, FormField } from '@/components/ui/form';
 import { Court } from '@/components/viz/court';
 import { ShotRegionChart } from '@/components/viz/shot-region-chart';
+import { cn } from '@/lib/utils';
 import { useFilters } from '@/stores/filters';
 import { useShots } from '@/stores/stats';
 import { FilterItem } from '@/types/filters';
@@ -23,6 +24,7 @@ export const FilterPanel = ({
   canRemovePanel,
   onChangeHoveredSection,
   onClosePanel,
+  className = '',
 }: {
   filter: FilterItem;
   onChangeFilter: (id: number) => void;
@@ -42,6 +44,7 @@ export const FilterPanel = ({
     } | null,
   ) => void;
   onClosePanel: () => void;
+  className?: string;
 }) => {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -58,7 +61,12 @@ export const FilterPanel = ({
   );
 
   return (
-    <div className="@container h-full max-w-full flex flex-col items-center px-4 py-4 gap-6">
+    <div
+      className={cn(
+        '@container h-full max-w-full flex flex-col items-center px-4 py-4 gap-6',
+        className,
+      )}
+    >
       <div className="flex items-center gap-2 w-full">
         <Form {...form}>
           <form onSubmit={(e) => e.preventDefault()} className="w-full">

@@ -157,21 +157,26 @@ export const ShotRegionChart = ({
   }, [chartData, setActiveIndex]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-rows-2 @xs:grid-cols-[repeat(2,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full">
-        <Stat
-          label="3PT shots"
-          total={threePointStats.total}
-          accuracy={threePointStats.accuracy}
-        />
+    <div className="flex flex-col w-full gap-4 -mx-4">
+      <div className="grid grid-rows-2 @xs:grid-cols-[repeat(2,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full px-4">
         <Stat
           label="2PT shots"
           total={twoPointStats.total}
           accuracy={twoPointStats.accuracy}
         />
+        <Stat
+          label="3PT shots"
+          total={threePointStats.total}
+          accuracy={threePointStats.accuracy}
+        />
       </div>
 
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer
+        minWidth="100%"
+        width="100%"
+        minHeight={200}
+        aspect={1}
+      >
         <RadarChart
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={chartRef as any}
@@ -186,8 +191,8 @@ export const ShotRegionChart = ({
           <Radar
             name="Total"
             dataKey="total"
-            stroke="#8884d8"
-            fill="#8884d8"
+            stroke="#4c699c"
+            fill="#4c699c"
             fillOpacity={0.6}
           />
           <Tooltip

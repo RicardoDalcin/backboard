@@ -93,6 +93,7 @@ export class VisualizationEngine {
   private startHighlightShot: HighlightCallbackData | null = null;
   private endHighlightShot: HighlightCallbackData | null = null;
   private isMouseDown = false;
+  private cachedVisualization: ImageData | null = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -150,6 +151,7 @@ export class VisualizationEngine {
       }
     });
 
+    this.cachedVisualization = null;
     this.draw();
   }
 
@@ -158,13 +160,21 @@ export class VisualizationEngine {
   }
 
   private draw() {
-    this.drawCourt();
+    if (this.cachedVisualization) {
+      this.ctx.putImageData(this.cachedVisualization, 0, 0);
+    } else {
+      this.drawCourt();
+      this.ctx.save();
+      this.drawShots();
 
-    // Add Gaussian blur here
-    // this.ctx.save();
-    // this.ctx.filter = 'blur(2px)'; // Adjust the pixel value to control the blur amount
-    this.ctx.save();
-    this.drawShots();
+      this.cachedVisualization = this.ctx.getImageData(
+        0,
+        0,
+        this.size.width,
+        this.size.height,
+      );
+    }
+
     this.drawHoveredShot();
   }
 
@@ -618,6 +628,7 @@ export class VisualizationEngine {
   private bindEvents() {
     const resizeObserver = new ResizeObserver(() => {
       this.onResize();
+      this.cachedVisualization = null;
       this.draw();
     });
 
