@@ -1,21 +1,24 @@
 import { HoverCallbackData } from '@/engine/Visualization';
 import { cn } from '@/lib/utils';
 import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 
 const roundTo = (num: number, precision: number) => {
   return Math.round(num * 10 ** precision) / 10 ** precision;
 };
 
-function usePrevious<T>(value: T) {
-  const [current, setCurrent] = useState(value);
-  const [previous, setPrevious] = useState<T | null>(null);
+function useLastValid<T>(value: T, isNull: (value: T) => boolean) {
+  const [lastValid, setLastValid] = useState(value);
 
-  if (value !== current) {
-    setPrevious(current);
-    setCurrent(value);
-  }
+  useEffect(() => {
+    if (isNull(value)) {
+      return;
+    }
 
-  return previous;
+    setLastValid(value);
+  }, [value, isNull]);
+
+  return lastValid;
 }
 
 function useDebounce<T>(
@@ -112,8 +115,6 @@ export const CourtTooltip = ({
     return { x, y };
   }, [getX, getY, shots]);
 
-  const previousPosition = usePrevious(position);
-
   const average = useMemo(() => {
     if (hoveredShot?.length === 0) {
       return {
@@ -133,46 +134,73 @@ export const CourtTooltip = ({
     };
   }, [hoveredShot]);
 
+  const lastValidAverage = useLastValid(average, (a) => a.totalShots === 0);
+
   return (
-    <>
-      {shots != null && (
-        <div
+    <AnimatePresence>
+      {shots != null && (position.x !== 0 || position.y !== 0) && (
+        <motion.div
           className={cn(
             'absolute rounded-md text-primary bg-white/80 border backdrop-blur-sm touch-none pointer-events-none z-20',
-            [
-              previousPosition &&
-              previousPosition.x !== 0 &&
-              previousPosition.y !== 0
-                ? 'transition-all duration-50 ease-in-out'
-                : 'transition-opacity duration-100',
-            ],
           )}
+          initial={{
+            opacity: 0,
+            scale: 0.7,
+            left: position.x,
+            top: position.y,
+            transition: { type: 'keyframes', duration: 2 },
+          }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            left: position.x,
+            top: position.y,
+            transition: {
+              type: 'spring',
+              stiffness: 200,
+              damping: 20,
+              bounce: 0,
+            },
+          }}
+          exit={{
+            opacity: 0,
+            scale: 0.7,
+            transition: { type: 'keyframes', duration: 0.2 },
+          }}
           style={{
             width: `${WIDTH}px`,
             height: `${HEIGHT}px`,
-            top: `${position.y}px`,
-            left: `${position.x}px`,
-            opacity: average.totalShots > 0 ? 1 : 0,
           }}
         >
           <div className="w-full h-full px-4 py-2 flex flex-col justify-between">
             <div className="text-sm">
               <span className="font-bold">
-                {formatter.format(average.madeShots)}/
-                {formatter.format(average.totalShots)}
+                {formatter.format(
+                  average.madeShots || lastValidAverage.madeShots,
+                )}
+                /
+                {formatter.format(
+                  average.totalShots || lastValidAverage.totalShots,
+                )}
               </span>{' '}
               shots
             </div>
 
             <div className="text-sm">
               <span className="font-bold">
-                {roundTo((average.madeShots / average.totalShots) * 100, 1)}%
+                {roundTo(
+                  ((average.madeShots || lastValidAverage.madeShots) /
+                    (average.totalShots || lastValidAverage.totalShots)) *
+                    100,
+                  1,
+                )}
+                %
               </span>{' '}
               FG%
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 };
