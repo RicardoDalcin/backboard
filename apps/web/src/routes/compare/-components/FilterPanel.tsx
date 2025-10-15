@@ -20,29 +20,13 @@ const schema = z.object({
 export const FilterPanel = ({
   filter,
   onChangeFilter,
-  hoveredSection,
   canRemovePanel,
-  onChangeHoveredSection,
   onClosePanel,
   className = '',
 }: {
   filter: FilterItem;
   onChangeFilter: (id: number) => void;
-  hoveredSection: {
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-  } | null;
   canRemovePanel: boolean;
-  onChangeHoveredSection: (
-    section: {
-      startX: number;
-      startY: number;
-      endX: number;
-      endY: number;
-    } | null,
-  ) => void;
   onClosePanel: () => void;
   className?: string;
 }) => {
@@ -99,11 +83,7 @@ export const FilterPanel = ({
         )}
       </div>
 
-      <Court
-        data={courtShotData}
-        onChangeHoveredSection={onChangeHoveredSection}
-        hoveredSection={hoveredSection}
-      />
+      <Court data={courtShotData} />
 
       <ShotRegionChart data={statSummary} />
     </div>

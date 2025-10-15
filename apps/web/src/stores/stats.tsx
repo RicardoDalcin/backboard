@@ -103,7 +103,11 @@ export function useShots(filter: Filter, isEnabled = true) {
 
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { currentFilter } = useFilters();
-  const routerState = useRouterState();
+  const { isEnabled } = useRouterState({
+    select: (state) => ({
+      isEnabled: state.location.pathname === '/' && state.status !== 'pending',
+    }),
+  });
 
   const {
     courtShotData,
@@ -112,10 +116,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     statSummary,
     isLoadingStats,
     isValidatingStats,
-  } = useShots(
-    currentFilter.filters,
-    routerState.location.pathname === '/' && routerState.status !== 'pending',
-  );
+  } = useShots(currentFilter.filters, isEnabled);
 
   return (
     <StatsStoreContext.Provider

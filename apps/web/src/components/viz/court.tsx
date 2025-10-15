@@ -1,32 +1,26 @@
 import { HoverCallbackData, VisualizationEngine } from '@/engine/Visualization';
 import { useEffect, useRef, useState } from 'react';
 import { CourtTooltip } from './court-tooltip';
+import { useAtom } from 'jotai';
+import { atom } from 'jotai';
+
+const hoveredSectionAtom = atom<{
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+} | null>(null);
 
 export const Court = ({
   data,
-  hoveredSection,
-  onChangeHoveredSection = () => {},
 }: {
   data: { locX: number; locY: number; totalShots: number; totalMade: number }[];
-  hoveredSection?: {
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-  } | null;
-  onChangeHoveredSection?: (
-    section: {
-      startX: number;
-      startY: number;
-      endX: number;
-      endY: number;
-    } | null,
-  ) => void;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const initialized = useRef(false);
   const engine = useRef<VisualizationEngine | null>(null);
+  const [hoveredSection, setHoveredSection] = useAtom(hoveredSectionAtom);
 
   const [hoveringData, setHoveringData] = useState<HoverCallbackData>(null);
 
@@ -57,7 +51,7 @@ export const Court = ({
         }
 
         if (!data) {
-          onChangeHoveredSection(null);
+          setHoveredSection(null);
           return;
         }
 
@@ -77,7 +71,7 @@ export const Court = ({
           maxY = Math.max(maxY, shot.section.y);
         }
 
-        onChangeHoveredSection({
+        setHoveredSection({
           startX: minX,
           startY: minY,
           endX: maxX,
@@ -102,7 +96,7 @@ export const Court = ({
       },
       { signal: abortController.current.signal },
     );
-  }, [onChangeHoveredSection]);
+  }, [setHoveredSection]);
 
   useEffect(() => {
     if (!engine.current) {
