@@ -160,6 +160,10 @@ export class VisualizationEngine {
   }
 
   private draw() {
+    this.ctx.clearRect(0, 0, this.size.width, this.size.height);
+    this.ctx.fillStyle = THEME.background;
+    this.ctx.fillRect(0, 0, this.size.width, this.size.height);
+
     if (this.cachedVisualization) {
       this.ctx.putImageData(this.cachedVisualization, 0, 0);
     } else {
@@ -170,8 +174,8 @@ export class VisualizationEngine {
       this.cachedVisualization = this.ctx.getImageData(
         0,
         0,
-        this.size.width,
-        this.size.height,
+        this.size.width * devicePixelRatio,
+        this.size.height * devicePixelRatio,
       );
     }
 
@@ -294,10 +298,6 @@ export class VisualizationEngine {
   }
 
   private drawCourt() {
-    this.ctx.clearRect(0, 0, this.size.width, this.size.height);
-    this.ctx.fillStyle = THEME.background;
-    this.ctx.fillRect(0, 0, this.size.width, this.size.height);
-
     // Draw the court lines
     // Border
     const lineWidth = this.feetToPixels(LINE_WIDTH);
