@@ -157,9 +157,10 @@ export const CourtTooltip = ({
             top: position.y,
             transition: {
               type: 'spring',
-              stiffness: 200,
-              damping: 20,
+              stiffness: 150,
+              damping: 10,
               bounce: 0,
+              mass: 0.1,
             },
           }}
           exit={{
