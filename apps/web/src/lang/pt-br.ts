@@ -11,6 +11,13 @@ export const ptBR = {
       rename: 'Renomear',
       delete: 'Deletar',
     },
+    select: {
+      selectOptions: 'Selecionar opções',
+      clearAllSelected: 'Limpar selecionados',
+      optionsSelected: 'opções selecionadas',
+      noResultsFound: 'Nenhum resultado encontrado',
+      search: 'Pesquisar...',
+    },
     menu: {
       explore: 'Explorar',
       compare: 'Comparar',
@@ -73,7 +80,9 @@ export const ptBR = {
       filterExample: 'ex. "Temporada 2023-24"',
       season: 'Temporada',
       teams: 'Times',
+      teamsSelected: 'times selecionados',
       players: 'Jogadores',
+      playersSelected: 'jogadores selecionados',
       drtgRanking: 'Ranking Defensivo',
       drtgRankingTooltip:
         'Ranking defensivo do time adversário durante o mês da partida.',

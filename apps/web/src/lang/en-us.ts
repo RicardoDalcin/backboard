@@ -14,6 +14,13 @@ export const enUS: Resource = {
       rename: 'Rename',
       delete: 'Delete',
     },
+    select: {
+      selectOptions: 'Select options',
+      clearAllSelected: 'Clear all selected',
+      optionsSelected: 'options selected',
+      noResultsFound: 'No results found',
+      search: 'Search...',
+    },
     menu: {
       explore: 'Explore',
       compare: 'Compare',
@@ -74,7 +81,9 @@ export const enUS: Resource = {
       filterExample: 'e.g. "2023-24 Season"',
       season: 'Season',
       teams: 'Teams',
+      teamsSelected: 'teams selected',
       players: 'Players',
+      playersSelected: 'players selected',
       drtgRanking: 'DRTG Ranking',
       drtgRankingTooltip:
         'DRTG ranking of the opposing team during the month of the game.',

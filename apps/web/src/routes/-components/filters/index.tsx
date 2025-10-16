@@ -320,7 +320,7 @@ export const Filters = ({ className }: { className?: string }) => {
                     form.setValue('teams', values, { shouldDirty: true })
                   }
                   className="w-full"
-                  multiSelectedMessage="teams selected"
+                  multiSelectedMessage={t('filters.teamsSelected')}
                 />
                 <FormMessage />
               </FormItem>
@@ -342,7 +342,7 @@ export const Filters = ({ className }: { className?: string }) => {
                     form.setValue('players', values, { shouldDirty: true })
                   }
                   className="w-full"
-                  multiSelectedMessage="players selected"
+                  multiSelectedMessage={t('filters.playersSelected')}
                 />
                 <FormMessage />
               </FormItem>

@@ -13,6 +13,7 @@ import {
 import { FormControl } from './form';
 import { Popover, PopoverTrigger, PopoverContent } from './popover';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ComboboxProps<T> {
   values: T[];
@@ -38,18 +39,19 @@ export function MultiCombobox<T>({
   className,
 }: ComboboxProps<T>) {
   const [query, setQuery] = useState('');
+  const { t } = useTranslation();
 
   const valueFormatted = useMemo(() => {
     if (values.length === 0) {
-      return placeholder ?? 'Select options';
+      return placeholder ?? t('select.selectOptions');
     }
 
     if (values.length === 1) {
       return options.find((option) => option.value === values[0])?.label;
     }
 
-    return `${values.length} ${multiSelectedMessage ?? 'options selected'}`;
-  }, [multiSelectedMessage, options, placeholder, values]);
+    return `${values.length} ${multiSelectedMessage ?? t('select.optionsSelected')}`;
+  }, [multiSelectedMessage, options, placeholder, t, values]);
 
   const onChange = useCallback(
     (value: T) => {
@@ -104,7 +106,7 @@ export function MultiCombobox<T>({
       <PopoverContent className="p-0" align="start">
         <Command>
           <CommandInput
-            placeholder={searchPlaceholder ?? 'Search...'}
+            placeholder={searchPlaceholder ?? t('select.search')}
             className="h-9"
             value={query}
             onValueChange={setQuery}
@@ -116,13 +118,13 @@ export function MultiCombobox<T>({
               onSelect={() => onSelect([])}
               disabled={!values.length}
             >
-              Clear all selected
+              {t('select.clearAllSelected')}
             </CommandItem>
           </CommandGroup>
 
           <CommandList>
             <CommandEmpty>
-              {searchEmptyMessage ?? 'No results found'}
+              {searchEmptyMessage ?? t('select.noResultsFound')}
             </CommandEmpty>
 
             <CommandSeparator />
