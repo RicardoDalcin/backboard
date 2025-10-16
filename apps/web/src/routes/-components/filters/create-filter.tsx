@@ -9,6 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const CreateFilterDialog = ({
   defaultName,
@@ -17,6 +18,7 @@ export const CreateFilterDialog = ({
   defaultName?: string;
   onCreate: (name: string) => void;
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(defaultName ?? '');
 
   const onSubmit = useCallback(
@@ -42,7 +44,7 @@ export const CreateFilterDialog = ({
     <DialogContent className="w-[280px] sm:w-[400px]">
       <DialogHeader>
         <DialogTitle>
-          {defaultName ? 'Edit filter' : 'Create filter'}
+          {defaultName ? t('filters.editFilter') : t('filters.createFilter')}
         </DialogTitle>
       </DialogHeader>
 
@@ -50,14 +52,14 @@ export const CreateFilterDialog = ({
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
-              Name
+              {t('filters.name')}
             </Label>
 
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder='e.g. "2023-24 Season"'
+              placeholder={t('filters.filterExample')}
               className="col-span-3"
             />
           </div>
@@ -66,7 +68,7 @@ export const CreateFilterDialog = ({
         <DialogFooter>
           <DialogClose asChild>
             <Button type="submit" disabled={!name}>
-              Save changes
+              {t('filters.saveChanges')}
             </Button>
           </DialogClose>
         </DialogFooter>

@@ -14,9 +14,12 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { SettingsDialog } from './-components/settings-dialog';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function Root() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const { t } = useTranslation();
 
   return (
     <ChartSyncProvider>
@@ -35,21 +38,21 @@ function Root() {
                     to="/"
                     className="[&.active]:text-foreground text-muted-foreground font-medium text-sm"
                   >
-                    Explore
+                    {t('menu.explore')}
                   </Link>
 
                   <Link
                     to="/compare"
                     className="[&.active]:text-foreground text-muted-foreground font-medium text-sm"
                   >
-                    Compare
+                    {t('menu.compare')}
                   </Link>
 
                   <Link
                     to="/about"
                     className="[&.active]:text-foreground text-muted-foreground font-medium text-sm"
                   >
-                    About
+                    {t('menu.about')}
                   </Link>
                 </nav>
               </div>

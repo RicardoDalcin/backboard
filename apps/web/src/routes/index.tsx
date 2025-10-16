@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useStats } from '@/stores/stats';
 import { Court } from '@/components/viz/court';
 import { ShotRegionChart } from '@/components/viz/shot-region-chart';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -18,11 +19,7 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const { courtShotData, isLoading, statSummary } = useStats();
-
-  const formatter = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
+  const { t } = useTranslation();
 
   const totalShots = courtShotData.reduce(
     (acc, shot) => acc + shot.totalShots,
@@ -34,15 +31,15 @@ function Index() {
       <div className="flex items-center justify-between w-full">
         <h2 className="text-3xl font-bold">
           {isLoading
-            ? `Loading shots...`
-            : `Exploring ${formatter.format(totalShots)} shots`}
+            ? t('explore.loadingShots')
+            : t('explore.exploringShots', { count: totalShots })}
         </h2>
 
         <div className="flex items-center gap-4">
-          <Button variant="outline">Share</Button>
+          <Button variant="outline">{t('global.share')}</Button>
 
           <Button>
-            <ArrowDownTrayIcon className="size-4" /> Export
+            <ArrowDownTrayIcon className="size-4" /> {t('global.export')}
           </Button>
         </div>
       </div>

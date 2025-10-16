@@ -1,12 +1,14 @@
 import { Progress } from '@/components/ui/progress';
 import { db } from '@/server/db';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const Loader = () => {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<'downloading' | 'initializing'>(
     'downloading',
   );
+  const { t } = useTranslation();
 
   useEffect(() => {
     const unsubscribes = [
@@ -23,11 +25,11 @@ export const Loader = () => {
 
   const phaseText = useMemo(() => {
     if (phase === 'downloading') {
-      return 'Downloading data...';
+      return t('setup.downloading');
     }
 
-    return 'Initializing dashboard...';
-  }, [phase]);
+    return t('setup.initializing');
+  }, [phase, t]);
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col items-center justify-center pb-20">

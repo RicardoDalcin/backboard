@@ -50,6 +50,7 @@ export const FiltersProvider = ({
         },
       },
     ],
+    (value) => value.length >= 1,
   );
 
   const [currentFilterId, setCurrentFilterId] = useLocalStorage(

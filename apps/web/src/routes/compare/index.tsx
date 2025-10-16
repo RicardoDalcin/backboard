@@ -14,6 +14,7 @@ import {
 import { useFilters } from '@/stores/filters';
 import { FilterPanel } from './-components/FilterPanel';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/compare/')({
   component: RouteComponent,
@@ -23,19 +24,25 @@ export const Route = createFileRoute('/compare/')({
 
 function RouteComponent() {
   const { filters } = useFilters();
-  const [panels, setPanels] = useLocalStorage('backboard.compare.panels', [
-    {
-      id: 1,
-      filterId: null,
-    },
-    {
-      id: 2,
-      filterId: null,
-    },
-  ] as Array<{
-    id: number;
-    filterId: number | null;
-  }>);
+  const { t } = useTranslation();
+
+  const [panels, setPanels] = useLocalStorage(
+    'backboard.compare.panels',
+    [
+      {
+        id: 1,
+        filterId: null,
+      },
+      {
+        id: 2,
+        filterId: null,
+      },
+    ] as Array<{
+      id: number;
+      filterId: number | null;
+    }>,
+    (value) => value.length >= 2,
+  );
 
   function addPanel() {
     const maxId = Math.max(...panels.map((p) => p.id));
@@ -72,11 +79,11 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-4 h-full w-full">
       <div className="flex items-center justify-between w-full">
-        <h2 className="text-3xl font-bold">Compare</h2>
+        <h2 className="text-3xl font-bold">{t('compare.title')}</h2>
 
         <div className="flex items-center gap-4">
           <Button onClick={addPanel}>
-            <PlusIcon className="size-4" /> Add panel
+            <PlusIcon className="size-4" /> {t('compare.addPanel')}
           </Button>
         </div>
       </div>
@@ -107,14 +114,15 @@ function RouteComponent() {
                 </svg>
 
                 <p className="text-sm font-medium text-zinc-600 max-w-[185px] text-center">
-                  No filter selected. Use a preset to continue.
+                  {t('compare.panel.noFilterSelected')}
                 </p>
 
                 <div className="flex flex-col gap-3">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button>
-                        Select preset <ChevronDownIcon className="size-4" />
+                        {t('compare.panel.selectPreset')}
+                        <ChevronDownIcon className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
 
@@ -135,7 +143,7 @@ function RouteComponent() {
                       variant="outline"
                       onClick={() => removePanel(panel.id)}
                     >
-                      Close panel
+                      {t('compare.panel.closePanel')}
                     </Button>
                   )}
                 </div>

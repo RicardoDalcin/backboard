@@ -32,7 +32,12 @@ export const POSITIONS_SIMPLIFIED = [
   getPositionSimplified('PF'),
   getPositionSimplified('C'),
 ];
-export const RESULTS = ['all', 'wins', 'losses'] as const;
+export const RESULT_VALUES = ['all', 'wins', 'losses'] as const;
+export const RESULTS = [
+  { value: 'all', labelKey: 'global.all' },
+  { value: 'wins', labelKey: 'filters.wins' },
+  { value: 'losses', labelKey: 'filters.losses' },
+] as const;
 
 export const PLAYERS = PLAYERS_DATA.map((player) => ({
   label: player.name,
@@ -46,7 +51,7 @@ export const DEFAULT_FILTER = {
   teams: [] as (typeof TEAMS)[number]['value'][],
   players: [] as (typeof TEAMS)[number]['value'][],
   positions: [...POSITIONS],
-  result: RESULTS[0] as 'all' | 'wins' | 'losses',
+  result: RESULTS[0].value as 'all' | 'wins' | 'losses',
 };
 
 export type Filter = typeof DEFAULT_FILTER;

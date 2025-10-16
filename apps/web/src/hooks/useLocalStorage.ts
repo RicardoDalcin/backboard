@@ -1,6 +1,10 @@
 import { useState } from 'react';
 
-export function useLocalStorage<T>(key: string, initialValue: T) {
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  isValid?: (value: T) => boolean,
+) {
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
@@ -8,7 +12,8 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
     try {
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      const value = item ? JSON.parse(item) : initialValue;
+      return isValid ? (isValid(value) ? value : initialValue) : value;
     } catch (error) {
       console.warn(error);
       return initialValue;

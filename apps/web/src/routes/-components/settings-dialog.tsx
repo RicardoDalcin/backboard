@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { db } from '@/server/db';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from '@tanstack/react-router';
+import { Trans, useTranslation } from 'react-i18next';
 
 const formatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
@@ -29,6 +30,7 @@ export function SettingsDialog({
   const [fileSize, setFileSize] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const { t } = useTranslation();
   const location = useLocation();
 
   const fileSizeMB = useMemo(() => {
@@ -64,23 +66,22 @@ export function SettingsDialog({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle>{t('settings.title')}</DialogTitle>
         </DialogHeader>
 
         {hasOptedIn ? (
           <div className="flex justify-between items-center gap-4">
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               <p>
-                NBA shot data is using{' '}
-                <span className="font-semibold text-foreground">
-                  {fileSizeMB}
-                </span>{' '}
-                of storage.
+                <Trans
+                  i18nKey="settings.storageUsage"
+                  values={{ size: fileSizeMB }}
+                  components={{
+                    bold: <span className="font-semibold text-foreground" />,
+                  }}
+                />
               </p>
-              <p className="text-xs">
-                This storage is used to make the offline-first experience
-                possible.
-              </p>
+              <p className="text-xs">{t('settings.storageDisclaimer')}</p>
             </div>
 
             <Dialog
@@ -88,22 +89,21 @@ export function SettingsDialog({
               onOpenChange={setIsConfirmationOpen}
             >
               <DialogTrigger asChild>
-                <Button size="sm">Clear Storage</Button>
+                <Button size="sm">{t('settings.clearStorage.title')}</Button>
               </DialogTrigger>
 
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Clear Storage</DialogTitle>
+                  <DialogTitle>{t('settings.clearStorage.title')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Are you sure you want to delete app data? This will only
-                    affect data and it will not delete your custom filters.
+                    {t('settings.clearStorage.description')}
                   </p>
                   <div className="flex justify-end gap-2">
                     <DialogClose asChild>
                       <Button variant="outline" size="sm">
-                        Cancel
+                        {t('global.cancel')}
                       </Button>
                     </DialogClose>
 
@@ -114,7 +114,7 @@ export function SettingsDialog({
                       variant="destructive"
                       size="sm"
                     >
-                      Delete data
+                      {t('settings.clearStorage.confirm')}
                     </Button>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ export function SettingsDialog({
           </div>
         ) : (
           <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-            <p>You have not opted in to download the data and use the app.</p>
+            <p>{t('settings.hasNotOptedIn')}</p>
           </div>
         )}
       </DialogContent>

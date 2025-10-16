@@ -33,7 +33,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
-import { POSITIONS, RESULTS, TEAMS, PLAYERS, Filter } from '@/types/filters';
+import {
+  POSITIONS,
+  RESULTS,
+  TEAMS,
+  PLAYERS,
+  Filter,
+  RESULT_VALUES,
+} from '@/types/filters';
 import { useCallback, useEffect, useState } from 'react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CreateFilterDialog } from './create-filter';
@@ -46,6 +53,7 @@ import {
 } from '@/components/ui/context-menu';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useStats } from '@/stores/stats';
+import { useTranslation } from 'react-i18next';
 
 const schema = z.object({
   season: z.tuple([z.number().min(4).max(24), z.number().min(4).max(24)]),
@@ -60,7 +68,7 @@ const schema = z.object({
   teams: z.array(z.number()),
   players: z.array(z.number()),
   positions: z.array(z.enum(POSITIONS)),
-  result: z.enum(RESULTS),
+  result: z.enum(RESULT_VALUES),
 });
 
 export const Filters = ({ className }: { className?: string }) => {
@@ -73,6 +81,7 @@ export const Filters = ({ className }: { className?: string }) => {
     deleteFilter,
   } = useFilters();
 
+  const { t } = useTranslation();
   const { isLoading, isValidating } = useStats();
 
   const [filterCreateType, setFilterCreateType] = useState<
@@ -167,7 +176,7 @@ export const Filters = ({ className }: { className?: string }) => {
             <DropdownMenuContent className="w-[280px]" align="start">
               <DialogTrigger asChild onClick={() => setFilterCreateType('new')}>
                 <DropdownMenuItem>
-                  Create filter
+                  {t('filters.createFilter')}
                   <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -177,7 +186,7 @@ export const Filters = ({ className }: { className?: string }) => {
                 onClick={() => setFilterCreateType('copy')}
               >
                 <DropdownMenuItem>
-                  Save as new filter
+                  {t('filters.saveAsNewFilter')}
                   <DropdownMenuShortcut>⌘shift+N</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -200,7 +209,7 @@ export const Filters = ({ className }: { className?: string }) => {
 
                     <ContextMenuContent className="w-[200px]">
                       <ContextMenuItem onClick={() => selectFilter(filter.id)}>
-                        Select
+                        {t('global.select')}
                       </ContextMenuItem>
 
                       <DialogTrigger asChild>
@@ -211,7 +220,7 @@ export const Filters = ({ className }: { className?: string }) => {
                             setEditingFilterId(filter.id);
                           }}
                         >
-                          Rename
+                          {t('global.rename')}
                         </ContextMenuItem>
                       </DialogTrigger>
 
@@ -221,7 +230,7 @@ export const Filters = ({ className }: { className?: string }) => {
                         onClick={() => deleteFilter(filter.id)}
                         variant="destructive"
                       >
-                        Delete
+                        {t('global.delete')}
                       </ContextMenuItem>
                     </ContextMenuContent>
                   </ContextMenu>
@@ -267,7 +276,7 @@ export const Filters = ({ className }: { className?: string }) => {
               strokeLinejoin="round"
             />
           </svg>
-          Clear
+          {t('global.clear')}
         </Button>
       </div>
 
@@ -278,7 +287,7 @@ export const Filters = ({ className }: { className?: string }) => {
             name="season"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Season</FormLabel>
+                <FormLabel>{t('filters.season')}</FormLabel>
                 <RangeSlider
                   min={4}
                   max={24}
@@ -302,7 +311,7 @@ export const Filters = ({ className }: { className?: string }) => {
             name="teams"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Teams</FormLabel>
+                <FormLabel>{t('filters.teams')}</FormLabel>
 
                 <MultiCombobox
                   values={field.value}
@@ -323,7 +332,7 @@ export const Filters = ({ className }: { className?: string }) => {
             name="players"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Players</FormLabel>
+                <FormLabel>{t('filters.players')}</FormLabel>
 
                 <MultiCombobox
                   values={field.value}
@@ -346,17 +355,14 @@ export const Filters = ({ className }: { className?: string }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  DRTG Ranking
+                  {t('filters.drtgRanking')}
                   <Tooltip delayDuration={500}>
                     <TooltipTrigger>
                       <InformationCircleIcon className="size-5" />
                     </TooltipTrigger>
 
                     <TooltipContent>
-                      <p>
-                        DRTG ranking of the opposing team during the month of
-                        the game.
-                      </p>
+                      {t('filters.drtgRankingTooltip')}
                     </TooltipContent>
                   </Tooltip>
                 </FormLabel>
@@ -387,17 +393,14 @@ export const Filters = ({ className }: { className?: string }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  ORTG Ranking
+                  {t('filters.ortgRanking')}
                   <Tooltip delayDuration={500}>
                     <TooltipTrigger>
                       <InformationCircleIcon className="size-5" />
                     </TooltipTrigger>
 
                     <TooltipContent>
-                      <p>
-                        ORTG ranking of the atacking team during the month of
-                        the game.
-                      </p>
+                      {t('filters.ortgRankingTooltip')}
                     </TooltipContent>
                   </Tooltip>
                 </FormLabel>
@@ -427,7 +430,7 @@ export const Filters = ({ className }: { className?: string }) => {
             name="positions"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Positions</FormLabel>
+                <FormLabel>{t('filters.positions')}</FormLabel>
 
                 <ToggleGroup
                   type="multiple"
@@ -455,7 +458,7 @@ export const Filters = ({ className }: { className?: string }) => {
             name="result"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Result</FormLabel>
+                <FormLabel>{t('filters.result')}</FormLabel>
 
                 <Tabs
                   value={field.value}
@@ -468,11 +471,11 @@ export const Filters = ({ className }: { className?: string }) => {
                   <TabsList className="w-full">
                     {RESULTS.map((option) => (
                       <TabsTrigger
-                        key={option}
-                        value={option}
+                        key={option.value}
+                        value={option.value}
                         className="capitalize"
                       >
-                        {option}
+                        {t(option.labelKey)}
                       </TabsTrigger>
                     ))}
                   </TabsList>
@@ -488,7 +491,7 @@ export const Filters = ({ className }: { className?: string }) => {
             disabled={!form.formState.isDirty}
             loading={isLoading || isValidating}
           >
-            Apply
+            {t('global.apply')}
           </Button>
         </form>
       </Form>
