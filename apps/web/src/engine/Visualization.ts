@@ -1,3 +1,5 @@
+import { BASIC_ZONES, ZONE_BY_LOCATION } from '@nba-viz/data';
+
 // All units are in feet
 
 // 50mm (0.16 ft)
@@ -82,6 +84,36 @@ export interface EngineCallbacks {
   onHover: (data: HighlightCallbackData[] | null) => void;
 }
 
+type ZoneLocations = Record<
+  keyof typeof BASIC_ZONES,
+  Array<{
+    x: number;
+    y: number;
+  }>
+>;
+
+const ZONE_LOCATIONS: ZoneLocations = Object.keys(BASIC_ZONES).reduce(
+  (acc, zone) => {
+    const locations = ZONE_BY_LOCATION.filter((z) => z.zone === zone);
+    acc[zone as keyof typeof BASIC_ZONES] = locations.map((l) => {
+      const split = l.location.split('-');
+
+      const x = l.location.startsWith('-')
+        ? Number(split[1]) * -1
+        : Number(split[0]);
+
+      const y = Number(split[split.length - 1]);
+
+      return {
+        x: x + 25,
+        y,
+      };
+    });
+    return acc;
+  },
+  {} as ZoneLocations,
+);
+
 export class VisualizationEngine {
   private ctx: CanvasRenderingContext2D;
   private size = { width: 0, height: 0, sectionSize: 0 };
@@ -92,6 +124,9 @@ export class VisualizationEngine {
 
   private startHighlightShot: HighlightCallbackData | null = null;
   private endHighlightShot: HighlightCallbackData | null = null;
+
+  private highlightedShots: { x: number; y: number }[] = [];
+
   private isMouseDown = false;
   private cachedVisualization: ImageData | null = null;
 
@@ -182,39 +217,71 @@ export class VisualizationEngine {
     this.drawHoveredShot();
   }
 
+  public highlightZone(zone: keyof typeof BASIC_ZONES) {
+    const shots = [];
+    const locations = ZONE_LOCATIONS[zone];
+    for (const location of locations) {
+      shots.push({ x: location.x, y: location.y });
+    }
+    this.highlightedShots = shots;
+    this.draw();
+  }
+
   private drawHoveredShot() {
-    if (!this.startHighlightShot || !this.endHighlightShot) {
+    if (this.highlightedShots.length === 0) {
       return;
     }
 
-    const { x: startX, y: startY } = this.sectionToPosition(
-      this.startHighlightShot.section.x,
-      this.startHighlightShot.section.y,
-    );
-
-    const { x, y } = this.sectionToPosition(
-      this.endHighlightShot.section.x,
-      this.endHighlightShot.section.y,
-    );
-
-    const endX = x + this.size.sectionSize;
-    const endY = y + this.size.sectionSize;
-
-    const width = Math.abs(endX - startX);
-    const height = Math.abs(endY - startY);
-
-    const minX = Math.min(startX, endX);
-    const minY = Math.min(startY, endY);
-
-    this.ctx.strokeStyle = THEME.hoveredShot;
-    this.ctx.beginPath();
-    this.ctx.rect(minX, minY, width, height);
-    this.ctx.closePath();
-    this.ctx.stroke();
-    this.ctx.fillStyle = THEME.hoveredShot;
     this.ctx.save();
+
+    // Create a set for quick lookup of highlighted shots
+    const highlightedSet = new Set(
+      this.highlightedShots.map((shot) => `${shot.x},${shot.y}`),
+    );
+
+    // Fill all highlighted shots as one shape
+    this.ctx.beginPath();
+    for (const shot of this.highlightedShots) {
+      const { x, y } = this.sectionToPosition(shot.x, shot.y);
+      this.ctx.rect(x, y, this.size.sectionSize, this.size.sectionSize);
+    }
     this.ctx.globalAlpha = 0.2;
-    this.ctx.fillRect(minX, minY, width, height);
+    this.ctx.fillStyle = THEME.hoveredShot;
+    this.ctx.fill();
+
+    // Draw strokes only on outer borders
+    this.ctx.beginPath();
+    for (const shot of this.highlightedShots) {
+      const { x, y } = this.sectionToPosition(shot.x, shot.y);
+      const size = this.size.sectionSize;
+
+      // Top
+      if (!highlightedSet.has(`${shot.x},${shot.y - 1}`)) {
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x + size, y);
+      }
+      // Right
+      if (!highlightedSet.has(`${shot.x + 1},${shot.y}`)) {
+        this.ctx.moveTo(x + size, y);
+        this.ctx.lineTo(x + size, y + size);
+      }
+      // Bottom
+      if (!highlightedSet.has(`${shot.x},${shot.y + 1}`)) {
+        this.ctx.moveTo(x, y + size);
+        this.ctx.lineTo(x + size, y + size);
+      }
+      // Left
+      if (!highlightedSet.has(`${shot.x - 1},${shot.y}`)) {
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x, y + size);
+      }
+    }
+
+    this.ctx.globalAlpha = 1;
+    this.ctx.strokeStyle = THEME.hoveredShot;
+    this.ctx.lineWidth = 2;
+    this.ctx.stroke();
+
     this.ctx.restore();
   }
 
@@ -651,6 +718,7 @@ export class VisualizationEngine {
       'mousemove',
       (event) => {
         const { x, y } = this.positionToSection(event.offsetX, event.offsetY);
+        console.log(x, y);
         this.onHover({ x, y });
       },
       { signal: this.abortController.signal },
@@ -744,5 +812,25 @@ const colorInterpolate = (colorA: string, colorB: string, intval: number) => {
 };
 
 const getAccuracyColor = (accuracy: number) => {
+  // if (basicZone === -1) {
+  //   return { r: 0, g: 0, b: 0 };
+  // }
+
+  // if (basicZone === 1) {
+  //   return { r: 255, g: 0, b: 0 };
+  // } else if (basicZone === 2) {
+  //   return { r: 0, g: 255, b: 0 };
+  // } else if (basicZone === 3) {
+  //   return { r: 0, g: 0, b: 255 };
+  // } else if (basicZone === 4) {
+  //   return { r: 255, g: 255, b: 0 };
+  // } else if (basicZone === 5) {
+  //   return { r: 255, g: 0, b: 255 };
+  // } else if (basicZone === 6) {
+  //   return { r: 0, g: 255, b: 255 };
+  // } else if (basicZone === 7) {
+  //   return { r: 255, g: 255, b: 255 };
+  // }
+
   return colorInterpolate('rgb(101, 146, 173)', 'rgb(0, 20, 30)', accuracy);
 };

@@ -7,9 +7,9 @@ export type ShotColumn = keyof Shot;
 
 class NBADatabase {
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRnezgapBmIZcHQVoTk7CNL30vSPEMJxlBRAzW';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRcZXS6k8bHdZkmw3lGfx7oyXWDuqLAIjM8RUJ';
 
-  private readonly EXPECTED_DB_SIZE = 511483904;
+  private readonly EXPECTED_DB_SIZE = 510976000;
 
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 

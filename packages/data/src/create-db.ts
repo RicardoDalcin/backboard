@@ -194,6 +194,8 @@ async function createAndSeed() {
 
   const playersCache = new PlayerCache();
 
+  const zoneByLocationMap = new Map<string, Record<number, number>>();
+
   // Maps to store string-to-integer mappings
   const eventTypeMap = new Map<string, number>();
   const actionTypeMap = new Map<string, number>();
@@ -280,7 +282,7 @@ async function createAndSeed() {
       const locX = Number(record.LOC_X);
       const locY = Number(record.LOC_Y);
 
-      const _correctedLocX = needCorrection ? locX * 10 : locX;
+      const _correctedLocX = needCorrection ? locX * 10 : locX * -1;
 
       const correctedLocX = clamp(
         _correctedLocX < COURT_CENTER_LEFT
@@ -295,6 +297,19 @@ async function createAndSeed() {
       const correctedLocY = roundTo(
         needCorrection ? locY * 10 - COURT_LENGTH * 1.4 : locY,
         0,
+      );
+
+      const basicZone = getOrCreateId(basicZoneMap, record.BASIC_ZONE);
+
+      const locationZone =
+        zoneByLocationMap.get(`${correctedLocX}-${correctedLocY}`) ?? {};
+      const newLocationZone = {
+        ...locationZone,
+        [basicZone]: (locationZone[basicZone] ?? 0) + 1,
+      };
+      zoneByLocationMap.set(
+        `${correctedLocX}-${correctedLocY}`,
+        newLocationZone,
       );
 
       const gameDate = new Date(`${year}-${monthString}-${dayString}`);
@@ -314,7 +329,7 @@ async function createAndSeed() {
         shotMade: record.SHOT_MADE === 'TRUE',
         actionType: getOrCreateId(actionTypeMap, record.ACTION_TYPE),
         shotType: getOrCreateId(shotTypeMap, record.SHOT_TYPE),
-        basicZone: getOrCreateId(basicZoneMap, record.BASIC_ZONE),
+        basicZone,
         zoneName: getOrCreateId(zoneNameMap, record.ZONE_NAME),
         zoneAbb: getOrCreateId(zoneAbbMap, record.ZONE_ABB),
         zoneRange: getOrCreateId(zoneRangeMap, record.ZONE_RANGE),
@@ -441,6 +456,24 @@ async function createAndSeed() {
     `${FOLDER_PATH}/data_dictionary.json`,
     JSON.stringify(dataDictionary, null, 2),
   );
+
+  // const finalZoneByLocation = Array.from(zoneByLocationMap.entries()).map(
+  //   ([location, zones]) => {
+  //     // final zone is the zone with the highest count
+  //     const finalZone = Object.keys(zones).reduce((a, b) =>
+  //       zones[a] > zones[b] ? a : b,
+  //     );
+  //     return {
+  //       location,
+  //       zone: finalZone,
+  //     };
+  //   },
+  // );
+
+  // await writeFile(
+  //   `${FOLDER_PATH}/zone_by_location.json`,
+  //   JSON.stringify(finalZoneByLocation, null, 2),
+  // );
 
   db.close();
 }

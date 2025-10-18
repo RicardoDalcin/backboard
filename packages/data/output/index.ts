@@ -1,4 +1,5 @@
 import dictionary from './data_dictionary.json';
+import ZONE_BY_LOCATION from './zone_by_location.json';
 
 const ACTION_TYPES = dictionary.actionType;
 const EVENT_TYPES = dictionary.eventType;
@@ -22,4 +23,5 @@ export {
   POSITIONS,
   POSITION_GROUPS,
   TEAMS,
+  ZONE_BY_LOCATION,
 };
