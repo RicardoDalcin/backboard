@@ -1,4 +1,4 @@
-import { BASIC_ZONES, ZONE_BY_LOCATION } from '@nba-viz/data';
+import { BASIC_ZONES, ZONE_LOCATIONS } from '@nba-viz/data';
 
 // All units are in feet
 
@@ -83,36 +83,6 @@ export type HoverCallbackData = HighlightCallbackData[] | null;
 export interface EngineCallbacks {
   onHover: (data: HighlightCallbackData[] | null) => void;
 }
-
-type ZoneLocations = Record<
-  keyof typeof BASIC_ZONES,
-  Array<{
-    x: number;
-    y: number;
-  }>
->;
-
-const ZONE_LOCATIONS: ZoneLocations = Object.keys(BASIC_ZONES).reduce(
-  (acc, zone) => {
-    const locations = ZONE_BY_LOCATION.filter((z) => z.zone === zone);
-    acc[zone as keyof typeof BASIC_ZONES] = locations.map((l) => {
-      const split = l.location.split('-');
-
-      const x = l.location.startsWith('-')
-        ? Number(split[1]) * -1
-        : Number(split[0]);
-
-      const y = Number(split[split.length - 1]);
-
-      return {
-        x: x + 25,
-        y,
-      };
-    });
-    return acc;
-  },
-  {} as ZoneLocations,
-);
 
 export class VisualizationEngine {
   private ctx: CanvasRenderingContext2D;

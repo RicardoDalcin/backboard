@@ -4,7 +4,7 @@ import {
   POSITION_GROUPS,
   BASIC_ZONES,
   POSITIONS,
-  ZONE_BY_LOCATION,
+  ZONE_LOCATIONS,
 } from './output';
 
 interface Team {
@@ -42,6 +42,6 @@ export {
   POSITION_GROUPS,
   BASIC_ZONES,
   POSITIONS,
-  ZONE_BY_LOCATION,
+  ZONE_LOCATIONS,
 };
 export type { Team, Season, Player };
