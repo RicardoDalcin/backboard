@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { CourtTooltip } from './court-tooltip';
 import { useAtom } from 'jotai';
 import { atom } from 'jotai';
+import { useChartSync } from '@/stores/chart-sync';
+import { BASIC_ZONES } from '@nba-viz/data';
 
 const hoveredSectionAtom = atom<{
   startX: number;
@@ -16,6 +18,8 @@ export const Court = ({
 }: {
   data: { locX: number; locY: number; totalShots: number; totalMade: number }[];
 }) => {
+  const { activeIndex } = useChartSync('clock-area');
+
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const initialized = useRef(false);
@@ -26,6 +30,22 @@ export const Court = ({
 
   const isMouseOver = useRef(false);
   const abortController = useRef(new AbortController());
+
+  useEffect(() => {
+    if (!activeIndex) {
+      return;
+    }
+
+    const zoneId = Object.keys(BASIC_ZONES).find(
+      (key) => BASIC_ZONES[key as keyof typeof BASIC_ZONES] === activeIndex,
+    );
+
+    if (!zoneId) {
+      return;
+    }
+
+    engine.current?.highlightZone(zoneId as keyof typeof BASIC_ZONES);
+  }, [activeIndex]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

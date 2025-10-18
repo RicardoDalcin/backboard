@@ -718,7 +718,6 @@ export class VisualizationEngine {
       'mousemove',
       (event) => {
         const { x, y } = this.positionToSection(event.offsetX, event.offsetY);
-        console.log(x, y);
         this.onHover({ x, y });
       },
       { signal: this.abortController.signal },
