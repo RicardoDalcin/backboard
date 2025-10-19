@@ -99,6 +99,7 @@ export class VisualizationEngine {
 
   private isMouseDown = false;
   private cachedVisualization: ImageData | null = null;
+  private cachedZones = new Map<keyof typeof BASIC_ZONES, HTMLCanvasElement>();
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -187,72 +188,102 @@ export class VisualizationEngine {
     this.drawHoveredShot();
   }
 
-  public highlightZone(zone: keyof typeof BASIC_ZONES) {
-    const shots = [];
-    const locations = ZONE_LOCATIONS[zone];
-    for (const location of locations) {
-      shots.push({ x: location.x, y: location.y });
-    }
-    this.highlightedShots = shots;
+  private highlightedZone: keyof typeof BASIC_ZONES | null = null;
+
+  public highlightZone(zone: keyof typeof BASIC_ZONES | null) {
+    // const shots = [];
+    // const locations = ZONE_LOCATIONS[zone];
+    // for (const location of locations) {
+    //   shots.push({ x: location.x, y: location.y });
+    // }
+    // this.highlightedShots = shots;
+    // this.draw();
+    this.highlightedZone = zone;
     this.draw();
   }
 
-  private drawHoveredShot() {
-    if (this.highlightedShots.length === 0) {
+  private cacheZone(zone: keyof typeof BASIC_ZONES) {
+    // Create offscreen canvas for this zone
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = this.size.width * devicePixelRatio;
+    offscreenCanvas.height = this.size.height * devicePixelRatio;
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+
+    if (!offscreenCtx) {
       return;
     }
 
-    this.ctx.save();
+    offscreenCtx.scale(devicePixelRatio, devicePixelRatio);
+
+    const highlightedShots = ZONE_LOCATIONS[zone];
 
     // Create a set for quick lookup of highlighted shots
     const highlightedSet = new Set(
-      this.highlightedShots.map((shot) => `${shot.x},${shot.y}`),
+      highlightedShots.map((shot) => `${shot.x},${shot.y}`),
     );
 
     // Fill all highlighted shots as one shape
-    this.ctx.beginPath();
-    for (const shot of this.highlightedShots) {
+    offscreenCtx.beginPath();
+    for (const shot of highlightedShots) {
       const { x, y } = this.sectionToPosition(shot.x, shot.y);
-      this.ctx.rect(x, y, this.size.sectionSize, this.size.sectionSize);
+      offscreenCtx.rect(x, y, this.size.sectionSize, this.size.sectionSize);
     }
-    this.ctx.globalAlpha = 0.2;
-    this.ctx.fillStyle = THEME.hoveredShot;
-    this.ctx.fill();
+    offscreenCtx.globalAlpha = 0.2;
+    offscreenCtx.fillStyle = THEME.hoveredShot;
+    offscreenCtx.fill();
 
     // Draw strokes only on outer borders
-    this.ctx.beginPath();
-    for (const shot of this.highlightedShots) {
+    offscreenCtx.beginPath();
+    for (const shot of highlightedShots) {
       const { x, y } = this.sectionToPosition(shot.x, shot.y);
       const size = this.size.sectionSize;
 
       // Top
       if (!highlightedSet.has(`${shot.x},${shot.y - 1}`)) {
-        this.ctx.moveTo(x, y);
-        this.ctx.lineTo(x + size, y);
+        offscreenCtx.moveTo(x, y);
+        offscreenCtx.lineTo(x + size, y);
       }
       // Right
       if (!highlightedSet.has(`${shot.x + 1},${shot.y}`)) {
-        this.ctx.moveTo(x + size, y);
-        this.ctx.lineTo(x + size, y + size);
+        offscreenCtx.moveTo(x + size, y);
+        offscreenCtx.lineTo(x + size, y + size);
       }
       // Bottom
       if (!highlightedSet.has(`${shot.x},${shot.y + 1}`)) {
-        this.ctx.moveTo(x, y + size);
-        this.ctx.lineTo(x + size, y + size);
+        offscreenCtx.moveTo(x, y + size);
+        offscreenCtx.lineTo(x + size, y + size);
       }
       // Left
       if (!highlightedSet.has(`${shot.x - 1},${shot.y}`)) {
-        this.ctx.moveTo(x, y);
-        this.ctx.lineTo(x, y + size);
+        offscreenCtx.moveTo(x, y);
+        offscreenCtx.lineTo(x, y + size);
       }
     }
 
-    this.ctx.globalAlpha = 1;
-    this.ctx.strokeStyle = THEME.hoveredShot;
-    this.ctx.lineWidth = 2;
-    this.ctx.stroke();
+    offscreenCtx.globalAlpha = 1;
+    offscreenCtx.strokeStyle = THEME.hoveredShot;
+    offscreenCtx.lineWidth = 2;
+    offscreenCtx.stroke();
 
-    this.ctx.restore();
+    this.cachedZones.set(zone, offscreenCanvas);
+  }
+
+  private drawHoveredShot() {
+    if (this.highlightedZone === null) {
+      return;
+    }
+
+    // Check if zone is cached, if not, cache it
+    if (!this.cachedZones.has(this.highlightedZone)) {
+      this.cacheZone(this.highlightedZone);
+    }
+
+    const cachedCanvas = this.cachedZones.get(this.highlightedZone);
+    if (cachedCanvas) {
+      this.ctx.save();
+      this.ctx.drawImage(cachedCanvas, 0, 0, this.size.width, this.size.height);
+      this.ctx.restore();
+    }
   }
 
   private positionToSection(x: number, y: number) {
@@ -516,6 +547,10 @@ export class VisualizationEngine {
     };
 
     this.ctx.scale(devicePixelRatio, devicePixelRatio);
+
+    for (const zone of Object.keys(BASIC_ZONES)) {
+      this.cacheZone(zone as keyof typeof BASIC_ZONES);
+    }
   }
 
   private clearHoveredShot() {
@@ -666,6 +701,10 @@ export class VisualizationEngine {
     const resizeObserver = new ResizeObserver(() => {
       this.onResize();
       this.cachedVisualization = null;
+      this.cachedZones.clear();
+      for (const zone of Object.keys(BASIC_ZONES)) {
+        this.cacheZone(zone as keyof typeof BASIC_ZONES);
+      }
       this.draw();
     });
 

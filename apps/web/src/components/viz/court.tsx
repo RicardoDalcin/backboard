@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CourtTooltip } from './court-tooltip';
 import { useAtom } from 'jotai';
 import { atom } from 'jotai';
-import { useChartSync } from '@/stores/chart-sync';
+import { regionSync } from '@/stores/chart-sync';
 import { BASIC_ZONES } from '@nba-viz/data';
 
 const hoveredSectionAtom = atom<{
@@ -18,7 +18,7 @@ export const Court = ({
 }: {
   data: { locX: number; locY: number; totalShots: number; totalMade: number }[];
 }) => {
-  const { activeIndex } = useChartSync('clock-area');
+  const [activeIndex] = useAtom(regionSync);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,22 +30,6 @@ export const Court = ({
 
   const isMouseOver = useRef(false);
   const abortController = useRef(new AbortController());
-
-  useEffect(() => {
-    if (!activeIndex) {
-      return;
-    }
-
-    const zoneId = Object.keys(BASIC_ZONES).find(
-      (key) => BASIC_ZONES[key as keyof typeof BASIC_ZONES] === activeIndex,
-    );
-
-    if (!zoneId) {
-      return;
-    }
-
-    engine.current?.highlightZone(zoneId as keyof typeof BASIC_ZONES);
-  }, [activeIndex]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -160,6 +144,23 @@ export const Court = ({
     engine.current.setHoveredShot(hoveredSection);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredSection]);
+
+  useEffect(() => {
+    if (!activeIndex) {
+      engine.current?.highlightZone(null);
+      return;
+    }
+
+    const zoneId = Object.keys(BASIC_ZONES).find(
+      (key) => BASIC_ZONES[key as keyof typeof BASIC_ZONES] === activeIndex,
+    );
+
+    if (!zoneId) {
+      return;
+    }
+
+    engine.current?.highlightZone(zoneId as keyof typeof BASIC_ZONES);
+  }, [activeIndex]);
 
   return (
     <div ref={containerRef} className="w-full h-min relative">

@@ -1,7 +1,7 @@
-import { useChartSync } from '@/stores/chart-sync';
+import { regionSync } from '@/stores/chart-sync';
 import { useStats } from '@/stores/stats';
 import { BASIC_ZONES } from '@nba-viz/data';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, memo } from 'react';
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -10,21 +10,45 @@ import {
   RadarChart,
   ResponsiveContainer,
   Tooltip,
-  type TooltipProps,
 } from 'recharts';
-import {
-  type NameType,
-  type ValueType,
-} from 'recharts/types/component/DefaultTooltipContent';
+import { AnimatePresence, motion } from 'motion/react';
+import { useAtom } from 'jotai';
 
-const CustomTooltip = ({
-  active,
-  payload,
-}: TooltipProps<ValueType, NameType>) => {
-  if (active && payload && payload.length) {
-    const data = payload[0];
+const bigFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+const percentageFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const CustomTooltip = memo(
+  ({
+    payload,
+    position,
+  }: {
+    payload: {
+      value: number;
+      payload: {
+        region: string;
+        accuracy: number;
+      };
+    }[];
+    position: { x: number; y: number };
+  }) => {
+    const data = useMemo(() => {
+      return payload[0];
+    }, [payload]);
+
     return (
-      <div className="bg-background border border-border rounded-lg shadow-lg px-3 py-2">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.7, left: position.x, top: position.y }}
+        animate={{ opacity: 1, scale: 1, left: position.x, top: position.y }}
+        exit={{ opacity: 0, scale: 0.7, left: position.x, top: position.y }}
+        className="bg-background border border-border rounded-lg shadow-lg px-3 py-2 absolute z-50 pointer-events-none min-w-[180px] w-[180px]"
+      >
         <p className="text-sm font-medium mb-1">{data.payload.region}</p>
         <p className="text-sm text-muted-foreground">
           Total Shots:{' '}
@@ -38,11 +62,10 @@ const CustomTooltip = ({
             {percentageFormatter.format(data.payload.accuracy)}%
           </span>
         </p>
-      </div>
+      </motion.div>
     );
-  }
-  return null;
-};
+  },
+);
 
 type CategoricalChartWrapper = {
   container: HTMLDivElement;
@@ -64,7 +87,7 @@ export const ShotRegionChart = ({
   data: ReturnType<typeof useStats>['statSummary'];
 }) => {
   const chartRef = useRef<CategoricalChartWrapper | null>(null);
-  const { activeIndex, setActiveIndex } = useChartSync('clock-area');
+  const [activeIndex, setActiveIndex] = useAtom(regionSync);
 
   const chartData = useMemo(() => {
     return data
@@ -106,26 +129,6 @@ export const ShotRegionChart = ({
   const threePointStats = useMemo(() => getStats([1, 4, 6, 7]), [getStats]);
   const twoPointStats = useMemo(() => getStats([2, 3, 5]), [getStats]);
 
-  const index = useMemo(() => {
-    if (!chartRef.current || activeIndex === undefined) {
-      return undefined;
-    }
-
-    if (activeIndex === null) {
-      return null;
-    }
-
-    const idx = chartRef.current.state.prevData.findIndex(
-      (item) => item.region === activeIndex,
-    );
-
-    if (idx === -1) {
-      return null;
-    }
-
-    return idx;
-  }, [activeIndex]);
-
   useEffect(() => {
     if (!chartRef.current || chartData.length === 0) {
       return;
@@ -136,7 +139,7 @@ export const ShotRegionChart = ({
     chartRef.current.container.addEventListener(
       'mousemove',
       () => {
-        setActiveIndex(chartRef.current?.state.activeLabel ?? null);
+        setActiveIndex(chartRef.current?.state.activeLabel?.toString() ?? null);
       },
       { signal: abortController.signal },
     );
@@ -156,9 +159,60 @@ export const ShotRegionChart = ({
     };
   }, [chartData, setActiveIndex]);
 
+  const activePayload = useMemo(() => {
+    if (
+      !chartRef.current ||
+      activeIndex === undefined ||
+      activeIndex === null
+    ) {
+      return null;
+    }
+
+    const dataPoint = chartData.find((item) => item.region === activeIndex);
+    if (!dataPoint) {
+      return null;
+    }
+
+    return [
+      {
+        value: dataPoint.total,
+        payload: dataPoint,
+        dataKey: 'total',
+        name: 'Total',
+      },
+    ];
+  }, [activeIndex, chartData]);
+
+  const tooltipPosition = useMemo(() => {
+    if (!chartRef.current || !activePayload) {
+      return undefined;
+    }
+
+    const dataIndex = chartData.findIndex(
+      (item) => item.region === activeIndex,
+    );
+
+    if (dataIndex === -1) {
+      return undefined;
+    }
+
+    // Calculate position based on radar chart geometry
+    const container = chartRef.current.container;
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const radius = Math.min(centerX, centerY) * 0.6; // 60% outer radius from chart
+    const angle = (dataIndex * 2 * Math.PI) / chartData.length - Math.PI / 2;
+
+    return {
+      x: centerX + radius * Math.cos(angle),
+      y: centerY + radius * Math.sin(angle),
+    };
+  }, [activePayload, activeIndex, chartData]);
+
   return (
     <div className="flex flex-col w-full gap-4 -mx-4">
-      <div className="grid grid-rows-2 @xs:grid-cols-[repeat(2,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full px-4">
+      <div className="grid grid-rows-2 @xs:grid-cols-[repeat(2,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full">
         <Stat
           label="2PT shots"
           total={twoPointStats.total}
@@ -171,50 +225,51 @@ export const ShotRegionChart = ({
         />
       </div>
 
-      <ResponsiveContainer
-        minWidth="100%"
-        width="100%"
-        minHeight={200}
-        aspect={1}
-      >
-        <RadarChart
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ref={chartRef as any}
-          cx="50%"
-          cy="50%"
-          outerRadius="60%"
-          data={chartData}
+      <div className="relative">
+        <ResponsiveContainer
+          minWidth="100%"
+          width="100%"
+          minHeight={200}
+          aspect={1}
         >
-          <PolarGrid />
-          <PolarAngleAxis dataKey="region" fontSize="80%" />
-          <PolarRadiusAxis tick={false} />
-          <Radar
-            name="Total"
-            dataKey="total"
-            stroke="#4c699c"
-            fill="#4c699c"
-            fillOpacity={0.6}
-          />
-          <Tooltip
-            active={index !== null}
-            defaultIndex={index ?? undefined}
-            content={<CustomTooltip />}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
+          <RadarChart
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ref={chartRef as any}
+            cx="50%"
+            cy="50%"
+            outerRadius="60%"
+            data={chartData}
+          >
+            <PolarGrid />
+            <PolarAngleAxis dataKey="region" fontSize="80%" />
+            <PolarRadiusAxis tick={false} />
+            <Radar
+              name="Total"
+              dataKey="total"
+              stroke="#4c699c"
+              fill="#4c699c"
+              fillOpacity={0.6}
+            />
+            <Tooltip content={<EmptyTooltip />} />
+          </RadarChart>
+        </ResponsiveContainer>
+
+        <AnimatePresence>
+          {activePayload && tooltipPosition && (
+            <CustomTooltip
+              payload={activePayload ?? []}
+              position={tooltipPosition}
+            />
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
 
-const bigFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
-const percentageFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+const EmptyTooltip = () => {
+  return <div className="touch-none pointer-events-none hidden"></div>;
+};
 
 const Stat = ({
   label,

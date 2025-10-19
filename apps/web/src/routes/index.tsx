@@ -56,7 +56,7 @@ function Index() {
             )}
           </Card>
 
-          <Card className="@container col-span-12 xl:col-span-5 xl:h-min py-0 px-4 overflow-hidden">
+          <Card className="@container col-span-12 xl:col-span-5 xl:h-min py-0 px-4">
             {isLoading ? (
               <Skeleton className="w-full h-full" />
             ) : (
