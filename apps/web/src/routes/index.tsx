@@ -47,20 +47,20 @@ function Index() {
       <div className="flex gap-6">
         <Filters />
 
-        <div className="grid grid-cols-12 gap-6 flex-1">
+        <div className="grid grid-cols-12 gap-6 flex-1 h-min">
           <Card className="col-span-12 xl:col-span-7 xl:h-min py-0">
             {isLoading ? (
-              <Skeleton className="w-full aspect-[541/406.83] rounded-xl" />
+              <Skeleton className="w-full aspect-[541/406.83] !rounded-xl" />
             ) : (
               <Court data={courtShotData} />
             )}
           </Card>
 
-          <Card className="@container col-span-12 xl:col-span-5 xl:h-min py-0 px-4 overflow-hidden">
+          <Card className="@container col-span-12 xl:col-span-5 xl:h-min py-0">
             {isLoading ? (
-              <Skeleton className="w-full h-full" />
+              <Skeleton className="w-full h-full aspect-[90/100] !rounded-xl" />
             ) : (
-              <div className="pt-8">
+              <div className="pt-8 px-4">
                 <ShotRegionChart data={statSummary} />
               </div>
             )}

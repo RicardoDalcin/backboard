@@ -60,11 +60,7 @@ export const CourtTooltip = ({
     style: 'decimal',
   });
 
-  const shots = useDebounce(
-    hoveredShot,
-    200,
-    (s) => s?.every((s) => s.totalShots === 0) ?? false,
-  );
+  const shots = useDebounce(hoveredShot, 200, (s) => s?.totalShots === 0);
 
   const getX = useCallback(
     (shotX: number) => {
@@ -102,35 +98,27 @@ export const CourtTooltip = ({
   );
 
   const position = useMemo(() => {
-    if (shots == null || shots.length === 0) {
+    if (shots == null || shots.totalShots === 0) {
       return { x: 0, y: 0 };
     }
 
-    const maxX = Math.max(...shots.map((shot) => shot.position.x));
-    const maxY = Math.max(...shots.map((shot) => shot.position.y));
-
-    const x = getX(maxX);
-    const y = getY(maxY);
+    const x = getX(shots.position.x);
+    const y = getY(shots.position.y);
 
     return { x, y };
   }, [getX, getY, shots]);
 
   const average = useMemo(() => {
-    if (hoveredShot?.length === 0) {
+    if (!hoveredShot || hoveredShot?.totalShots === 0) {
       return {
         totalShots: 0,
         madeShots: 0,
       };
     }
 
-    const totalShots =
-      hoveredShot?.reduce((acc, shot) => acc + shot.totalShots, 0) ?? 0;
-    const madeShots =
-      hoveredShot?.reduce((acc, shot) => acc + shot.madeShots, 0) ?? 0;
-
     return {
-      totalShots,
-      madeShots,
+      totalShots: hoveredShot.totalShots,
+      madeShots: hoveredShot.madeShots,
     };
   }, [hoveredShot]);
 

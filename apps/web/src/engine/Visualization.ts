@@ -40,17 +40,11 @@ const COURT_WIDTH_FT = 50;
 
 const COURT_ASPECT_RATIO = COURT_WIDTH_FT / COURT_LENGTH_FT;
 
-// const THEME = {
-//   background: '#242424',
-//   line: '#ffffff',
-//   paintedArea: '#ffffff',
-// };
-
 const THEME = {
   background: '#ffffff',
   line: '#808080',
   paintedArea: '#353535',
-  hoveredShot: '#61d0ff',
+  hoveredShot: '#4f39f6',
 };
 
 interface ShotSection {
@@ -69,8 +63,10 @@ export type HighlightCallbackData = {
   totalShots: number;
   madeShots: number;
   section: {
-    x: number;
-    y: number;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
   };
   position: {
     x: number;
@@ -78,10 +74,24 @@ export type HighlightCallbackData = {
   };
 };
 
-export type HoverCallbackData = HighlightCallbackData[] | null;
+export type HoverCallbackData = HighlightCallbackData | null;
+
+const getDefaultHoveringData = (): HighlightCallbackData => {
+  return {
+    totalShots: 0,
+    madeShots: 0,
+    section: {
+      startX: Infinity,
+      startY: Infinity,
+      endX: -Infinity,
+      endY: -Infinity,
+    },
+    position: { x: 0, y: 0 },
+  };
+};
 
 export interface EngineCallbacks {
-  onHover: (data: HighlightCallbackData[] | null) => void;
+  onHover: (data: HighlightCallbackData | null) => void;
 }
 
 export class VisualizationEngine {
@@ -95,10 +105,9 @@ export class VisualizationEngine {
   private startHighlightShot: HighlightCallbackData | null = null;
   private endHighlightShot: HighlightCallbackData | null = null;
 
-  private highlightedShots: { x: number; y: number }[] = [];
-
   private isMouseDown = false;
   private cachedVisualization: ImageData | null = null;
+  private cachedZones = new Map<keyof typeof BASIC_ZONES, HTMLCanvasElement>();
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -187,72 +196,168 @@ export class VisualizationEngine {
     this.drawHoveredShot();
   }
 
-  public highlightZone(zone: keyof typeof BASIC_ZONES) {
-    const shots = [];
-    const locations = ZONE_LOCATIONS[zone];
-    for (const location of locations) {
-      shots.push({ x: location.x, y: location.y });
-    }
-    this.highlightedShots = shots;
-    this.draw();
-  }
+  private highlightedZone: keyof typeof BASIC_ZONES | null = null;
 
-  private drawHoveredShot() {
-    if (this.highlightedShots.length === 0) {
+  public highlightZone(zone: keyof typeof BASIC_ZONES | null) {
+    this.highlightedZone = zone;
+    this.draw();
+
+    if (!zone) {
+      this.callbacks.onHover(null);
       return;
     }
 
-    this.ctx.save();
+    const shotZone = ZONE_LOCATIONS[zone];
+    const aggregate: HighlightCallbackData = shotZone.reduce((acc, shot) => {
+      const key = this.getShotKey(shot.x, shot.y);
+      const shotData = this.shots.get(key);
+      const position = this.sectionToPosition(shot.x, shot.y);
+
+      return {
+        totalShots: acc.totalShots + (shotData?.quantity ?? 0),
+        madeShots: acc.madeShots + (shotData?.totalMade ?? 0),
+        section: {
+          startX: Math.min(acc.section.startX, shot.x),
+          startY: Math.min(acc.section.startY, shot.y),
+          endX: Math.max(acc.section.endX, shot.x),
+          endY: Math.max(acc.section.endY, shot.y),
+        },
+        position: {
+          x: Math.max(acc.position.x, position.x),
+          y: Math.max(acc.position.y, position.y),
+        },
+      };
+    }, getDefaultHoveringData());
+
+    this.callbacks.onHover(aggregate);
+  }
+
+  private cacheZone(zone: keyof typeof BASIC_ZONES) {
+    // Create offscreen canvas for this zone
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = this.size.width * devicePixelRatio;
+    offscreenCanvas.height = this.size.height * devicePixelRatio;
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+
+    if (!offscreenCtx) {
+      return;
+    }
+
+    offscreenCtx.scale(devicePixelRatio, devicePixelRatio);
+
+    const highlightedShots = ZONE_LOCATIONS[zone];
 
     // Create a set for quick lookup of highlighted shots
     const highlightedSet = new Set(
-      this.highlightedShots.map((shot) => `${shot.x},${shot.y}`),
+      highlightedShots.map((shot) => `${shot.x},${shot.y}`),
     );
 
     // Fill all highlighted shots as one shape
-    this.ctx.beginPath();
-    for (const shot of this.highlightedShots) {
+    offscreenCtx.beginPath();
+    for (const shot of highlightedShots) {
       const { x, y } = this.sectionToPosition(shot.x, shot.y);
-      this.ctx.rect(x, y, this.size.sectionSize, this.size.sectionSize);
+      offscreenCtx.rect(x, y, this.size.sectionSize, this.size.sectionSize);
     }
-    this.ctx.globalAlpha = 0.2;
-    this.ctx.fillStyle = THEME.hoveredShot;
-    this.ctx.fill();
+    offscreenCtx.globalAlpha = 0.2;
+    offscreenCtx.fillStyle = THEME.hoveredShot;
+    offscreenCtx.fill();
 
     // Draw strokes only on outer borders
-    this.ctx.beginPath();
-    for (const shot of this.highlightedShots) {
+    offscreenCtx.beginPath();
+    for (const shot of highlightedShots) {
       const { x, y } = this.sectionToPosition(shot.x, shot.y);
       const size = this.size.sectionSize;
 
       // Top
       if (!highlightedSet.has(`${shot.x},${shot.y - 1}`)) {
-        this.ctx.moveTo(x, y);
-        this.ctx.lineTo(x + size, y);
+        offscreenCtx.moveTo(x, y);
+        offscreenCtx.lineTo(x + size, y);
       }
       // Right
       if (!highlightedSet.has(`${shot.x + 1},${shot.y}`)) {
-        this.ctx.moveTo(x + size, y);
-        this.ctx.lineTo(x + size, y + size);
+        offscreenCtx.moveTo(x + size, y);
+        offscreenCtx.lineTo(x + size, y + size);
       }
       // Bottom
       if (!highlightedSet.has(`${shot.x},${shot.y + 1}`)) {
-        this.ctx.moveTo(x, y + size);
-        this.ctx.lineTo(x + size, y + size);
+        offscreenCtx.moveTo(x, y + size);
+        offscreenCtx.lineTo(x + size, y + size);
       }
       // Left
       if (!highlightedSet.has(`${shot.x - 1},${shot.y}`)) {
-        this.ctx.moveTo(x, y);
-        this.ctx.lineTo(x, y + size);
+        offscreenCtx.moveTo(x, y);
+        offscreenCtx.lineTo(x, y + size);
       }
     }
 
-    this.ctx.globalAlpha = 1;
-    this.ctx.strokeStyle = THEME.hoveredShot;
-    this.ctx.lineWidth = 2;
-    this.ctx.stroke();
+    offscreenCtx.globalAlpha = 1;
+    offscreenCtx.strokeStyle = THEME.hoveredShot;
+    offscreenCtx.lineWidth = 2;
+    offscreenCtx.stroke();
 
-    this.ctx.restore();
+    this.cachedZones.set(zone, offscreenCanvas);
+  }
+
+  private drawHoveredShot() {
+    if (
+      this.highlightedZone === null &&
+      (!this.startHighlightShot || !this.endHighlightShot)
+    ) {
+      return;
+    }
+
+    if (this.highlightedZone) {
+      // Check if zone is cached, if not, cache it
+      if (!this.cachedZones.has(this.highlightedZone)) {
+        this.cacheZone(this.highlightedZone);
+      }
+
+      const cachedCanvas = this.cachedZones.get(this.highlightedZone);
+      if (cachedCanvas) {
+        this.ctx.save();
+        this.ctx.drawImage(
+          cachedCanvas,
+          0,
+          0,
+          this.size.width,
+          this.size.height,
+        );
+        this.ctx.restore();
+      }
+      return;
+    }
+
+    if (this.startHighlightShot && this.endHighlightShot) {
+      const startSection = this.startHighlightShot.section;
+      const endSection = this.endHighlightShot.section;
+      const minX = Math.min(startSection.startX, endSection.endX);
+      const maxX = Math.max(startSection.startX, endSection.endX);
+      const minY = Math.min(startSection.startY, endSection.endY);
+      const maxY = Math.max(startSection.startY, endSection.endY);
+
+      this.ctx.strokeStyle = THEME.hoveredShot;
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeRect(
+        minX * this.size.sectionSize,
+        minY * this.size.sectionSize,
+        (maxX - minX + 1) * this.size.sectionSize,
+        (maxY - minY + 1) * this.size.sectionSize,
+      );
+      this.ctx.stroke();
+      this.ctx.restore();
+
+      this.ctx.save();
+      this.ctx.fillStyle = THEME.hoveredShot;
+      this.ctx.globalAlpha = 0.2;
+      this.ctx.fillRect(
+        minX * this.size.sectionSize,
+        minY * this.size.sectionSize,
+        (maxX - minX + 1) * this.size.sectionSize,
+        (maxY - minY + 1) * this.size.sectionSize,
+      );
+      this.ctx.fill();
+      this.ctx.restore();
+    }
   }
 
   private positionToSection(x: number, y: number) {
@@ -516,6 +621,10 @@ export class VisualizationEngine {
     };
 
     this.ctx.scale(devicePixelRatio, devicePixelRatio);
+
+    for (const zone of Object.keys(BASIC_ZONES)) {
+      this.cacheZone(zone as keyof typeof BASIC_ZONES);
+    }
   }
 
   private clearHoveredShot() {
@@ -537,8 +646,10 @@ export class VisualizationEngine {
 
     if (
       currentHighlight &&
-      currentHighlight.section.x === x &&
-      currentHighlight.section.y === y
+      currentHighlight.section.startX === x &&
+      currentHighlight.section.startY === y &&
+      currentHighlight.section.endX === x &&
+      currentHighlight.section.endY === y
     ) {
       return;
     }
@@ -546,7 +657,7 @@ export class VisualizationEngine {
     const newShot = {
       totalShots: shot?.quantity ?? 0,
       madeShots: shot?.totalMade ?? 0,
-      section: { x, y },
+      section: { startX: x, startY: y, endX: x, endY: y },
       position: { x: posX, y: posY },
     };
 
@@ -557,7 +668,7 @@ export class VisualizationEngine {
       this.endHighlightShot = newShot;
     }
 
-    const shots: HighlightCallbackData[] = [];
+    const aggregate = getDefaultHoveringData();
 
     if (!this.startHighlightShot || !this.endHighlightShot) {
       return;
@@ -566,10 +677,10 @@ export class VisualizationEngine {
     const startSection = this.startHighlightShot.section;
     const endSection = this.endHighlightShot.section;
 
-    const minX = Math.min(startSection.x, endSection.x);
-    const maxX = Math.max(startSection.x, endSection.x);
-    const minY = Math.min(startSection.y, endSection.y);
-    const maxY = Math.max(startSection.y, endSection.y);
+    const minX = Math.min(startSection.startX, endSection.endX);
+    const maxX = Math.max(startSection.startX, endSection.endX);
+    const minY = Math.min(startSection.startY, endSection.endY);
+    const maxY = Math.max(startSection.startY, endSection.endY);
 
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
@@ -577,17 +688,25 @@ export class VisualizationEngine {
         const shot = this.shots.get(key);
 
         if (shot) {
-          shots.push({
-            totalShots: shot.quantity,
-            madeShots: shot.totalMade,
-            section: { x, y },
-            position: this.sectionToPosition(x, y),
-          });
+          const position = this.sectionToPosition(x, y);
+
+          aggregate.totalShots += shot.quantity;
+          aggregate.madeShots += shot.totalMade;
+          aggregate.section = {
+            startX: Math.min(aggregate.section.startX, x),
+            startY: Math.min(aggregate.section.startY, y),
+            endX: Math.max(aggregate.section.endX, x),
+            endY: Math.max(aggregate.section.endY, y),
+          };
+          aggregate.position = {
+            x: Math.max(aggregate.position.x, position.x),
+            y: Math.max(aggregate.position.y, position.y),
+          };
         }
       }
     }
 
-    this.callbacks.onHover(shots);
+    this.callbacks.onHover(aggregate);
     this.draw();
   }
 
@@ -621,43 +740,62 @@ export class VisualizationEngine {
     const newStartShot = {
       totalShots: startShot?.quantity ?? 0,
       madeShots: startShot?.totalMade ?? 0,
-      section: { x: startX, y: startY },
-      position: { x: startPosX, y: startPosY },
+      section: { startX: startX, startY: startY, endX: startX, endY: startY },
+      position: {
+        x: startPosX,
+        y: startPosY,
+      },
     };
 
     const newEndShot = {
       totalShots: endShot?.quantity ?? 0,
       madeShots: endShot?.totalMade ?? 0,
-      section: { x: endX, y: endY },
-      position: { x: endPosX, y: endPosY },
+      section: { startX: endX, startY: endY, endX: endX, endY: endY },
+      position: {
+        x: endPosX,
+        y: endPosY,
+      },
     };
 
     this.startHighlightShot = newStartShot;
     this.endHighlightShot = newEndShot;
 
-    const shots: HighlightCallbackData[] = [];
+    const aggregate = getDefaultHoveringData();
 
-    const startSection = newStartShot.section;
-    const endSection = newEndShot.section;
+    const startSection = this.startHighlightShot.section;
+    const endSection = this.endHighlightShot.section;
 
-    for (let x = startSection.x; x <= endSection.x; x++) {
-      for (let y = startSection.y; y <= endSection.y; y++) {
+    const minX = Math.min(startSection.startX, endSection.startX);
+    const maxX = Math.max(startSection.endX, endSection.endX);
+    const minY = Math.min(startSection.startY, endSection.startY);
+    const maxY = Math.max(startSection.endY, endSection.endY);
+
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
         const key = this.getShotKey(x, y);
         const shot = this.shots.get(key);
 
         if (shot) {
-          shots.push({
-            totalShots: shot.quantity,
-            madeShots: shot.totalMade,
-            section: { x, y },
-            position: this.sectionToPosition(x, y),
-          });
+          aggregate.totalShots += shot.quantity;
+          aggregate.madeShots += shot.totalMade;
+          aggregate.section = {
+            startX: Math.min(aggregate.section.startX, x),
+            startY: Math.min(aggregate.section.startY, y),
+            endX: Math.max(aggregate.section.endX, x),
+            endY: Math.max(aggregate.section.endY, y),
+          };
+
+          const position = this.sectionToPosition(x, y);
+          aggregate.position = {
+            x: Math.max(aggregate.position.x, position.x),
+            y: Math.max(aggregate.position.y, position.y),
+          };
         }
       }
     }
 
-    if (shots.length > 0) {
-      this.callbacks.onHover(shots);
+    if (aggregate.totalShots > 0) {
+      this.callbacks.onHover(aggregate);
     }
     this.draw();
   }
@@ -666,6 +804,10 @@ export class VisualizationEngine {
     const resizeObserver = new ResizeObserver(() => {
       this.onResize();
       this.cachedVisualization = null;
+      this.cachedZones.clear();
+      for (const zone of Object.keys(BASIC_ZONES)) {
+        this.cacheZone(zone as keyof typeof BASIC_ZONES);
+      }
       this.draw();
     });
 
@@ -678,7 +820,7 @@ export class VisualizationEngine {
       this.isMouseDown = true;
     });
 
-    this.canvas.addEventListener('mouseup', () => {
+    window.addEventListener('mouseup', () => {
       this.startHighlightShot = this.endHighlightShot;
       this.isMouseDown = false;
       this.draw();
@@ -696,6 +838,9 @@ export class VisualizationEngine {
     this.canvas.addEventListener(
       'mouseleave',
       () => {
+        if (this.isMouseDown) {
+          return;
+        }
         this.clearHoveredShot();
       },
       { signal: this.abortController.signal },
@@ -705,48 +850,6 @@ export class VisualizationEngine {
   private feetToPixels(feet: number) {
     return feet * (this.size.width / COURT_WIDTH_FT);
   }
-
-  // private isThreePointer(sectionX: number, sectionY: number) {
-  //   const { x, y } = this.sectionToPosition(sectionX, sectionY);
-  //   const courtMiddle = this.size.width / 2;
-
-  //   const courtInfoInPixels = {
-  //     straightLength: this.feetToPixels(THREE_POINT_LINE_STRAIGHT_LENGTH),
-  //     radius: this.feetToPixels(THREE_POINT_LINE_RADIUS + 1.1),
-  //     distanceToSideline: this.feetToPixels(THREE_POINT_LINE_DISTANCE),
-  //     distanceToBackline: this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE),
-  //   };
-
-  //   const posX = x + this.size.sectionSize / 2;
-  //   const posY = y + this.size.sectionSize / 2;
-
-  //   const isInStraight =
-  //     y < courtInfoInPixels.straightLength + this.size.sectionSize;
-
-  //   if (isInStraight) {
-  //     return (
-  //       x + this.size.sectionSize <= courtInfoInPixels.distanceToSideline ||
-  //       x >= this.size.width - courtInfoInPixels.distanceToSideline
-  //     );
-  //   }
-
-  //   const isInMiddleFew =
-  //     posX >= courtMiddle - this.size.sectionSize * 6 &&
-  //     posX <= courtMiddle + this.size.sectionSize * 6;
-
-  //   if (isInMiddleFew) {
-  //     return (
-  //       y > courtInfoInPixels.radius + courtInfoInPixels.distanceToBackline
-  //     );
-  //   }
-
-  //   return (
-  //     Math.sqrt(
-  //       Math.pow(posX - this.size.width / 2, 2) +
-  //         Math.pow(posY - courtInfoInPixels.distanceToBackline, 2),
-  //     ) > courtInfoInPixels.radius
-  //   );
-  // }
 }
 
 const getRgb = (color: string) => {
@@ -781,25 +884,5 @@ const colorInterpolate = (colorA: string, colorB: string, intval: number) => {
 };
 
 const getAccuracyColor = (accuracy: number) => {
-  // if (basicZone === -1) {
-  //   return { r: 0, g: 0, b: 0 };
-  // }
-
-  // if (basicZone === 1) {
-  //   return { r: 255, g: 0, b: 0 };
-  // } else if (basicZone === 2) {
-  //   return { r: 0, g: 255, b: 0 };
-  // } else if (basicZone === 3) {
-  //   return { r: 0, g: 0, b: 255 };
-  // } else if (basicZone === 4) {
-  //   return { r: 255, g: 255, b: 0 };
-  // } else if (basicZone === 5) {
-  //   return { r: 255, g: 0, b: 255 };
-  // } else if (basicZone === 6) {
-  //   return { r: 0, g: 255, b: 255 };
-  // } else if (basicZone === 7) {
-  //   return { r: 255, g: 255, b: 255 };
-  // }
-
   return colorInterpolate('rgb(101, 146, 173)', 'rgb(0, 20, 30)', accuracy);
 };

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CourtTooltip } from './court-tooltip';
 import { useAtom } from 'jotai';
 import { atom } from 'jotai';
-import { useChartSync } from '@/stores/chart-sync';
+import { regionSync } from '@/stores/chart-sync';
 import { BASIC_ZONES } from '@nba-viz/data';
 
 const hoveredSectionAtom = atom<{
@@ -18,7 +18,7 @@ export const Court = ({
 }: {
   data: { locX: number; locY: number; totalShots: number; totalMade: number }[];
 }) => {
-  const { activeIndex } = useChartSync('clock-area');
+  const [activeIndex] = useAtom(regionSync);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,22 +30,6 @@ export const Court = ({
 
   const isMouseOver = useRef(false);
   const abortController = useRef(new AbortController());
-
-  useEffect(() => {
-    if (!activeIndex) {
-      return;
-    }
-
-    const zoneId = Object.keys(BASIC_ZONES).find(
-      (key) => BASIC_ZONES[key as keyof typeof BASIC_ZONES] === activeIndex,
-    );
-
-    if (!zoneId) {
-      return;
-    }
-
-    engine.current?.highlightZone(zoneId as keyof typeof BASIC_ZONES);
-  }, [activeIndex]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -75,28 +59,11 @@ export const Court = ({
           return;
         }
 
-        if (data.length === 0) {
+        if (data.totalShots === 0) {
           return;
         }
 
-        let minX = Infinity;
-        let maxX = -Infinity;
-        let minY = Infinity;
-        let maxY = -Infinity;
-
-        for (const shot of data) {
-          minX = Math.min(minX, shot.section.x);
-          maxX = Math.max(maxX, shot.section.x);
-          minY = Math.min(minY, shot.section.y);
-          maxY = Math.max(maxY, shot.section.y);
-        }
-
-        setHoveredSection({
-          startX: minX,
-          startY: minY,
-          endX: maxX,
-          endY: maxY,
-        });
+        setHoveredSection(data.section);
       },
     });
     initialized.current = true;
@@ -135,31 +102,25 @@ export const Court = ({
       return;
     }
 
-    const { x: startX, y: startY } = hoveringData?.[0]?.section ?? {
-      x: 0,
-      y: 0,
-    };
-    const { x: endX, y: endY } = hoveringData?.[hoveringData.length - 1]
-      ?.section ?? {
-      x: 0,
-      y: 0,
-    };
+    engine.current.setHoveredShot(hoveredSection);
+  }, [hoveredSection]);
 
-    if (
-      (!hoveredSection && !hoveringData) ||
-      (hoveredSection &&
-        hoveringData &&
-        hoveredSection.startX === startX &&
-        hoveredSection.startY === startY &&
-        hoveredSection.endX === endX &&
-        hoveredSection.endY === endY)
-    ) {
+  useEffect(() => {
+    if (!activeIndex) {
+      engine.current?.highlightZone(null);
       return;
     }
 
-    engine.current.setHoveredShot(hoveredSection);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hoveredSection]);
+    const zoneId = Object.keys(BASIC_ZONES).find(
+      (key) => BASIC_ZONES[key as keyof typeof BASIC_ZONES] === activeIndex,
+    );
+
+    if (!zoneId) {
+      return;
+    }
+
+    engine.current?.highlightZone(zoneId as keyof typeof BASIC_ZONES);
+  }, [activeIndex]);
 
   return (
     <div ref={containerRef} className="w-full h-min relative">

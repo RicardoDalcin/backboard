@@ -1,3 +1,4 @@
+import { atom } from 'jotai';
 import {
   createContext,
   useCallback,
@@ -49,6 +50,8 @@ export const ChartSyncProvider = ({
     </ChartSyncStoreContext.Provider>
   );
 };
+
+export const regionSync = atom<string | null>(null);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useChartSync(name: string) {
