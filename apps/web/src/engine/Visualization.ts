@@ -40,17 +40,11 @@ const COURT_WIDTH_FT = 50;
 
 const COURT_ASPECT_RATIO = COURT_WIDTH_FT / COURT_LENGTH_FT;
 
-// const THEME = {
-//   background: '#242424',
-//   line: '#ffffff',
-//   paintedArea: '#ffffff',
-// };
-
 const THEME = {
   background: '#ffffff',
   line: '#808080',
   paintedArea: '#353535',
-  hoveredShot: '#61d0ff',
+  hoveredShot: '#4f39f6',
 };
 
 interface ShotSection {
@@ -78,10 +72,10 @@ export type HighlightCallbackData = {
   };
 };
 
-export type HoverCallbackData = HighlightCallbackData[] | null;
+export type HoverCallbackData = HighlightCallbackData | null;
 
 export interface EngineCallbacks {
-  onHover: (data: HighlightCallbackData[] | null) => void;
+  onHover: (data: HighlightCallbackData | null) => void;
 }
 
 export class VisualizationEngine {
@@ -191,15 +185,43 @@ export class VisualizationEngine {
   private highlightedZone: keyof typeof BASIC_ZONES | null = null;
 
   public highlightZone(zone: keyof typeof BASIC_ZONES | null) {
-    // const shots = [];
-    // const locations = ZONE_LOCATIONS[zone];
-    // for (const location of locations) {
-    //   shots.push({ x: location.x, y: location.y });
-    // }
-    // this.highlightedShots = shots;
-    // this.draw();
     this.highlightedZone = zone;
     this.draw();
+
+    if (!zone) {
+      this.callbacks.onHover(null);
+      return;
+    }
+
+    const shotZone = ZONE_LOCATIONS[zone];
+    const aggregate: HighlightCallbackData = shotZone.reduce(
+      (acc, shot) => {
+        const key = this.getShotKey(shot.x, shot.y);
+        const shotData = this.shots.get(key);
+        const position = this.sectionToPosition(shot.x, shot.y);
+
+        return {
+          totalShots: acc.totalShots + (shotData?.quantity ?? 0),
+          madeShots: acc.madeShots + (shotData?.totalMade ?? 0),
+          section: {
+            x: Math.max(acc.section.x, shot.x),
+            y: Math.max(acc.section.y, shot.y),
+          },
+          position: {
+            x: Math.max(acc.position.x, position.x),
+            y: Math.max(acc.position.y, position.y),
+          },
+        };
+      },
+      {
+        totalShots: 0,
+        madeShots: 0,
+        section: { x: 0, y: 0 },
+        position: { x: 0, y: 0 },
+      },
+    );
+
+    this.callbacks.onHover(aggregate);
   }
 
   private cacheZone(zone: keyof typeof BASIC_ZONES) {
@@ -269,19 +291,63 @@ export class VisualizationEngine {
   }
 
   private drawHoveredShot() {
-    if (this.highlightedZone === null) {
+    if (
+      this.highlightedZone === null &&
+      (!this.startHighlightShot || !this.endHighlightShot)
+    ) {
       return;
     }
 
-    // Check if zone is cached, if not, cache it
-    if (!this.cachedZones.has(this.highlightedZone)) {
-      this.cacheZone(this.highlightedZone);
+    if (this.highlightedZone) {
+      // Check if zone is cached, if not, cache it
+      if (!this.cachedZones.has(this.highlightedZone)) {
+        this.cacheZone(this.highlightedZone);
+      }
+
+      const cachedCanvas = this.cachedZones.get(this.highlightedZone);
+      if (cachedCanvas) {
+        this.ctx.save();
+        this.ctx.drawImage(
+          cachedCanvas,
+          0,
+          0,
+          this.size.width,
+          this.size.height,
+        );
+        this.ctx.restore();
+      }
+      return;
     }
 
-    const cachedCanvas = this.cachedZones.get(this.highlightedZone);
-    if (cachedCanvas) {
+    if (this.startHighlightShot && this.endHighlightShot) {
+      const startSection = this.startHighlightShot.section;
+      const endSection = this.endHighlightShot.section;
+      const minX = Math.min(startSection.x, endSection.x);
+      const maxX = Math.max(startSection.x, endSection.x);
+      const minY = Math.min(startSection.y, endSection.y);
+      const maxY = Math.max(startSection.y, endSection.y);
+
+      this.ctx.strokeStyle = THEME.hoveredShot;
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeRect(
+        minX * this.size.sectionSize,
+        minY * this.size.sectionSize,
+        (maxX - minX + 1) * this.size.sectionSize,
+        (maxY - minY + 1) * this.size.sectionSize,
+      );
+      this.ctx.stroke();
+      this.ctx.restore();
+
       this.ctx.save();
-      this.ctx.drawImage(cachedCanvas, 0, 0, this.size.width, this.size.height);
+      this.ctx.fillStyle = THEME.hoveredShot;
+      this.ctx.globalAlpha = 0.2;
+      this.ctx.fillRect(
+        minX * this.size.sectionSize,
+        minY * this.size.sectionSize,
+        (maxX - minX + 1) * this.size.sectionSize,
+        (maxY - minY + 1) * this.size.sectionSize,
+      );
+      this.ctx.fill();
       this.ctx.restore();
     }
   }
@@ -592,7 +658,12 @@ export class VisualizationEngine {
       this.endHighlightShot = newShot;
     }
 
-    const shots: HighlightCallbackData[] = [];
+    const aggregate: HighlightCallbackData = {
+      totalShots: 0,
+      madeShots: 0,
+      section: { x: 0, y: 0 },
+      position: { x: 0, y: 0 },
+    };
 
     if (!this.startHighlightShot || !this.endHighlightShot) {
       return;
@@ -612,17 +683,21 @@ export class VisualizationEngine {
         const shot = this.shots.get(key);
 
         if (shot) {
-          shots.push({
-            totalShots: shot.quantity,
-            madeShots: shot.totalMade,
-            section: { x, y },
-            position: this.sectionToPosition(x, y),
-          });
+          aggregate.totalShots += shot.quantity;
+          aggregate.madeShots += shot.totalMade;
+          aggregate.section = {
+            x: Math.max(aggregate.section.x, x),
+            y: Math.max(aggregate.section.y, y),
+          };
+          aggregate.position = {
+            x: Math.max(aggregate.position.x, this.sectionToPosition(x, y).x),
+            y: Math.max(aggregate.position.y, this.sectionToPosition(x, y).y),
+          };
         }
       }
     }
 
-    this.callbacks.onHover(shots);
+    this.callbacks.onHover(aggregate);
     this.draw();
   }
 
@@ -670,7 +745,12 @@ export class VisualizationEngine {
     this.startHighlightShot = newStartShot;
     this.endHighlightShot = newEndShot;
 
-    const shots: HighlightCallbackData[] = [];
+    const aggregate: HighlightCallbackData = {
+      totalShots: 0,
+      madeShots: 0,
+      section: { x: 0, y: 0 },
+      position: { x: 0, y: 0 },
+    };
 
     const startSection = newStartShot.section;
     const endSection = newEndShot.section;
@@ -681,18 +761,22 @@ export class VisualizationEngine {
         const shot = this.shots.get(key);
 
         if (shot) {
-          shots.push({
-            totalShots: shot.quantity,
-            madeShots: shot.totalMade,
-            section: { x, y },
-            position: this.sectionToPosition(x, y),
-          });
+          aggregate.totalShots += shot.quantity;
+          aggregate.madeShots += shot.totalMade;
+          aggregate.section = {
+            x: Math.max(aggregate.section.x, x),
+            y: Math.max(aggregate.section.y, y),
+          };
+          aggregate.position = {
+            x: Math.max(aggregate.position.x, this.sectionToPosition(x, y).x),
+            y: Math.max(aggregate.position.y, this.sectionToPosition(x, y).y),
+          };
         }
       }
     }
 
-    if (shots.length > 0) {
-      this.callbacks.onHover(shots);
+    if (aggregate.totalShots > 0) {
+      this.callbacks.onHover(aggregate);
     }
     this.draw();
   }

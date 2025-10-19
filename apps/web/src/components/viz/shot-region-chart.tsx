@@ -159,57 +159,6 @@ export const ShotRegionChart = ({
     };
   }, [chartData, setActiveIndex]);
 
-  const activePayload = useMemo(() => {
-    if (
-      !chartRef.current ||
-      activeIndex === undefined ||
-      activeIndex === null
-    ) {
-      return null;
-    }
-
-    const dataPoint = chartData.find((item) => item.region === activeIndex);
-    if (!dataPoint) {
-      return null;
-    }
-
-    return [
-      {
-        value: dataPoint.total,
-        payload: dataPoint,
-        dataKey: 'total',
-        name: 'Total',
-      },
-    ];
-  }, [activeIndex, chartData]);
-
-  const tooltipPosition = useMemo(() => {
-    if (!chartRef.current || !activePayload) {
-      return undefined;
-    }
-
-    const dataIndex = chartData.findIndex(
-      (item) => item.region === activeIndex,
-    );
-
-    if (dataIndex === -1) {
-      return undefined;
-    }
-
-    // Calculate position based on radar chart geometry
-    const container = chartRef.current.container;
-    const rect = container.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const radius = Math.min(centerX, centerY) * 0.6; // 60% outer radius from chart
-    const angle = (dataIndex * 2 * Math.PI) / chartData.length - Math.PI / 2;
-
-    return {
-      x: centerX + radius * Math.cos(angle),
-      y: centerY + radius * Math.sin(angle),
-    };
-  }, [activePayload, activeIndex, chartData]);
-
   return (
     <div className="flex flex-col w-full gap-4 -mx-4">
       <div className="grid grid-rows-2 @xs:grid-cols-[repeat(2,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full">
@@ -253,15 +202,6 @@ export const ShotRegionChart = ({
             <Tooltip content={<EmptyTooltip />} />
           </RadarChart>
         </ResponsiveContainer>
-
-        <AnimatePresence>
-          {activePayload && tooltipPosition && (
-            <CustomTooltip
-              payload={activePayload ?? []}
-              position={tooltipPosition}
-            />
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
