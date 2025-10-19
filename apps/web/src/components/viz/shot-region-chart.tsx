@@ -45,24 +45,27 @@ export const ShotRegionChart = ({
   data: ReturnType<typeof useStats>['statSummary'];
 }) => {
   const chartRef = useRef<CategoricalChartWrapper | null>(null);
-  const [activeIndex, setActiveIndex] = useAtom(regionSync);
+  const [, setActiveIndex] = useAtom(regionSync);
 
   const chartData = useMemo(() => {
-    return data
-      .filter((item) => item.basicZone !== 7)
-      .map((item) => {
+    const allZonesData = Object.keys(BASIC_ZONES)
+      .filter((key) => key !== '7')
+      .map((key) => {
+        const zone = data.find((item) => item.basicZone === Number(key));
+
         return {
-          total: item.totalShots,
-          made: item.totalMade,
-          accuracy: (item.totalMade / item.totalShots) * 100,
-          region: BASIC_ZONES[item.basicZone],
-          basicZone: item.basicZone,
+          total: zone?.totalMade ?? 0,
+          made: zone?.totalMade ?? 0,
+          accuracy: zone ? (zone.totalMade / zone.totalShots) * 100 : 0,
+          region: BASIC_ZONES[key as keyof typeof BASIC_ZONES],
+          basicZone: Number(key),
         };
-      })
-      .sort(
-        (a, b) =>
-          ZONE_ORDER.indexOf(a.basicZone) - ZONE_ORDER.indexOf(b.basicZone),
-      );
+      });
+
+    return allZonesData.sort(
+      (a, b) =>
+        ZONE_ORDER.indexOf(a.basicZone) - ZONE_ORDER.indexOf(b.basicZone),
+    );
   }, [data]);
 
   const getStats = useCallback(
@@ -91,26 +94,6 @@ export const ShotRegionChart = ({
 
   const threePointStats = useMemo(() => getStats([1, 4, 6, 7]), [getStats]);
   const twoPointStats = useMemo(() => getStats([2, 3, 5]), [getStats]);
-
-  const index = useMemo(() => {
-    if (!chartRef.current || activeIndex === undefined) {
-      return undefined;
-    }
-
-    if (activeIndex === null) {
-      return null;
-    }
-
-    const idx = chartRef.current.state.prevData.findIndex(
-      (item) => item.region === activeIndex,
-    );
-
-    if (idx === -1) {
-      return null;
-    }
-
-    return idx;
-  }, [activeIndex]);
 
   useEffect(() => {
     if (!chartRef.current || chartData.length === 0) {
@@ -182,11 +165,7 @@ export const ShotRegionChart = ({
               fill="#4c699c"
               fillOpacity={0.6}
             />
-            <Tooltip
-              active={index !== null && index !== undefined}
-              defaultIndex={index ?? undefined}
-              content={<EmptyTooltip />}
-            />
+            <Tooltip content={<EmptyTooltip />} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
