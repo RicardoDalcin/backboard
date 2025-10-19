@@ -10,16 +10,18 @@ import { useFilters } from './filters';
 import { db } from '@/server/db';
 import { Filter } from '@/types/filters';
 import { useRouterState } from '@tanstack/react-router';
+import { BASIC_ZONES, ZONE_LOCATIONS } from '@nba-viz/data';
 
 type CourtShotData = Awaited<ReturnType<typeof db.getCourtShotData>>;
 type StatSummary = Awaited<ReturnType<typeof db.getStatSummary>>;
+
+type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
 interface StatsStore {
   courtShotData: CourtShotData;
   isLoading: boolean;
   isValidating: boolean;
   statSummary: StatSummary;
-  isLoadingStats: boolean;
   isValidatingStats: boolean;
 }
 
@@ -29,7 +31,6 @@ const StatsStoreContext = createContext<StatsStore>({
   isLoading: false,
   isValidating: false,
   statSummary: [],
-  isLoadingStats: false,
   isValidatingStats: false,
 });
 
@@ -41,7 +42,6 @@ export function useShots(filter: Filter, isEnabled = true) {
   // const [shots, setShots] = useState<Pick<Shot, T[number]>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [isValidatingStats, setIsValidatingStats] = useState(false);
 
   const abortController = useRef(new AbortController());
@@ -74,20 +74,38 @@ export function useShots(filter: Filter, isEnabled = true) {
         setIsLoading(false);
         setIsValidating(false);
         setCourtShotData(data);
+
+        const regionSummary = Object.keys(BASIC_ZONES).map((key) => {
+          const locations = ZONE_LOCATIONS[key as keyof typeof ZONE_LOCATIONS];
+          const summary = locations.reduce(
+            (acc, location) => {
+              const shotLocation = data.find(
+                (shot) =>
+                  shot.locX + 25 === location.x && shot.locY === location.y,
+              );
+
+              if (!shotLocation) {
+                return acc;
+              }
+
+              return {
+                totalShots: acc.totalShots + shotLocation.totalShots,
+                totalMade: acc.totalMade + shotLocation.totalMade,
+              };
+            },
+            { totalShots: 0, totalMade: 0 },
+          );
+          return {
+            basicZone: Number(key) as ParseInt<keyof typeof BASIC_ZONES>,
+            totalShots: summary.totalShots,
+            totalMade: summary.totalMade,
+          };
+        });
+        setStatSummary(regionSummary);
       })
       .catch((error) => {
         console.error(error);
       });
-
-    db.getStatSummary(filter).then((data) => {
-      if (signal.aborted) {
-        return;
-      }
-
-      setIsLoadingStats(false);
-      setIsValidatingStats(false);
-      setStatSummary(data);
-    });
   }, [isEnabled, filterKey, lastFilterKey, filter]);
 
   return {
@@ -96,7 +114,6 @@ export function useShots(filter: Filter, isEnabled = true) {
     isLoading,
     isValidating,
     statSummary,
-    isLoadingStats,
     isValidatingStats,
   };
 }
@@ -114,7 +131,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     isLoading,
     isValidating,
     statSummary,
-    isLoadingStats,
     isValidatingStats,
   } = useShots(currentFilter.filters, isEnabled);
 
@@ -125,7 +141,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         isValidating,
         statSummary,
-        isLoadingStats,
         isValidatingStats,
       }}
     >

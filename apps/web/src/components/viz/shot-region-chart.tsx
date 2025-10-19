@@ -1,7 +1,7 @@
 import { regionSync } from '@/stores/chart-sync';
 import { useStats } from '@/stores/stats';
 import { BASIC_ZONES } from '@nba-viz/data';
-import { useCallback, useEffect, useMemo, useRef, memo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -11,7 +11,6 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
-import { AnimatePresence, motion } from 'motion/react';
 import { useAtom } from 'jotai';
 
 const bigFormatter = new Intl.NumberFormat('en-US', {
@@ -23,49 +22,6 @@ const percentageFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
-
-const CustomTooltip = memo(
-  ({
-    payload,
-    position,
-  }: {
-    payload: {
-      value: number;
-      payload: {
-        region: string;
-        accuracy: number;
-      };
-    }[];
-    position: { x: number; y: number };
-  }) => {
-    const data = useMemo(() => {
-      return payload[0];
-    }, [payload]);
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.7, left: position.x, top: position.y }}
-        animate={{ opacity: 1, scale: 1, left: position.x, top: position.y }}
-        exit={{ opacity: 0, scale: 0.7, left: position.x, top: position.y }}
-        className="bg-background border border-border rounded-lg shadow-lg px-3 py-2 absolute z-50 pointer-events-none min-w-[180px] w-[180px]"
-      >
-        <p className="text-sm font-medium mb-1">{data.payload.region}</p>
-        <p className="text-sm text-muted-foreground">
-          Total Shots:{' '}
-          <span className="font-medium text-foreground">
-            {bigFormatter.format(Number(data.value))}
-          </span>
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Accuracy:{' '}
-          <span className="font-medium text-foreground">
-            {percentageFormatter.format(data.payload.accuracy)}%
-          </span>
-        </p>
-      </motion.div>
-    );
-  },
-);
 
 type CategoricalChartWrapper = {
   container: HTMLDivElement;
@@ -80,6 +36,8 @@ type CategoricalChartWrapper = {
     }[];
   };
 };
+
+const ZONE_ORDER = [2, 3, 6, 1, 4, 5];
 
 export const ShotRegionChart = ({
   data,
@@ -98,8 +56,13 @@ export const ShotRegionChart = ({
           made: item.totalMade,
           accuracy: (item.totalMade / item.totalShots) * 100,
           region: BASIC_ZONES[item.basicZone],
+          basicZone: item.basicZone,
         };
-      });
+      })
+      .sort(
+        (a, b) =>
+          ZONE_ORDER.indexOf(a.basicZone) - ZONE_ORDER.indexOf(b.basicZone),
+      );
   }, [data]);
 
   const getStats = useCallback(
@@ -128,6 +91,26 @@ export const ShotRegionChart = ({
 
   const threePointStats = useMemo(() => getStats([1, 4, 6, 7]), [getStats]);
   const twoPointStats = useMemo(() => getStats([2, 3, 5]), [getStats]);
+
+  const index = useMemo(() => {
+    if (!chartRef.current || activeIndex === undefined) {
+      return undefined;
+    }
+
+    if (activeIndex === null) {
+      return null;
+    }
+
+    const idx = chartRef.current.state.prevData.findIndex(
+      (item) => item.region === activeIndex,
+    );
+
+    if (idx === -1) {
+      return null;
+    }
+
+    return idx;
+  }, [activeIndex]);
 
   useEffect(() => {
     if (!chartRef.current || chartData.length === 0) {
@@ -199,7 +182,11 @@ export const ShotRegionChart = ({
               fill="#4c699c"
               fillOpacity={0.6}
             />
-            <Tooltip content={<EmptyTooltip />} />
+            <Tooltip
+              active={index !== null && index !== undefined}
+              defaultIndex={index ?? undefined}
+              content={<EmptyTooltip />}
+            />
           </RadarChart>
         </ResponsiveContainer>
       </div>

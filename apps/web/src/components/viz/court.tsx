@@ -63,15 +63,7 @@ export const Court = ({
           return;
         }
 
-        const { x: startX, y: startY } = data.position;
-        const { x: endX, y: endY } = data.position;
-
-        setHoveredSection({
-          startX,
-          startY,
-          endX,
-          endY,
-        });
+        setHoveredSection(data.section);
       },
     });
     initialized.current = true;

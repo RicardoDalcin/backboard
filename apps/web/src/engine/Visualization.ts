@@ -63,8 +63,10 @@ export type HighlightCallbackData = {
   totalShots: number;
   madeShots: number;
   section: {
-    x: number;
-    y: number;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
   };
   position: {
     x: number;
@@ -73,6 +75,20 @@ export type HighlightCallbackData = {
 };
 
 export type HoverCallbackData = HighlightCallbackData | null;
+
+const getDefaultHoveringData = (): HighlightCallbackData => {
+  return {
+    totalShots: 0,
+    madeShots: 0,
+    section: {
+      startX: Infinity,
+      startY: Infinity,
+      endX: -Infinity,
+      endY: -Infinity,
+    },
+    position: { x: 0, y: 0 },
+  };
+};
 
 export interface EngineCallbacks {
   onHover: (data: HighlightCallbackData | null) => void;
@@ -88,8 +104,6 @@ export class VisualizationEngine {
 
   private startHighlightShot: HighlightCallbackData | null = null;
   private endHighlightShot: HighlightCallbackData | null = null;
-
-  private highlightedShots: { x: number; y: number }[] = [];
 
   private isMouseDown = false;
   private cachedVisualization: ImageData | null = null;
@@ -194,32 +208,26 @@ export class VisualizationEngine {
     }
 
     const shotZone = ZONE_LOCATIONS[zone];
-    const aggregate: HighlightCallbackData = shotZone.reduce(
-      (acc, shot) => {
-        const key = this.getShotKey(shot.x, shot.y);
-        const shotData = this.shots.get(key);
-        const position = this.sectionToPosition(shot.x, shot.y);
+    const aggregate: HighlightCallbackData = shotZone.reduce((acc, shot) => {
+      const key = this.getShotKey(shot.x, shot.y);
+      const shotData = this.shots.get(key);
+      const position = this.sectionToPosition(shot.x, shot.y);
 
-        return {
-          totalShots: acc.totalShots + (shotData?.quantity ?? 0),
-          madeShots: acc.madeShots + (shotData?.totalMade ?? 0),
-          section: {
-            x: Math.max(acc.section.x, shot.x),
-            y: Math.max(acc.section.y, shot.y),
-          },
-          position: {
-            x: Math.max(acc.position.x, position.x),
-            y: Math.max(acc.position.y, position.y),
-          },
-        };
-      },
-      {
-        totalShots: 0,
-        madeShots: 0,
-        section: { x: 0, y: 0 },
-        position: { x: 0, y: 0 },
-      },
-    );
+      return {
+        totalShots: acc.totalShots + (shotData?.quantity ?? 0),
+        madeShots: acc.madeShots + (shotData?.totalMade ?? 0),
+        section: {
+          startX: Math.min(acc.section.startX, shot.x),
+          startY: Math.min(acc.section.startY, shot.y),
+          endX: Math.max(acc.section.endX, shot.x),
+          endY: Math.max(acc.section.endY, shot.y),
+        },
+        position: {
+          x: Math.max(acc.position.x, position.x),
+          y: Math.max(acc.position.y, position.y),
+        },
+      };
+    }, getDefaultHoveringData());
 
     this.callbacks.onHover(aggregate);
   }
@@ -322,10 +330,10 @@ export class VisualizationEngine {
     if (this.startHighlightShot && this.endHighlightShot) {
       const startSection = this.startHighlightShot.section;
       const endSection = this.endHighlightShot.section;
-      const minX = Math.min(startSection.x, endSection.x);
-      const maxX = Math.max(startSection.x, endSection.x);
-      const minY = Math.min(startSection.y, endSection.y);
-      const maxY = Math.max(startSection.y, endSection.y);
+      const minX = Math.min(startSection.startX, endSection.endX);
+      const maxX = Math.max(startSection.startX, endSection.endX);
+      const minY = Math.min(startSection.startY, endSection.endY);
+      const maxY = Math.max(startSection.startY, endSection.endY);
 
       this.ctx.strokeStyle = THEME.hoveredShot;
       this.ctx.lineWidth = 2;
@@ -638,8 +646,10 @@ export class VisualizationEngine {
 
     if (
       currentHighlight &&
-      currentHighlight.section.x === x &&
-      currentHighlight.section.y === y
+      currentHighlight.section.startX === x &&
+      currentHighlight.section.startY === y &&
+      currentHighlight.section.endX === x &&
+      currentHighlight.section.endY === y
     ) {
       return;
     }
@@ -647,7 +657,7 @@ export class VisualizationEngine {
     const newShot = {
       totalShots: shot?.quantity ?? 0,
       madeShots: shot?.totalMade ?? 0,
-      section: { x, y },
+      section: { startX: x, startY: y, endX: x, endY: y },
       position: { x: posX, y: posY },
     };
 
@@ -658,12 +668,7 @@ export class VisualizationEngine {
       this.endHighlightShot = newShot;
     }
 
-    const aggregate: HighlightCallbackData = {
-      totalShots: 0,
-      madeShots: 0,
-      section: { x: 0, y: 0 },
-      position: { x: 0, y: 0 },
-    };
+    const aggregate = getDefaultHoveringData();
 
     if (!this.startHighlightShot || !this.endHighlightShot) {
       return;
@@ -672,10 +677,10 @@ export class VisualizationEngine {
     const startSection = this.startHighlightShot.section;
     const endSection = this.endHighlightShot.section;
 
-    const minX = Math.min(startSection.x, endSection.x);
-    const maxX = Math.max(startSection.x, endSection.x);
-    const minY = Math.min(startSection.y, endSection.y);
-    const maxY = Math.max(startSection.y, endSection.y);
+    const minX = Math.min(startSection.startX, endSection.endX);
+    const maxX = Math.max(startSection.startX, endSection.endX);
+    const minY = Math.min(startSection.startY, endSection.endY);
+    const maxY = Math.max(startSection.startY, endSection.endY);
 
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
@@ -683,15 +688,19 @@ export class VisualizationEngine {
         const shot = this.shots.get(key);
 
         if (shot) {
+          const position = this.sectionToPosition(x, y);
+
           aggregate.totalShots += shot.quantity;
           aggregate.madeShots += shot.totalMade;
           aggregate.section = {
-            x: Math.max(aggregate.section.x, x),
-            y: Math.max(aggregate.section.y, y),
+            startX: Math.min(aggregate.section.startX, x),
+            startY: Math.min(aggregate.section.startY, y),
+            endX: Math.max(aggregate.section.endX, x),
+            endY: Math.max(aggregate.section.endY, y),
           };
           aggregate.position = {
-            x: Math.max(aggregate.position.x, this.sectionToPosition(x, y).x),
-            y: Math.max(aggregate.position.y, this.sectionToPosition(x, y).y),
+            x: Math.max(aggregate.position.x, position.x),
+            y: Math.max(aggregate.position.y, position.y),
           };
         }
       }
@@ -731,32 +740,38 @@ export class VisualizationEngine {
     const newStartShot = {
       totalShots: startShot?.quantity ?? 0,
       madeShots: startShot?.totalMade ?? 0,
-      section: { x: startX, y: startY },
-      position: { x: startPosX, y: startPosY },
+      section: { startX: startX, startY: startY, endX: startX, endY: startY },
+      position: {
+        x: startPosX,
+        y: startPosY,
+      },
     };
 
     const newEndShot = {
       totalShots: endShot?.quantity ?? 0,
       madeShots: endShot?.totalMade ?? 0,
-      section: { x: endX, y: endY },
-      position: { x: endPosX, y: endPosY },
+      section: { startX: endX, startY: endY, endX: endX, endY: endY },
+      position: {
+        x: endPosX,
+        y: endPosY,
+      },
     };
 
     this.startHighlightShot = newStartShot;
     this.endHighlightShot = newEndShot;
 
-    const aggregate: HighlightCallbackData = {
-      totalShots: 0,
-      madeShots: 0,
-      section: { x: 0, y: 0 },
-      position: { x: 0, y: 0 },
-    };
+    const aggregate = getDefaultHoveringData();
 
-    const startSection = newStartShot.section;
-    const endSection = newEndShot.section;
+    const startSection = this.startHighlightShot.section;
+    const endSection = this.endHighlightShot.section;
 
-    for (let x = startSection.x; x <= endSection.x; x++) {
-      for (let y = startSection.y; y <= endSection.y; y++) {
+    const minX = Math.min(startSection.startX, endSection.startX);
+    const maxX = Math.max(startSection.endX, endSection.endX);
+    const minY = Math.min(startSection.startY, endSection.startY);
+    const maxY = Math.max(startSection.endY, endSection.endY);
+
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
         const key = this.getShotKey(x, y);
         const shot = this.shots.get(key);
 
@@ -764,12 +779,16 @@ export class VisualizationEngine {
           aggregate.totalShots += shot.quantity;
           aggregate.madeShots += shot.totalMade;
           aggregate.section = {
-            x: Math.max(aggregate.section.x, x),
-            y: Math.max(aggregate.section.y, y),
+            startX: Math.min(aggregate.section.startX, x),
+            startY: Math.min(aggregate.section.startY, y),
+            endX: Math.max(aggregate.section.endX, x),
+            endY: Math.max(aggregate.section.endY, y),
           };
+
+          const position = this.sectionToPosition(x, y);
           aggregate.position = {
-            x: Math.max(aggregate.position.x, this.sectionToPosition(x, y).x),
-            y: Math.max(aggregate.position.y, this.sectionToPosition(x, y).y),
+            x: Math.max(aggregate.position.x, position.x),
+            y: Math.max(aggregate.position.y, position.y),
           };
         }
       }
@@ -801,7 +820,7 @@ export class VisualizationEngine {
       this.isMouseDown = true;
     });
 
-    this.canvas.addEventListener('mouseup', () => {
+    window.addEventListener('mouseup', () => {
       this.startHighlightShot = this.endHighlightShot;
       this.isMouseDown = false;
       this.draw();
@@ -819,6 +838,9 @@ export class VisualizationEngine {
     this.canvas.addEventListener(
       'mouseleave',
       () => {
+        if (this.isMouseDown) {
+          return;
+        }
         this.clearHoveredShot();
       },
       { signal: this.abortController.signal },
@@ -828,48 +850,6 @@ export class VisualizationEngine {
   private feetToPixels(feet: number) {
     return feet * (this.size.width / COURT_WIDTH_FT);
   }
-
-  // private isThreePointer(sectionX: number, sectionY: number) {
-  //   const { x, y } = this.sectionToPosition(sectionX, sectionY);
-  //   const courtMiddle = this.size.width / 2;
-
-  //   const courtInfoInPixels = {
-  //     straightLength: this.feetToPixels(THREE_POINT_LINE_STRAIGHT_LENGTH),
-  //     radius: this.feetToPixels(THREE_POINT_LINE_RADIUS + 1.1),
-  //     distanceToSideline: this.feetToPixels(THREE_POINT_LINE_DISTANCE),
-  //     distanceToBackline: this.feetToPixels(BACKBOARD_DISTANCE_TO_BACKLINE),
-  //   };
-
-  //   const posX = x + this.size.sectionSize / 2;
-  //   const posY = y + this.size.sectionSize / 2;
-
-  //   const isInStraight =
-  //     y < courtInfoInPixels.straightLength + this.size.sectionSize;
-
-  //   if (isInStraight) {
-  //     return (
-  //       x + this.size.sectionSize <= courtInfoInPixels.distanceToSideline ||
-  //       x >= this.size.width - courtInfoInPixels.distanceToSideline
-  //     );
-  //   }
-
-  //   const isInMiddleFew =
-  //     posX >= courtMiddle - this.size.sectionSize * 6 &&
-  //     posX <= courtMiddle + this.size.sectionSize * 6;
-
-  //   if (isInMiddleFew) {
-  //     return (
-  //       y > courtInfoInPixels.radius + courtInfoInPixels.distanceToBackline
-  //     );
-  //   }
-
-  //   return (
-  //     Math.sqrt(
-  //       Math.pow(posX - this.size.width / 2, 2) +
-  //         Math.pow(posY - courtInfoInPixels.distanceToBackline, 2),
-  //     ) > courtInfoInPixels.radius
-  //   );
-  // }
 }
 
 const getRgb = (color: string) => {
@@ -904,25 +884,5 @@ const colorInterpolate = (colorA: string, colorB: string, intval: number) => {
 };
 
 const getAccuracyColor = (accuracy: number) => {
-  // if (basicZone === -1) {
-  //   return { r: 0, g: 0, b: 0 };
-  // }
-
-  // if (basicZone === 1) {
-  //   return { r: 255, g: 0, b: 0 };
-  // } else if (basicZone === 2) {
-  //   return { r: 0, g: 255, b: 0 };
-  // } else if (basicZone === 3) {
-  //   return { r: 0, g: 0, b: 255 };
-  // } else if (basicZone === 4) {
-  //   return { r: 255, g: 255, b: 0 };
-  // } else if (basicZone === 5) {
-  //   return { r: 255, g: 0, b: 255 };
-  // } else if (basicZone === 6) {
-  //   return { r: 0, g: 255, b: 255 };
-  // } else if (basicZone === 7) {
-  //   return { r: 255, g: 255, b: 255 };
-  // }
-
   return colorInterpolate('rgb(101, 146, 173)', 'rgb(0, 20, 30)', accuracy);
 };
