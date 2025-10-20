@@ -9,9 +9,11 @@ import {
   Radar,
   RadarChart,
   ResponsiveContainer,
-  Tooltip,
+  Tooltip as RechartsTooltip,
 } from 'recharts';
 import { useAtom } from 'jotai';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip';
+import { InformationCircleIcon } from '@heroicons/react/20/solid';
 
 const bigFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 0,
@@ -86,6 +88,7 @@ export const ShotRegionChart = ({
 
       return {
         total: stats.total,
+        made: stats.made,
         accuracy: stats.total === 0 ? 0 : (stats.made / stats.total) * 100,
       };
     },
@@ -125,9 +128,19 @@ export const ShotRegionChart = ({
     };
   }, [chartData, setActiveIndex]);
 
+  const efgAccuracy = useMemo(() => {
+    const total = twoPointStats.total + threePointStats.total;
+
+    if (total === 0) {
+      return 0;
+    }
+
+    return ((twoPointStats.made + 1.5 * threePointStats.made) / total) * 100;
+  }, [twoPointStats, threePointStats]);
+
   return (
     <div className="flex flex-col w-full gap-4 -mx-4">
-      <div className="grid grid-rows-2 @xs:grid-cols-[repeat(2,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full">
+      <div className="grid grid-rows-3 @xs:grid-cols-[repeat(3,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full">
         <Stat
           label="2PT shots"
           total={twoPointStats.total}
@@ -137,6 +150,11 @@ export const ShotRegionChart = ({
           label="3PT shots"
           total={threePointStats.total}
           accuracy={threePointStats.accuracy}
+        />
+        <Stat
+          label="eFG%"
+          accuracy={efgAccuracy}
+          hint="Effective Field Goal %: (2PM + (1.5 * 3PM)) / FGA. Takes into account the extra value of 3-pointers."
         />
       </div>
 
@@ -165,7 +183,7 @@ export const ShotRegionChart = ({
               fill="#4c699c"
               fillOpacity={0.6}
             />
-            <Tooltip content={<EmptyTooltip />} />
+            <RechartsTooltip content={<EmptyTooltip />} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
@@ -179,28 +197,45 @@ const EmptyTooltip = () => {
 
 const Stat = ({
   label,
-  total,
   accuracy,
+  total,
+  hint,
 }: {
   label: string;
-  total: number;
   accuracy: number;
+  total?: number;
+  hint?: string;
 }) => {
-  const formattedTotal = useMemo(() => bigFormatter.format(total), [total]);
+  const formattedTotal = useMemo(
+    () => (total ? bigFormatter.format(total) : null),
+    [total],
+  );
   const formattedAccuracy = useMemo(
     () => percentageFormatter.format(accuracy),
     [accuracy],
   );
   return (
     <div className="flex flex-col items-center gap-2">
-      <span className="text-xs leading-none text-muted-foreground">
+      <span className="text-xs leading-none text-muted-foreground flex items-center gap-1">
         {label}
+
+        {hint && (
+          <Tooltip delayDuration={500}>
+            <TooltipTrigger>
+              <InformationCircleIcon className="size-4" />
+            </TooltipTrigger>
+
+            <TooltipContent>{hint}</TooltipContent>
+          </Tooltip>
+        )}
       </span>
 
       <div className="flex items-center divide-x divide-muted-foreground/30">
-        <span className="text-base leading-none font-medium px-2">
-          {formattedTotal}
-        </span>
+        {formattedTotal !== null && (
+          <span className="text-base leading-none font-medium px-2">
+            {formattedTotal}
+          </span>
+        )}
         <span className="text-base leading-none font-medium px-2">
           {formattedAccuracy}%
         </span>

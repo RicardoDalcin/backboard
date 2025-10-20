@@ -92,7 +92,7 @@ function RouteComponent() {
         {panelsWithFilters.map((panel) => (
           <Card
             key={panel.id}
-            className="w-full max-w-3xl h-full !py-0 min-w-[350px]"
+            className="w-full h-full !py-0 min-w-[350px] max-w-[450px]"
           >
             {!panel.filter ? (
               <div className="h-full flex flex-col items-center gap-6 px-4 pt-[164px] pb-4">
