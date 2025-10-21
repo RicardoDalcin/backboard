@@ -47,10 +47,10 @@ export const Court = ({
     abortController.current = new AbortController();
 
     engine.current = new VisualizationEngine(canvas, container, {
-      onHover: (data) => {
+      onHover: (data, passive) => {
         setHoveringData(data);
 
-        if (!isMouseOver.current) {
+        if (passive) {
           return;
         }
 

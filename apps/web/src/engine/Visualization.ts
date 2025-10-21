@@ -91,7 +91,7 @@ const getDefaultHoveringData = (): HighlightCallbackData => {
 };
 
 export interface EngineCallbacks {
-  onHover: (data: HighlightCallbackData | null) => void;
+  onHover: (data: HighlightCallbackData | null, passive?: boolean) => void;
 }
 
 export class VisualizationEngine {
@@ -106,6 +106,7 @@ export class VisualizationEngine {
   private endHighlightShot: HighlightCallbackData | null = null;
 
   private isMouseDown = false;
+  private isMouseOutside = false;
   private cachedVisualization: ImageData | null = null;
   private cachedZones = new Map<keyof typeof BASIC_ZONES, HTMLCanvasElement>();
 
@@ -203,7 +204,7 @@ export class VisualizationEngine {
     this.draw();
 
     if (!zone) {
-      this.callbacks.onHover(null);
+      this.callbacks.onHover(null, true);
       return;
     }
 
@@ -229,7 +230,7 @@ export class VisualizationEngine {
       };
     }, getDefaultHoveringData());
 
-    this.callbacks.onHover(aggregate);
+    this.callbacks.onHover(aggregate, true);
   }
 
   private cacheZone(zone: keyof typeof BASIC_ZONES) {
@@ -627,10 +628,10 @@ export class VisualizationEngine {
     }
   }
 
-  private clearHoveredShot() {
+  private clearHoveredShot({ passive }: { passive?: boolean } = {}) {
     this.startHighlightShot = null;
     this.endHighlightShot = null;
-    this.callbacks.onHover(null);
+    this.callbacks.onHover(null, passive);
     this.draw();
   }
 
@@ -706,7 +707,7 @@ export class VisualizationEngine {
       }
     }
 
-    this.callbacks.onHover(aggregate);
+    this.callbacks.onHover(aggregate, false);
     this.draw();
   }
 
@@ -719,7 +720,7 @@ export class VisualizationEngine {
     } | null,
   ) {
     if (hoveredShot == null) {
-      this.clearHoveredShot();
+      this.clearHoveredShot({ passive: true });
       return;
     }
 
@@ -795,7 +796,7 @@ export class VisualizationEngine {
     }
 
     if (aggregate.totalShots > 0) {
-      this.callbacks.onHover(aggregate);
+      this.callbacks.onHover(aggregate, true);
     }
     this.draw();
   }
@@ -820,11 +821,35 @@ export class VisualizationEngine {
       this.isMouseDown = true;
     });
 
-    window.addEventListener('mouseup', () => {
-      this.startHighlightShot = this.endHighlightShot;
-      this.isMouseDown = false;
-      this.draw();
-    });
+    window.addEventListener(
+      'mouseup',
+      () => {
+        if (!this.isMouseDown) {
+          return;
+        }
+
+        this.isMouseDown = false;
+
+        if (this.isMouseOutside || !this.endHighlightShot) {
+          this.clearHoveredShot();
+          return;
+        }
+
+        this.onHover({
+          x: this.endHighlightShot.section.endX,
+          y: this.endHighlightShot.section.endY,
+        });
+      },
+      { signal: this.abortController.signal },
+    );
+
+    this.canvas.addEventListener(
+      'mouseenter',
+      () => {
+        this.isMouseOutside = false;
+      },
+      { signal: this.abortController.signal },
+    );
 
     this.canvas.addEventListener(
       'mousemove',
@@ -838,9 +863,12 @@ export class VisualizationEngine {
     this.canvas.addEventListener(
       'mouseleave',
       () => {
+        this.isMouseOutside = true;
+
         if (this.isMouseDown) {
           return;
         }
+
         this.clearHoveredShot();
       },
       { signal: this.abortController.signal },
