@@ -124,7 +124,7 @@ export const Court = ({
 
   return (
     <div ref={containerRef} className="w-full h-min relative">
-      <canvas ref={canvasRef} className="rounded-xl"></canvas>
+      <canvas ref={canvasRef}></canvas>
 
       <CourtTooltip shots={hoveringData} container={containerRef} />
     </div>

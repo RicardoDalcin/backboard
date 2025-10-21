@@ -95,5 +95,15 @@ export const enUS: Resource = {
       wins: 'Wins',
       losses: 'Losses',
     },
+    basketball: {
+      stats: {
+        eFG: {
+          title: 'Effective Field Goal %: (2PM + (1.5 * 3PM)) / FGA.',
+          description: 'Takes into account the extra value of 3-pointers.',
+        },
+        twoPointer: '2PT shots',
+        threePointer: '3PT shots',
+      },
+    },
   },
 };

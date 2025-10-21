@@ -1,7 +1,7 @@
 import { regionSync } from '@/stores/chart-sync';
 import { useStats } from '@/stores/stats';
 import { BASIC_ZONES } from '@nba-viz/data';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -14,6 +14,7 @@ import {
 import { useAtom } from 'jotai';
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
+import { useTranslation } from 'react-i18next';
 
 const bigFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 0,
@@ -46,8 +47,9 @@ export const ShotRegionChart = ({
 }: {
   data: ReturnType<typeof useStats>['statSummary'];
 }) => {
-  const chartRef = useRef<CategoricalChartWrapper | null>(null);
   const [, setActiveIndex] = useAtom(regionSync);
+
+  const { t } = useTranslation();
 
   const chartData = useMemo(() => {
     const allZonesData = Object.keys(BASIC_ZONES)
@@ -98,35 +100,44 @@ export const ShotRegionChart = ({
   const threePointStats = useMemo(() => getStats([1, 4, 6, 7]), [getStats]);
   const twoPointStats = useMemo(() => getStats([2, 3, 5]), [getStats]);
 
-  useEffect(() => {
-    if (!chartRef.current || chartData.length === 0) {
-      return;
-    }
+  const abortController = useRef<AbortController | null>(null);
 
-    const abortController = new AbortController();
+  const setChartRef = useCallback(
+    (chart: CategoricalChartWrapper | null) => {
+      abortController.current?.abort();
 
-    chartRef.current.container.addEventListener(
-      'mousemove',
-      () => {
-        setActiveIndex(chartRef.current?.state.activeLabel?.toString() ?? null);
-      },
-      { signal: abortController.signal },
-    );
+      if (chart === null) {
+        abortController.current = null;
+        return;
+      }
 
-    chartRef.current.container.addEventListener(
-      'mouseleave',
-      () => {
-        setActiveIndex(null);
-      },
-      { signal: abortController.signal },
-    );
+      const newController = new AbortController();
+      abortController.current = newController;
 
-    setActiveIndex(null);
+      if (chartData.length === 0) {
+        return;
+      }
 
-    return () => {
-      abortController.abort();
-    };
-  }, [chartData, setActiveIndex]);
+      chart.container.addEventListener(
+        'mousemove',
+        () => {
+          setActiveIndex(chart.state.activeLabel?.toString() ?? null);
+        },
+        { signal: newController.signal },
+      );
+
+      chart.container.addEventListener(
+        'mouseleave',
+        () => {
+          setActiveIndex(null);
+        },
+        { signal: newController.signal },
+      );
+
+      setActiveIndex(null);
+    },
+    [chartData, setActiveIndex],
+  );
 
   const efgAccuracy = useMemo(() => {
     const total = twoPointStats.total + threePointStats.total;
@@ -142,19 +153,22 @@ export const ShotRegionChart = ({
     <div className="flex flex-col w-full gap-4 -mx-4">
       <div className="grid grid-rows-3 @xs:grid-cols-[repeat(3,minmax(auto,200px))] @xs:grid-rows-1 justify-center px-4 gap-4 w-full">
         <Stat
-          label="2PT shots"
+          label={t('basketball.stats.twoPointer')}
           total={twoPointStats.total}
           accuracy={twoPointStats.accuracy}
         />
         <Stat
-          label="3PT shots"
+          label={t('basketball.stats.threePointer')}
           total={threePointStats.total}
           accuracy={threePointStats.accuracy}
         />
         <Stat
           label="eFG%"
           accuracy={efgAccuracy}
-          hint="Effective Field Goal %: (2PM + (1.5 * 3PM)) / FGA. Takes into account the extra value of 3-pointers."
+          hints={[
+            t('basketball.stats.eFG.title'),
+            t('basketball.stats.eFG.description'),
+          ]}
         />
       </div>
 
@@ -167,7 +181,7 @@ export const ShotRegionChart = ({
         >
           <RadarChart
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ref={chartRef as any}
+            ref={setChartRef as any}
             cx="50%"
             cy="50%"
             outerRadius="60%"
@@ -199,12 +213,12 @@ const Stat = ({
   label,
   accuracy,
   total,
-  hint,
+  hints,
 }: {
   label: string;
   accuracy: number;
   total?: number;
-  hint?: string;
+  hints?: string[];
 }) => {
   const formattedTotal = useMemo(
     () => (total ? bigFormatter.format(total) : null),
@@ -219,13 +233,17 @@ const Stat = ({
       <span className="text-xs leading-none text-muted-foreground flex items-center gap-1">
         {label}
 
-        {hint && (
+        {hints && (
           <Tooltip delayDuration={500}>
             <TooltipTrigger>
               <InformationCircleIcon className="size-4" />
             </TooltipTrigger>
 
-            <TooltipContent>{hint}</TooltipContent>
+            <TooltipContent className="flex flex-col items-center">
+              {hints.map((h) => (
+                <div key={h}>{h}</div>
+              ))}
+            </TooltipContent>
           </Tooltip>
         )}
       </span>

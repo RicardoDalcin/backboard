@@ -94,5 +94,16 @@ export const ptBR = {
       wins: 'Vitórias',
       losses: 'Derrotas',
     },
+    basketball: {
+      stats: {
+        eFG: {
+          title: 'Acerto de arremesso efetivo %: (2PM + (1.5 * 3PM)) / FGA.',
+          description:
+            'Leva em consideração o valor extra de arremessos de 3 pontos.',
+        },
+        twoPointer: '2 pontos',
+        threePointer: '3 pontos',
+      },
+    },
   },
 };
