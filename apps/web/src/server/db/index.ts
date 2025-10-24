@@ -7,9 +7,9 @@ export type ShotColumn = keyof Shot;
 
 class NBADatabase {
   private readonly DATABASE_REMOTE_URL =
-    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRcZXS6k8bHdZkmw3lGfx7oyXWDuqLAIjM8RUJ';
+    'https://4dw9ddnwz7.ufs.sh/f/kS63ApJ1dQxRYKZb6hgpJwOPuckzGp2RTn9IfMbgFCQ4aq8D';
 
-  private readonly EXPECTED_DB_SIZE = 510976000;
+  private readonly EXPECTED_DB_SIZE = 855556096;
 
   private readonly DATABASE_OPFS_PATH = 'nba_db.sqlite3';
 
@@ -31,6 +31,7 @@ class NBADatabase {
     const dbExists = await this.fileSystem.fileExists(this.DATABASE_OPFS_PATH);
     const fileSize = await this.fileSystem.getFileSize(this.DATABASE_OPFS_PATH);
 
+    console.log(fileSize);
     if (!dbExists || fileSize != this.EXPECTED_DB_SIZE) {
       this.initPhase = 'downloading';
       this.phaseCallbacks.forEach((callback) => callback('downloading'));
@@ -266,10 +267,12 @@ class NBADatabase {
       locX,
       locY,
       count(*) as totalShots,
-      SUM(shotMade) as totalMade
+      SUM(shotMade) as totalMade,
+      quarter,
+      minsLeft
       FROM mem.shots
       ${filters ? this.getShotsTableFilters(filters) : ''}
-      GROUP BY locX, locY;
+      GROUP BY locX, locY, quarter, minsLeft;
       `;
 
     if (import.meta.env.DEV) {
@@ -282,6 +285,8 @@ class NBADatabase {
       locY: number;
       totalShots: number;
       totalMade: number;
+      quarter: number;
+      minsLeft: number;
     }>(query);
 
     if (import.meta.env.DEV) {

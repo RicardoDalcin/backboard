@@ -10,6 +10,9 @@ import { useStats } from '@/stores/stats';
 import { Court } from '@/components/viz/court';
 import { ShotRegionChart } from '@/components/viz/shot-region-chart';
 import { useTranslation } from 'react-i18next';
+import { useMemo, useState } from 'react';
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { BASIC_ZONES, ZONE_LOCATIONS } from '@nba-viz/data';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -25,6 +28,43 @@ function Index() {
     (acc, shot) => acc + shot.totalShots,
     0,
   );
+
+  const [gameMinute, setGameMinute] = useState(0);
+  const shotData = useMemo(() => {
+    const quarter = Math.floor(gameMinute / 12) + 1;
+    const minsLeft = 12 - (gameMinute % 12) - 1;
+    return courtShotData.filter((shot) => {
+      return shot.quarter === quarter && shot.minsLeft === minsLeft;
+    });
+  }, [gameMinute, courtShotData]);
+
+  type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
+
+  const regionSummary = Object.keys(BASIC_ZONES).map((key) => {
+    const locations = ZONE_LOCATIONS[key as keyof typeof ZONE_LOCATIONS];
+    const summary = locations.reduce(
+      (acc, location) => {
+        const shotLocation = shotData.find(
+          (shot) => shot.locX + 25 === location.x && shot.locY === location.y,
+        );
+
+        if (!shotLocation) {
+          return acc;
+        }
+
+        return {
+          totalShots: acc.totalShots + shotLocation.totalShots,
+          totalMade: acc.totalMade + shotLocation.totalMade,
+        };
+      },
+      { totalShots: 0, totalMade: 0 },
+    );
+    return {
+      basicZone: Number(key) as ParseInt<keyof typeof BASIC_ZONES>,
+      totalShots: summary.totalShots,
+      totalMade: summary.totalMade,
+    };
+  });
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -48,12 +88,28 @@ function Index() {
         <Filters />
 
         <div className="grid grid-cols-12 gap-6 flex-1 h-min">
-          <Card className="col-span-12 xl:col-span-7 xl:h-min py-0">
+          <Card className="col-span-12 xl:col-span-7 xl:h-min py-0 overflow-hidden">
             {isLoading ? (
               <Skeleton className="w-full aspect-[541/406.83] !rounded-xl" />
             ) : (
-              <Court data={courtShotData} />
+              <Court data={shotData} />
             )}
+
+            <div className="flex items-center gap-2">
+              {gameMinute}
+              <Button
+                variant="outline"
+                onClick={() => setGameMinute(gameMinute + 1)}
+              >
+                <ArrowRightIcon className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setGameMinute(gameMinute - 1)}
+              >
+                <ArrowLeftIcon className="size-4" />
+              </Button>
+            </div>
           </Card>
 
           <Card className="@container col-span-12 xl:col-span-5 xl:h-min py-0">
@@ -61,7 +117,7 @@ function Index() {
               <Skeleton className="w-full h-full aspect-[90/100] !rounded-xl" />
             ) : (
               <div className="pt-8 px-4">
-                <ShotRegionChart data={statSummary} />
+                <ShotRegionChart data={regionSummary} />
               </div>
             )}
           </Card>

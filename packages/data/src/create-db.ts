@@ -92,15 +92,16 @@ async function createDb() {
         locY INTEGER,
         -- shotDistance REAL,
         quarter INTEGER,
-        -- minsLeft INTEGER,
-        -- secsLeft INTEGER,
+        minsLeft INTEGER,
+        secsLeft INTEGER,
         -- defRtg REAL,
         defRtgRank INTEGER,
         -- offRtg REAL,
         offRtgRank INTEGER,
-        -- playerHeight REAL,
-        -- playerWeight INTEGER,
-        gameWon INTEGER
+        playerHeight REAL,
+        playerWeight INTEGER,
+        gameWon INTEGER,
+        isAway INTEGER
       ) WITHOUT ROWID`,
     );
 
@@ -109,6 +110,15 @@ async function createDb() {
     db.run(`CREATE INDEX IF NOT EXISTS teamId_index on shots (teamId)`);
     db.run(`CREATE INDEX IF NOT EXISTS defRtgRank_index on shots (defRtgRank)`);
     db.run(`CREATE INDEX IF NOT EXISTS offRtgRank_index on shots (offRtgRank)`);
+    db.run(`CREATE INDEX IF NOT EXISTS quarter_index on shots (quarter)`);
+    db.run(`CREATE INDEX IF NOT EXISTS minsLeft_index on shots (minsLeft)`);
+    db.run(`CREATE INDEX IF NOT EXISTS secsLeft_index on shots (secsLeft)`);
+    db.run(
+      `CREATE INDEX IF NOT EXISTS playerHeight_index on shots (playerHeight)`,
+    );
+    db.run(
+      `CREATE INDEX IF NOT EXISTS playerWeight_index on shots (playerWeight)`,
+    );
     db.run(`CREATE INDEX IF NOT EXISTS position_index on shots (locX, locY)`);
   });
 
@@ -350,6 +360,7 @@ async function createAndSeed() {
         playerHeight: player.height ? String(playerHeight) : '0',
         playerWeight: player.weight ? Number(player.weight) : 0,
         gameWon: gameWinner === teamShortName,
+        isAway: record.HOME_TEAM === teamShortName,
       };
 
       return shot;
@@ -369,9 +380,14 @@ async function createAndSeed() {
         ${obj.locX},
         ${obj.locY},
         ${obj.quarter},
+        ${obj.minsLeft},
+        ${obj.secsLeft},
         ${obj.defRtgRank},
         ${obj.offRtgRank},
-        ${obj.gameWon ? 1 : 0}
+        ${obj.playerHeight},
+        ${obj.playerWeight},
+        ${obj.gameWon ? 1 : 0},
+        ${obj.isAway ? 1 : 0}
       )`;
 
     const CHUNK_SIZE = 1_000;
@@ -406,15 +422,16 @@ async function createAndSeed() {
           locY,
           -- shotDistance,
           quarter,
-          -- minsLeft,
-          -- secsLeft,
+          minsLeft,
+          secsLeft,
           -- defRtg,
           defRtgRank,
           -- offRtg,
           offRtgRank,
-          -- playerHeight,
-          -- playerWeight,
-          gameWon
+          playerHeight,
+          playerWeight,
+          gameWon,
+          isAway
         ) values
         ${chunk.map((record) => `${toValues(record)}`).join(',')}`;
 

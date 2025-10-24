@@ -172,7 +172,7 @@ export const ShotRegionChart = ({
         />
       </div>
 
-      <div className="relative">
+      <div className="relative -mx-4 px-2">
         <ResponsiveContainer
           minWidth="100%"
           width="100%"
