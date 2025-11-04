@@ -3,4 +3,4 @@ output/*.sqlite3
 output/*.db
 output/*.gz
 output/*.gzip
-shots
+*.csv
