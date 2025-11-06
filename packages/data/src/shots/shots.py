@@ -1,6 +1,6 @@
 import datetime
 import traceback
-from nba_api.stats.endpoints import BoxScorePlayerTrackV3, CommonPlayerInfo, CommonTeamRoster, LeagueDashPlayerStats, ShotChartDetail, ShotChartLineupDetail, LeagueGameLog
+from nba_api.stats.endpoints import BoxScorePlayerTrackV3, CommonPlayerInfo, CommonTeamRoster, LeagueDashPlayerStats, LeagueDashTeamStats, ShotChartDetail, ShotChartLineupDetail, LeagueGameLog
 import json
 import time
 import os
@@ -8,7 +8,7 @@ import requests
 #generate csv file with the shots
 import csv
 
-csv_file = 'shots_test.csv'
+csv_file = './packages/data/src/shots/shots_test.csv'
 csv_headers = ['SEASON_1','SEASON_2','TEAM_ID','TEAM_NAME','PLAYER_ID','PLAYER_NAME','POSITION_GROUP','POSITION','GAME_DATE','GAME_ID','HOME_TEAM','AWAY_TEAM','EVENT_TYPE','SHOT_MADE','ACTION_TYPE','SHOT_TYPE','BASIC_ZONE','ZONE_NAME','ZONE_ABB','ZONE_RANGE','LOC_X','LOC_Y','SHOT_DISTANCE','QUARTER','MINS_LEFT','SECS_LEFT']
 
 position_equivalences = {
@@ -83,14 +83,45 @@ def get_team_data(season, team_id):
         team_data_cache[key] = players_by_id
         return players_by_id
 
+def get_teams(season):
+    teams = LeagueDashTeamStats(
+        season=season,
+        season_type_all_star='Regular Season',
+        league_id_nullable='00',
+    )
+    teams_response = teams.get_dict()
+    teams_data = teams_response['resultSets'][0]['rowSet']
+    teams_as_dict = [dict(zip(teams_response['resultSets'][0]['headers'], team)) for team in teams_data]
+    teams_by_id = {team['TEAM_ID']: team for team in teams_as_dict}
+    return teams_by_id
+
+def get_players(season, teams):
+    players_by_id = {}
+    for team_id, team in teams.items():
+        players = CommonTeamRoster(
+            season=season,
+            team_id=team_id
+        )
+        players_response = players.get_dict()
+        players_data = players_response['resultSets'][0]['rowSet']
+        players_as_dict = [dict(zip(players_response['resultSets'][0]['headers'], player)) for player in players_data]
+        for player in players_as_dict:
+            players_by_id[player['PLAYER_ID']] = player
+        time.sleep(0.5)
+        
+    return players_by_id
+
 try:
-    season = '2014-15'
+    season = '2024-25'
+
+    shots = get_shots(season)
     games = get_games(season)
+    teams = get_teams(season)
+    players = get_players(season, teams)
 
     season_1 = '20' + season.split('-')[1]
     season_2 = season
 
-    shots = get_shots(season)
     
     for shot in shots:
         game = games[shot['GAME_ID']]
@@ -104,7 +135,63 @@ try:
         shot_made = "TRUE" if shot['SHOT_MADE_FLAG'] == 1 else "FALSE"
 
         team_data = get_team_data(season, shot_team['TEAM_ID'])
-        player_data = team_data[shot['PLAYER_ID']]
+        player_data = players[shot['PLAYER_ID']]
+
+        basic_zone = shot['SHOT_ZONE_BASIC']
+        # SHOT_ZONE_AREA has both zone_name and zone_abb in the format "zone_name(zone_abb)"
+        zone_name = shot['SHOT_ZONE_AREA'].split('(')[0].strip()
+        zone_abb = shot['SHOT_ZONE_AREA'].split('(')[1].split(')')[0].strip()
+
+        # if position starts with key, position group is the value
+        convert_position = {
+            'C': 'C',
+            'PF': 'F',
+            'SF': 'F',
+            'SG': 'G',
+            'PG': 'G',
+            'G': 'G',
+            'F': 'F',
+        }
+        
+        position_group = next((key for key in convert_position if player_data['POSITION'].startswith(key)), None)
+        if position_group is None:
+            print(f"Position group not found for {player_data['PLAYER_NAME']} {player_data['POSITION']}")
+            position_group = ""
+        else:
+            position_group = convert_position[position_group]
+
+        row = [
+            season_1,
+            season_2,
+            shot_team['TEAM_ID'],
+            shot_team['TEAM_NAME'],
+            shot['PLAYER_ID'],
+            player_data['PLAYER'],
+            position_group,
+            player_data['POSITION'],
+            game_date,
+            game_id,
+            home_team['TEAM_ABBREVIATION'],
+            away_team['TEAM_ABBREVIATION'],
+            shot['EVENT_TYPE'],
+            shot_made,
+            shot['ACTION_TYPE'],
+            shot['SHOT_TYPE'],
+            shot['SHOT_ZONE_BASIC'],
+            zone_name,
+            zone_abb,
+            shot['SHOT_ZONE_RANGE'],
+            shot['LOC_X'],
+            shot['LOC_Y'],
+            shot['SHOT_DISTANCE'],
+            shot['PERIOD'],
+            shot['MINUTES_REMAINING'],
+            shot['SECONDS_REMAINING']
+        ]
+
+        writer.writerow(row)
+
+    print(f"Wrote {len(shots)} shots to {csv_file}")
 
 except Exception as e:
     # print stack trace
