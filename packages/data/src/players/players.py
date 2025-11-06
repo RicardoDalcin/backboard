@@ -5,8 +5,8 @@ import os
 import requests
 
 # Define the file paths
-player_ids_file = "player_ids.json"
-players_info_file = "players_2003_2024.json"
+player_ids_file = "./packages/data/src/players/player_ids.json"
+players_info_file = "./packages/data/src/players/players_2003_2024.json"
 
 # Function to load player IDs from a file
 def load_player_ids(file_path):
@@ -25,7 +25,7 @@ def save_player_ids(player_ids, file_path):
 player_ids = load_player_ids(player_ids_file)
 
 # Fetch player IDs from the API if not enough player IDs are available
-if len(player_ids) < 2178:
+if len(player_ids) < 2341:
     print("🔍 Gathering player IDs from the API (will save for future use)…")
     seasons = [f"{year:04d}-{str(year+1)[-2:]}" for year in range(2003, 2026)]
     for season in seasons:
@@ -35,7 +35,7 @@ if len(player_ids) < 2178:
             for row in data:
                 player_ids.add(row['PLAYER_ID'])
             print(f"✔ {season}: {len(data)} players → total so far: {len(player_ids)}")
-            time.sleep(0.2)
+            time.sleep(0.5)
         except Exception as e:
             print(f"⚠️ Failed to fetch stats for {season}: {e}")
     
@@ -49,7 +49,7 @@ if os.path.exists(players_info_file):
     with open(players_info_file, "r") as f:
         players_info = json.load(f)
     # Gather player IDs already fetched
-    fetched_player_ids = {player['player_id'] for player in players_info}
+    fetched_player_ids = {player['id'] for player in players_info}
 else:
     fetched_player_ids = set()
 
