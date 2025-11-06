@@ -15,10 +15,6 @@ position_equivalences = {
     "Center-Forward": "C-F",
 }
 
-with open(csv_file, 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(csv_headers)
-
 def convert_coords(x, y):
     corrected_x = x * -0.1
     corrected_y = y * 0.1 + 5.25
@@ -39,7 +35,8 @@ def get_games(season):
         if game_id not in games_by_game_id:
             games_by_game_id[game_id] = { "home": game_dict, "away": None } if "vs" in game_dict["MATCHUP"] else { "home": None, "away": game_dict }
         else:
-            if "vs" in game_dict["MATCHUP"]:
+            if "vs" in game_dict["MATCHUP"] or games_by_game_id[game_id]["away"] is not None:
+                # The yearly Mexico City game is the only one that doesn't have "vs" in the matchup
                 games_by_game_id[game_id]["home"] = game_dict
             else:
                 games_by_game_id[game_id]["away"] = game_dict
@@ -51,7 +48,7 @@ def get_shots(season):
         context_measure_simple='FGA',  # Field Goals Attempted
         # game_id_nullable=game_id,
         season_nullable=season,
-        team_id=1610612742,
+        team_id=0,
         player_id=0
     )
     shot_chart_response = shots.get_dict()
@@ -114,84 +111,88 @@ def get_players(season, teams):
 try:
     season = '2024-25'
 
-    shots = get_shots(season)
     games = get_games(season)
+    shots = get_shots(season)
     teams = get_teams(season)
     players = get_players(season, teams)
 
     season_1 = '20' + season.split('-')[1]
     season_2 = season
 
-    
-    for shot in shots:
-        game = games[shot['GAME_ID']]
-        home_team = game['home']
-        away_team = game['away']
-        shot_team = home_team if shot['TEAM_ID'] == game['home']['TEAM_ID'] else away_team
-
-        game_date = datetime.datetime.strptime(shot_team['GAME_DATE'], '%Y-%m-%d').strftime('%m-%d-%Y')
-        game_id = shot_team['GAME_ID']
-
-        shot_made = "TRUE" if shot['SHOT_MADE_FLAG'] == 1 else "FALSE"
-
-        team_data = get_team_data(season, shot_team['TEAM_ID'])
-        player_data = players[shot['PLAYER_ID']]
-
-        basic_zone = shot['SHOT_ZONE_BASIC']
-        # SHOT_ZONE_AREA has both zone_name and zone_abb in the format "zone_name(zone_abb)"
-        zone_name = shot['SHOT_ZONE_AREA'].split('(')[0].strip()
-        zone_abb = shot['SHOT_ZONE_AREA'].split('(')[1].split(')')[0].strip()
-
-        # if position starts with key, position group is the value
-        convert_position = {
-            'C': 'C',
-            'PF': 'F',
-            'SF': 'F',
-            'SG': 'G',
-            'PG': 'G',
-            'G': 'G',
-            'F': 'F',
-        }
+    with open(csv_file, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(csv_headers)
         
-        position_group = next((key for key in convert_position if player_data['POSITION'].startswith(key)), None)
-        if position_group is None:
-            print(f"Position group not found for {player_data['PLAYER_NAME']} {player_data['POSITION']}")
-            position_group = ""
-        else:
-            position_group = convert_position[position_group]
+        for shot in shots:
+            game = games[shot['GAME_ID']]
+            home_team = game['home']
+            away_team = game['away']
+            shot_team = home_team if shot['TEAM_ID'] == game['home']['TEAM_ID'] else away_team
 
-        row = [
-            season_1,
-            season_2,
-            shot_team['TEAM_ID'],
-            shot_team['TEAM_NAME'],
-            shot['PLAYER_ID'],
-            player_data['PLAYER'],
-            position_group,
-            player_data['POSITION'],
-            game_date,
-            game_id,
-            home_team['TEAM_ABBREVIATION'],
-            away_team['TEAM_ABBREVIATION'],
-            shot['EVENT_TYPE'],
-            shot_made,
-            shot['ACTION_TYPE'],
-            shot['SHOT_TYPE'],
-            shot['SHOT_ZONE_BASIC'],
-            zone_name,
-            zone_abb,
-            shot['SHOT_ZONE_RANGE'],
-            shot['LOC_X'],
-            shot['LOC_Y'],
-            shot['SHOT_DISTANCE'],
-            shot['PERIOD'],
-            shot['MINUTES_REMAINING'],
-            shot['SECONDS_REMAINING']
-        ]
+            game_date = datetime.datetime.strptime(shot_team['GAME_DATE'], '%Y-%m-%d').strftime('%m-%d-%Y')
+            game_id = shot_team['GAME_ID']
+            # remove leading 00 from game_id
+            game_id = game_id[2:]
 
-        writer.writerow(row)
+            shot_made = "TRUE" if shot['SHOT_MADE_FLAG'] == 1 else "FALSE"
 
-    print(f"Wrote {len(shots)} shots to {csv_file}")
+            team_data = teams[shot_team['TEAM_ID']]
+            player_data = players[shot['PLAYER_ID']] if shot['PLAYER_ID'] in players else None
+
+            basic_zone = shot['SHOT_ZONE_BASIC']
+            # SHOT_ZONE_AREA has both zone_name and zone_abb in the format "zone_name(zone_abb)"
+            zone_name = shot['SHOT_ZONE_AREA'].split('(')[0].strip()
+            zone_abb = shot['SHOT_ZONE_AREA'].split('(')[1].split(')')[0].strip()
+
+            # if position starts with key, position group is the value
+            convert_position = {
+                'C': 'C',
+                'PF': 'F',
+                'SF': 'F',
+                'SG': 'G',
+                'PG': 'G',
+                'G': 'G',
+                'F': 'F',
+            }
+            
+            position_group = next((key for key in convert_position if player_data['POSITION'].startswith(key)), None) if player_data else None
+            if position_group is None:
+                position_group = ""
+            else:
+                position_group = convert_position[position_group]
+
+            row = [
+                season_1,
+                season_2,
+                shot_team['TEAM_ID'],
+                shot_team['TEAM_NAME'],
+                shot['PLAYER_ID'],
+                player_data['PLAYER'] if player_data else '',
+                position_group,
+                player_data['POSITION'] if player_data else '',
+                game_date,
+                game_id,
+                home_team['TEAM_ABBREVIATION'],
+                away_team['TEAM_ABBREVIATION'],
+                shot['EVENT_TYPE'],
+                shot_made,
+                shot['ACTION_TYPE'],
+                shot['SHOT_TYPE'],
+                shot['SHOT_ZONE_BASIC'],
+                zone_name,
+                zone_abb,
+                shot['SHOT_ZONE_RANGE'],
+                shot['LOC_X'],
+                shot['LOC_Y'],
+                shot['SHOT_DISTANCE'],
+                shot['PERIOD'],
+                shot['MINUTES_REMAINING'],
+                shot['SECONDS_REMAINING']
+            ]
+
+            writer.writerow(row)
+
+        print(f"Wrote {len(shots)} shots to {csv_file}")
 
 except Exception as e:
     # print stack trace

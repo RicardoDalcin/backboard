@@ -27,7 +27,7 @@ player_ids = load_player_ids(player_ids_file)
 # Fetch player IDs from the API if not enough player IDs are available
 if len(player_ids) < 2178:
     print("🔍 Gathering player IDs from the API (will save for future use)…")
-    seasons = [f"{year:04d}-{str(year+1)[-2:]}" for year in range(2003, 2024)]
+    seasons = [f"{year:04d}-{str(year+1)[-2:]}" for year in range(2003, 2026)]
     for season in seasons:
         try:
             stats = LeagueDashPlayerStats(season=season, per_mode_detailed='PerGame')

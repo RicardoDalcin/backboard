@@ -190,6 +190,8 @@ async function createAndSeed() {
     './src/shots/NBA_2022_Shots.csv',
     './src/shots/NBA_2023_Shots.csv',
     './src/shots/NBA_2024_Shots.csv',
+    './src/shots/NBA_2025_Shots.csv',
+    './src/shots/NBA_2026_Shots.csv',
   ];
 
   const playersCache = new PlayerCache();
