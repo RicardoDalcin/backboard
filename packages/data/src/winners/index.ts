@@ -20,6 +20,7 @@ import winners2021 from './2021-22_winners.json';
 import winners2022 from './2022-23_winners.json';
 import winners2023 from './2023-24_winners.json';
 import winners2024 from './2024-25_winners.json';
+import winners2025 from './2025-26_winners.json';
 
 export const winners = {
   '2003-04': winners2003 as Record<string, string>,
@@ -44,4 +45,5 @@ export const winners = {
   '2022-23': winners2022 as Record<string, string>,
   '2023-24': winners2023 as Record<string, string>,
   '2024-25': winners2024 as Record<string, string>,
+  '2025-26': winners2025 as Record<string, string>,
 };

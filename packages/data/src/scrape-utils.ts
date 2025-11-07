@@ -15,8 +15,7 @@ type MonthlyRanking = {
 };
 
 export async function scrapeStats(
-  sortingType: string,
-  statIndex: number,
+  { sortingType, statIndex }: { sortingType: string; statIndex: number },
   getFilePath: (season: string) => string,
 ): Promise<void> {
   const browser = await puppeteer.launch({ headless: false });
@@ -35,27 +34,31 @@ export async function scrapeStats(
       await page.goto(url, { waitUntil: 'networkidle2' });
       await page.waitForSelector('.Crom_table__p1iZz');
 
-      const rankings: TeamRanking[] = await page.evaluate((teams) => {
-        const rows = Array.from(
-          document.querySelectorAll('table.Crom_table__p1iZz tbody tr'),
-        );
+      const rankings: TeamRanking[] = await page.evaluate(
+        (teams, statIndex) => {
+          const rows = Array.from(
+            document.querySelectorAll('table.Crom_table__p1iZz tbody tr'),
+          );
 
-        return rows.map((row, i) => {
-          const cells = row.querySelectorAll('td');
-          const teamName = cells[1]?.textContent?.trim() || '';
-          const stat = parseFloat(cells[statIndex]?.textContent || '0');
+          return rows.map((row, i) => {
+            const cells = row.querySelectorAll('td');
+            const teamName = cells[1]?.textContent?.trim() || '';
+            const stat = parseFloat(cells[statIndex]?.textContent || '0');
 
-          const teamAbbr =
-            teams.find((team) => team.name === teamName)?.abbreviation ||
-            teamName.slice(0, 3).toUpperCase();
+            const teamAbbr =
+              teams.find((team) => team.name === teamName)?.abbreviation ||
+              teamName.slice(0, 3).toUpperCase();
 
-          return {
-            team: teamAbbr,
-            rank: i + 1,
-            stat,
-          };
-        });
-      }, season.teams);
+            return {
+              team: teamAbbr,
+              rank: i + 1,
+              stat,
+            };
+          });
+        },
+        season.teams,
+        statIndex,
+      );
 
       console.log(`Scraped Month ${index} of ${seasonKey}`);
 

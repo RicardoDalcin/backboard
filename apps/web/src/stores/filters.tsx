@@ -35,20 +35,6 @@ export const FiltersProvider = ({
         name: 'New filter',
         filters: DEFAULT_FILTER,
       },
-      {
-        id: DEFAULT_FILTER_ID + 1,
-        name: 'Dallas Mavericks',
-        filters: { ...DEFAULT_FILTER, teams: [1610612737] },
-      },
-      {
-        id: DEFAULT_FILTER_ID + 2,
-        name: 'Def vs. Off',
-        filters: {
-          ...DEFAULT_FILTER,
-          defensiveRatingRank: [1, 10],
-          offensiveRatingRank: [20, 30],
-        },
-      },
     ],
     (value) => value.length >= 1,
   );

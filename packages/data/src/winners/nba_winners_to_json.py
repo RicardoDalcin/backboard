@@ -42,7 +42,7 @@ for season in seasons:
                 print(f"⚠️ Skipping game {game_id}: not exactly 2 teams")
 
         # Save to file
-        filename = f"{season}_winners.json"
+        filename = f"./src/winners/{season}_winners.json"
         with open(filename, "w") as f:
             json.dump(winners, f, indent=4)
 

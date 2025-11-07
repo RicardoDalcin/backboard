@@ -56,7 +56,7 @@ import { useStats } from '@/stores/stats';
 import { useTranslation } from 'react-i18next';
 
 const schema = z.object({
-  season: z.tuple([z.number().min(4).max(24), z.number().min(4).max(24)]),
+  season: z.tuple([z.number().min(4).max(26), z.number().min(4).max(26)]),
   defensiveRatingRank: z.tuple([
     z.number().min(1).max(30),
     z.number().min(1).max(30),
@@ -290,7 +290,7 @@ export const Filters = ({ className }: { className?: string }) => {
                 <FormLabel>{t('filters.season')}</FormLabel>
                 <RangeSlider
                   min={4}
-                  max={24}
+                  max={26}
                   step={1}
                   value={field.value}
                   label={(item) => item}
