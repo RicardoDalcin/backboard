@@ -1,7 +1,6 @@
-import { scrapeStats } from './scrape-utils';
+import { scrapeStats } from '../scrape-utils';
 
 scrapeStats(
-  'OFF_RATING',
-  6,
-  (season) => `./data/offensive/${season}_offensive_ratings.json`,
+  { sortingType: 'OFF_RATING', statIndex: 6 },
+  (season) => `./src/offensive/${season}_offensive_ratings.json`,
 );

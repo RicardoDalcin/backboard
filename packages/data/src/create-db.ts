@@ -376,7 +376,7 @@ async function createAndSeed() {
         ${obj.gameWon ? 1 : 0}
       )`;
 
-    const CHUNK_SIZE = 1_000;
+    const CHUNK_SIZE = 5_000;
 
     console.log(
       `Starting to insert chunks for ${file.split('/').pop() ?? 'NO_FILE_NAME'}`,

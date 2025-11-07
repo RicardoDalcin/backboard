@@ -20,6 +20,7 @@ import def2021 from './2021-22_defensive_ratings.json';
 import def2022 from './2022-23_defensive_ratings.json';
 import def2023 from './2023-24_defensive_ratings.json';
 import def2024 from './2024-25_defensive_ratings.json';
+import def2025 from './2025-26_defensive_ratings.json';
 
 export const defensiveRatings = {
   '2003-04': def2003,
@@ -44,4 +45,5 @@ export const defensiveRatings = {
   '2022-23': def2022,
   '2023-24': def2023,
   '2024-25': def2024,
+  '2025-26': def2025,
 };

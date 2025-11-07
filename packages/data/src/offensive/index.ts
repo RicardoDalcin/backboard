@@ -20,6 +20,7 @@ import off2021 from './2021-22_offensive_ratings.json';
 import off2022 from './2022-23_offensive_ratings.json';
 import off2023 from './2023-24_offensive_ratings.json';
 import off2024 from './2024-25_offensive_ratings.json';
+import off2025 from './2025-26_offensive_ratings.json';
 
 export const offensiveRatings = {
   '2003-04': off2003,
@@ -44,4 +45,5 @@ export const offensiveRatings = {
   '2022-23': off2022,
   '2023-24': off2023,
   '2024-25': off2024,
+  '2025-26': off2025,
 };

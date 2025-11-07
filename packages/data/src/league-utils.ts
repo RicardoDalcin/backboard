@@ -261,6 +261,11 @@ export const SEASONS: Record<
   '2021-22': { months: REGULAR_SEASON, teams: MODERN_NBA },
   '2022-23': { months: REGULAR_SEASON, teams: MODERN_NBA },
   '2023-24': { months: REGULAR_SEASON, teams: MODERN_NBA },
+  '2024-25': { months: REGULAR_SEASON, teams: MODERN_NBA },
+  '2025-26': {
+    months: [REGULAR_SEASON[0], REGULAR_SEASON[1]],
+    teams: MODERN_NBA,
+  },
 };
 
 export const YEAR_CHANGE_INDEX = 4;

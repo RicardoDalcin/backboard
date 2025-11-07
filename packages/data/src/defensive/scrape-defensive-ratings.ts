@@ -1,7 +1,6 @@
 import { scrapeStats } from '../scrape-utils';
 
 scrapeStats(
-  'DEF_RATING',
-  7,
-  (season) => `./data/defensive/${season}_defensive_ratings.json`,
+  { sortingType: 'DEF_RATING', statIndex: 7 },
+  (season) => `./src/defensive/${season}_defensive_ratings.json`,
 );
