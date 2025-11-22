@@ -51,13 +51,13 @@ export const ALL_TEAMS = {
   RAPTORS: { id: 1610612761, name: 'Toronto Raptors', abbreviation: 'TOR' },
   JAZZ: { id: 1610612762, name: 'Utah Jazz', abbreviation: 'UTA' },
   WIZARDS: { id: 1610612764, name: 'Washington Wizards', abbreviation: 'WAS' },
-  SONICS: { id: 1610612760, name: 'Seattle SuperSonics', abbreviation: 'SEA' },
-  BOBCATS: { id: 1610612766, name: 'Charlotte Bobcats', abbreviation: 'CHA' },
+  HORNETS: { id: 1610612766, name: 'Charlotte Hornets', abbreviation: 'CHA' },
   THUNDER: {
     id: 1610612760,
     name: 'Oklahoma City Thunder',
     abbreviation: 'OKC',
   },
+  BOBCATS: { id: 1610612766, name: 'Charlotte Bobcats', abbreviation: 'CHA' },
   OKC_HORNETS: {
     id: 1610612740,
     name: 'New Orleans/Oklahoma City Hornets',
@@ -69,7 +69,7 @@ export const ALL_TEAMS = {
     abbreviation: 'NOH',
   },
   NEW_JERSEY: { id: 1610612751, name: 'New Jersey Nets', abbreviation: 'NJN' },
-  HORNETS: { id: 1610612766, name: 'Charlotte Hornets', abbreviation: 'CHA' },
+  SONICS: { id: 1610612760, name: 'Seattle SuperSonics', abbreviation: 'SEA' },
 };
 
 export const TEAMS_BY_NAME = Object.values(ALL_TEAMS).reduce(

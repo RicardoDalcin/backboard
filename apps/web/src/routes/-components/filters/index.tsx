@@ -41,7 +41,7 @@ import {
   Filter,
   RESULT_VALUES,
 } from '@/types/filters';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { CreateFilterDialog } from './create-filter';
 import {
@@ -136,6 +136,10 @@ export const Filters = ({ className }: { className?: string }) => {
   );
 
   const [isDialogOpen, setDialogOpen] = useState(false);
+
+  const teamsOptions = useMemo(() => {
+    return TEAMS.sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
 
   useHotkeys(
     'ctrl+n',
@@ -315,7 +319,7 @@ export const Filters = ({ className }: { className?: string }) => {
 
                 <MultiCombobox
                   values={field.value}
-                  options={TEAMS}
+                  options={teamsOptions}
                   onSelect={(values) =>
                     form.setValue('teams', values, { shouldDirty: true })
                   }
