@@ -130,7 +130,7 @@ export const CourtTooltip = ({
       {shots != null && (position.x !== 0 || position.y !== 0) && (
         <motion.div
           className={cn(
-            'absolute rounded-md text-primary bg-white/80 border backdrop-blur-sm touch-none pointer-events-none z-20',
+            'absolute rounded-md text-primary bg-white/90 border touch-none pointer-events-none z-20',
           )}
           initial={{
             opacity: 0,
