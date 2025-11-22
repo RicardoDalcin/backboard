@@ -5,7 +5,7 @@ export const enUS: Resource = {
   translation: {
     global: {
       cancel: 'Cancel',
-      share: 'Share',
+      share: 'Share view',
       export: 'Export',
       clear: 'Clear',
       all: 'All',
@@ -14,6 +14,7 @@ export const enUS: Resource = {
       rename: 'Rename',
       delete: 'Delete',
       noResults: 'No results',
+      copiedLink: 'Link copied',
     },
     select: {
       selectOptions: 'Select options',

@@ -102,7 +102,7 @@ function Index() {
                   exit={{ filter: 'blur(2px)', opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  Link copiado
+                  {t('global.copiedLink')}
                 </motion.div>
               ) : (
                 <motion.div

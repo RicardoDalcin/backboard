@@ -11,6 +11,7 @@ export const ptBR = {
       rename: 'Renomear',
       delete: 'Deletar',
       noResults: 'Sem resultados',
+      copiedLink: 'Link copiado',
     },
     select: {
       selectOptions: 'Selecionar opções',
