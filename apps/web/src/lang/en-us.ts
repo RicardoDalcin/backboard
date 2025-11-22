@@ -65,6 +65,8 @@ export const enUS: Resource = {
     explore: {
       loadingShots: 'Loading shots...',
       exploringShots: 'Exploring {{count, number}} shots',
+      statsByPlayer: 'Volume and efficiency by player',
+      statsByTeam: 'Volume and efficiency by team',
     },
     compare: {
       title: 'Compare',
