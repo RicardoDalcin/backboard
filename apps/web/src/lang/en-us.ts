@@ -13,6 +13,7 @@ export const enUS: Resource = {
       select: 'Select',
       rename: 'Rename',
       delete: 'Delete',
+      noResults: 'No results',
     },
     select: {
       selectOptions: 'Select options',

@@ -214,7 +214,18 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
                 data-state={row.getIsSelected() && 'selected'}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell
+                    key={cell.id}
+                    className="truncate"
+                    style={{
+                      width:
+                        cell.column.id === 'teamName' ? '160px' : undefined,
+                      maxWidth:
+                        cell.column.id === 'teamName' ? '160px' : undefined,
+                      minWidth:
+                        cell.column.id === 'teamName' ? '160px' : undefined,
+                    }}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -223,7 +234,7 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                {t('global.noResults')}
               </TableCell>
             </TableRow>
           )}

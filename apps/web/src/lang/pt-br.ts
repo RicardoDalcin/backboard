@@ -10,6 +10,7 @@ export const ptBR = {
       select: 'Selecionar',
       rename: 'Renomear',
       delete: 'Deletar',
+      noResults: 'Sem resultados',
     },
     select: {
       selectOptions: 'Selecionar opções',
