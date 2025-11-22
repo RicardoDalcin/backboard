@@ -1,6 +1,12 @@
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { DEFAULT_FILTER, FilterItem } from '@/types/filters';
-import { createContext, useCallback, useContext, useMemo } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react';
 
 interface FiltersStore {
   filters: FilterItem[];
@@ -9,6 +15,7 @@ interface FiltersStore {
   newFilter: (name: string) => number;
   selectFilter: (id: number) => void;
   deleteFilter: (id: number) => void;
+  getShareableUrl: () => string;
 }
 
 const FiltersStoreContext = createContext<FiltersStore>({
@@ -18,6 +25,7 @@ const FiltersStoreContext = createContext<FiltersStore>({
   newFilter: () => -1,
   selectFilter: () => {},
   deleteFilter: () => {},
+  getShareableUrl: () => '',
 });
 
 export const FiltersProvider = ({
@@ -116,6 +124,32 @@ export const FiltersProvider = ({
     [currentFilter.id, filters, selectFilter, setFilters],
   );
 
+  const getShareableUrl = useCallback(() => {
+    const filter = {
+      name: currentFilter.name,
+      filters: currentFilter.filters,
+    };
+    const stringifiedFilter = JSON.stringify(filter);
+    const base64Filter = btoa(stringifiedFilter);
+    return `${window.location.origin}?filter=${base64Filter}`;
+  }, [currentFilter]);
+
+  useEffect(() => {
+    const sharedFilter = window.localStorage.getItem('backboard.sharedFilter');
+    if (sharedFilter) {
+      const decodedFilter = atob(sharedFilter);
+      const filterObject = JSON.parse(decodedFilter);
+      const id = newFilter(filterObject.name);
+      saveFilter({
+        id,
+        name: filterObject.name,
+        filters: filterObject.filters,
+      });
+      selectFilter(id);
+      window.localStorage.removeItem('backboard.sharedFilter');
+    }
+  }, [newFilter, saveFilter, selectFilter]);
+
   return (
     <FiltersStoreContext.Provider
       value={{
@@ -125,6 +159,7 @@ export const FiltersProvider = ({
         newFilter,
         selectFilter,
         deleteFilter,
+        getShareableUrl,
       }}
     >
       {children}

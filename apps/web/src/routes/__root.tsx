@@ -113,6 +113,12 @@ function Root() {
 export const Route = createRootRoute({
   component: Root,
   beforeLoad: (ctx) => {
+    const searchParams = new URLSearchParams(ctx.location.search ?? '');
+    const filter = searchParams.get('filter') as string;
+    if (filter) {
+      window.localStorage.setItem('backboard.sharedFilter', filter);
+    }
+
     const hasOptedIn =
       typeof window !== 'undefined'
         ? JSON.parse(
@@ -126,7 +132,7 @@ export const Route = createRootRoute({
       throw redirect({ to: '/welcome' });
     }
 
-    if (hasOptedIn && isWelcome) {
+    if ((hasOptedIn && isWelcome) || filter) {
       throw redirect({ to: '/' });
     }
   },

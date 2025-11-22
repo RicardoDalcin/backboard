@@ -14,6 +14,7 @@ import { PlayerStatsTable } from './-components/player-stats-table';
 import { motion, AnimatePresence } from 'motion/react';
 import { useRef, useState } from 'react';
 import { TeamStatsTable } from './-components/team-stats-table';
+import { useFilters } from '@/stores/filters';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -24,6 +25,7 @@ export const Route = createFileRoute('/')({
 function Index() {
   const { courtShotData, isLoading, statSummary, statsByPlayer, statsByTeam } =
     useStats();
+  const { getShareableUrl } = useFilters();
   const { t } = useTranslation();
 
   const totalShots = courtShotData.reduce(
@@ -35,6 +37,12 @@ function Index() {
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
   function onShare() {
+    const url = getShareableUrl();
+    if (!url) {
+      return;
+    }
+
+    navigator.clipboard.writeText(url);
     setShowCopySuccess(true);
 
     if (timeout.current) {
