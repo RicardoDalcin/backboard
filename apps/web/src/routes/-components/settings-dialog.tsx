@@ -139,7 +139,7 @@ export function SettingsDialog({
           </div>
 
           <div className="pt-4 flex flex-col gap-4">
-            <p className="font-medium">Language</p>
+            <p className="font-medium">{t('settings.language')}</p>
 
             <RadioGroup
               value={i18n.language}

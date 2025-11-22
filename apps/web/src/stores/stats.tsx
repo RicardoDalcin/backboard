@@ -14,6 +14,8 @@ import { BASIC_ZONES, ZONE_LOCATIONS } from '@nba-viz/data';
 
 type CourtShotData = Awaited<ReturnType<typeof db.getCourtShotData>>;
 type StatSummary = Awaited<ReturnType<typeof db.getStatSummary>>;
+type StatsByPlayer = Awaited<ReturnType<typeof db.getStatsByPlayer>>;
+type StatsByTeam = Awaited<ReturnType<typeof db.getStatsByTeam>>;
 
 type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
 
@@ -22,6 +24,8 @@ interface StatsStore {
   isLoading: boolean;
   isValidating: boolean;
   statSummary: StatSummary;
+  statsByPlayer: StatsByPlayer;
+  statsByTeam: StatsByTeam;
   isValidatingStats: boolean;
 }
 
@@ -31,13 +35,21 @@ const StatsStoreContext = createContext<StatsStore>({
   isLoading: false,
   isValidating: false,
   statSummary: [],
+  statsByPlayer: [],
+  statsByTeam: [],
   isValidatingStats: false,
 });
 
-export function useShots(filter: Filter, isEnabled = true) {
+export function useShots(
+  filter: Filter,
+  isEnabled = true,
+  shouldLoadAuxData = true,
+) {
   const filterKey = useMemo(() => JSON.stringify(filter), [filter]);
   const [courtShotData, setCourtShotData] = useState<CourtShotData>([]);
   const [statSummary, setStatSummary] = useState<StatSummary>([]);
+  const [statsByPlayer, setStatsByPlayer] = useState<StatsByPlayer>([]);
+  const [statsByTeam, setStatsByTeam] = useState<StatsByTeam>([]);
 
   // const [shots, setShots] = useState<Pick<Shot, T[number]>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +118,25 @@ export function useShots(filter: Filter, isEnabled = true) {
       .catch((error) => {
         console.error(error);
       });
-  }, [isEnabled, filterKey, lastFilterKey, filter]);
+
+    if (shouldLoadAuxData) {
+      db.getStatsByPlayer(filter).then((data) => {
+        if (signal.aborted) {
+          return;
+        }
+
+        setStatsByPlayer(data);
+      });
+
+      db.getStatsByTeam(filter).then((data) => {
+        if (signal.aborted) {
+          return;
+        }
+
+        setStatsByTeam(data);
+      });
+    }
+  }, [isEnabled, filterKey, lastFilterKey, filter, shouldLoadAuxData]);
 
   return {
     // data: shots,
@@ -114,6 +144,8 @@ export function useShots(filter: Filter, isEnabled = true) {
     isLoading,
     isValidating,
     statSummary,
+    statsByPlayer,
+    statsByTeam,
     isValidatingStats,
   };
 }
@@ -131,6 +163,8 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     isLoading,
     isValidating,
     statSummary,
+    statsByPlayer,
+    statsByTeam,
     isValidatingStats,
   } = useShots(currentFilter.filters, isEnabled);
 
@@ -141,6 +175,8 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
         isLoading,
         isValidating,
         statSummary,
+        statsByPlayer,
+        statsByTeam,
         isValidatingStats,
       }}
     >

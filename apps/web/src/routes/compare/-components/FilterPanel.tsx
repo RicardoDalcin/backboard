@@ -35,7 +35,7 @@ export const FilterPanel = ({
     defaultValues: { filterId: filter.id },
   });
 
-  const { courtShotData, statSummary } = useShots(filter.filters);
+  const { courtShotData, statSummary } = useShots(filter.filters, true, false);
 
   const { filters } = useFilters();
 

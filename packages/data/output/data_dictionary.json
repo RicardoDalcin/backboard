@@ -80,13 +80,13 @@
     "2": "2PT Field Goal"
   },
   "basicZone": {
-    "1": "Above Break 3",
-    "2": "Restricted Area",
-    "3": "Mid-Range",
-    "4": "Left Corner 3",
-    "5": "Paint (Non-RA)",
-    "6": "Right Corner 3",
-    "7": "Backcourt"
+    "1": "aboveBreak3",
+    "2": "restrictedArea",
+    "3": "midRange",
+    "4": "leftCorner3",
+    "5": "paintNonRa",
+    "6": "rightCorner3",
+    "7": "backcourt"
   },
   "zoneName": {
     "1": "Left Side Center",

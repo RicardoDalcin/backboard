@@ -42,6 +42,15 @@ type CategoricalChartWrapper = {
 
 const ZONE_ORDER = [2, 3, 6, 1, 4, 5];
 
+type ZoneKey =
+  | 'aboveBreak3'
+  | 'restrictedArea'
+  | 'midRange'
+  | 'leftCorner3'
+  | 'paintNonRa'
+  | 'rightCorner3'
+  | 'backcourt';
+
 export const ShotRegionChart = ({
   data,
 }: {
@@ -188,7 +197,13 @@ export const ShotRegionChart = ({
             data={chartData}
           >
             <PolarGrid />
-            <PolarAngleAxis dataKey="region" fontSize="80%" />
+            <PolarAngleAxis
+              dataKey="region"
+              fontSize="80%"
+              tickFormatter={(value) =>
+                t(`basketball.zones.${value as unknown as ZoneKey}`)
+              }
+            />
             <PolarRadiusAxis tick={false} />
             <Radar
               name="Total"

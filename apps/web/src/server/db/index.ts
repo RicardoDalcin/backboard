@@ -324,6 +324,59 @@ class NBADatabase {
     return data;
   }
 
+  async getStatsByPlayer(filters: Partial<Filter>) {
+    console.log(filters);
+    const query = `
+      SELECT
+      playerId,
+      SUM(if(shotType = 1, shotMade, 0)) as total3PtMade,
+      SUM(if(shotType = 2, shotMade, 0)) as total2PtMade,
+      COUNT(if(shotType = 1, 1, NULL)) as total3PtShots,
+      COUNT(if(shotType = 2, 1, NULL)) as total2PtShots
+      FROM mem.shots
+      ${filters ? this.getShotsTableFilters(filters) : ''}
+      GROUP BY playerId
+    `;
+
+    if (import.meta.env.DEV) {
+      console.log(query);
+    }
+
+    return this.db.exec<{
+      playerId: number;
+      total3PtMade: number;
+      total2PtMade: number;
+      total3PtShots: number;
+      total2PtShots: number;
+    }>(query);
+  }
+
+  async getStatsByTeam(filters: Partial<Filter>) {
+    const query = `
+      SELECT
+      teamId,
+      SUM(if(shotType = 1, shotMade, 0)) as total3PtMade,
+      SUM(if(shotType = 2, shotMade, 0)) as total2PtMade,
+      COUNT(if(shotType = 1, 1, NULL)) as total3PtShots,
+      COUNT(if(shotType = 2, 1, NULL)) as total2PtShots
+      FROM mem.shots
+      ${filters ? this.getShotsTableFilters(filters) : ''}
+      GROUP BY teamId
+    `;
+
+    if (import.meta.env.DEV) {
+      console.log(query);
+    }
+
+    return this.db.exec<{
+      teamId: number;
+      total3PtMade: number;
+      total2PtMade: number;
+      total3PtShots: number;
+      total2PtShots: number;
+    }>(query);
+  }
+
   async deleteData() {
     await this.db.close();
     await this.fileSystem.deleteFile(this.DATABASE_OPFS_PATH);
