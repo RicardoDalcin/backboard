@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useTranslation } from 'react-i18next';
+import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
 
 type StatsByTeam = Awaited<ReturnType<typeof db.getStatsByTeam>>;
 type StatsByTeamWithTeam = StatsByTeam[number] & {
@@ -52,10 +53,12 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
       {
         header: t('basketball.stats.team'),
         accessorKey: 'teamName',
+        enableSorting: false,
       },
       {
         header: t('basketball.stats.shots'),
         accessorKey: 'totalShots',
+        enableSorting: true,
         sortingFn: (rowA, rowB) => {
           const totalA =
             rowA.original.total2PtShots + rowA.original.total3PtShots;
@@ -72,11 +75,20 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
       {
         header: '2pts',
         accessorKey: 'total2PtShots',
+        enableSorting: true,
         cell: ({ row }) => bigFormatter.format(row.original.total2PtShots),
       },
       {
         header: 'FG2%',
         accessorKey: 'total2PtMade',
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const fg2A =
+            rowA.original.total2PtMade / (rowA.original.total2PtShots || 1);
+          const fg2B =
+            rowB.original.total2PtMade / (rowB.original.total2PtShots || 1);
+          return fg2A - fg2B;
+        },
         cell: ({ row }) =>
           percentageFormatter.format(
             (row.original.total2PtMade / (row.original.total2PtShots || 1)) *
@@ -86,11 +98,20 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
       {
         header: '3pts',
         accessorKey: 'total3PtShots',
+        enableSorting: true,
         cell: ({ row }) => bigFormatter.format(row.original.total3PtShots),
       },
       {
         header: 'FG3%',
         accessorKey: 'total3PtMade',
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const fg3A =
+            rowA.original.total3PtMade / (rowA.original.total3PtShots || 1);
+          const fg3B =
+            rowB.original.total3PtMade / (rowB.original.total3PtShots || 1);
+          return fg3A - fg3B;
+        },
         cell: ({ row }) =>
           percentageFormatter.format(
             (row.original.total3PtMade / (row.original.total3PtShots || 1)) *
@@ -99,6 +120,20 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
       },
       {
         header: 'eFG%',
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const totalShotsA =
+            rowA.original.total2PtShots + rowA.original.total3PtShots || 1;
+          const totalShotsB =
+            rowB.original.total2PtShots + rowB.original.total3PtShots || 1;
+          const efgA =
+            (rowA.original.total2PtMade + 1.5 * rowA.original.total3PtMade) /
+            totalShotsA;
+          const efgB =
+            (rowB.original.total2PtMade + 1.5 * rowB.original.total3PtMade) /
+            totalShotsB;
+          return efgA - efgB;
+        },
         cell: ({ row }) => {
           const totalShots =
             row.original.total2PtShots + row.original.total3PtShots || 1;
@@ -137,14 +172,34 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
+                const canSort = header.column.getCanSort();
+                const sortDirection = header.column.getIsSorted();
                 return (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+                    {header.isPlaceholder ? null : (
+                      <div
+                        className={
+                          canSort
+                            ? 'flex items-center gap-1 cursor-pointer select-none hover:text-foreground'
+                            : 'flex items-center'
+                        }
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
                         )}
+                        {canSort && (
+                          <span>
+                            {sortDirection === 'asc' ? (
+                              <ArrowUpIcon className="h-4 w-4" />
+                            ) : sortDirection === 'desc' ? (
+                              <ArrowDownIcon className="h-4 w-4" />
+                            ) : null}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </TableHead>
                 );
               })}
