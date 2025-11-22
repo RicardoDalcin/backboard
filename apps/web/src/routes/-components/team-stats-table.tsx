@@ -19,24 +19,16 @@ import {
 } from '@/components/ui/table';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import { useFormatter } from '@/stores/formatter';
 
 type StatsByTeam = Awaited<ReturnType<typeof db.getStatsByTeam>>;
 type StatsByTeamWithTeam = StatsByTeam[number] & {
   teamName: string;
 };
 
-const bigFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
-const percentageFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
 export function TeamStatsTable({ data }: { data: StatsByTeam }) {
   const { t } = useTranslation();
+  const formatter = useFormatter();
 
   const dataWithTeam = useMemo<StatsByTeamWithTeam[]>(() => {
     return data.map((item) => {
@@ -56,7 +48,7 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
         enableSorting: false,
       },
       {
-        header: t('basketball.stats.shots'),
+        header: t('basketball.stats.total'),
         accessorKey: 'totalShots',
         enableSorting: true,
         sortingFn: (rowA, rowB) => {
@@ -68,7 +60,7 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
           return totalA - totalB;
         },
         cell: ({ row }) =>
-          bigFormatter.format(
+          formatter.bigNumber.format(
             row.original.total2PtShots + row.original.total3PtShots,
           ),
       },
@@ -76,7 +68,8 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
         header: '2pts',
         accessorKey: 'total2PtShots',
         enableSorting: true,
-        cell: ({ row }) => bigFormatter.format(row.original.total2PtShots),
+        cell: ({ row }) =>
+          formatter.bigNumber.format(row.original.total2PtShots),
       },
       {
         header: 'FG2%',
@@ -90,7 +83,7 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
           return fg2A - fg2B;
         },
         cell: ({ row }) =>
-          percentageFormatter.format(
+          formatter.percentage.format(
             (row.original.total2PtMade / (row.original.total2PtShots || 1)) *
               100,
           ) + '%',
@@ -99,7 +92,8 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
         header: '3pts',
         accessorKey: 'total3PtShots',
         enableSorting: true,
-        cell: ({ row }) => bigFormatter.format(row.original.total3PtShots),
+        cell: ({ row }) =>
+          formatter.bigNumber.format(row.original.total3PtShots),
       },
       {
         header: 'FG3%',
@@ -113,7 +107,7 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
           return fg3A - fg3B;
         },
         cell: ({ row }) =>
-          percentageFormatter.format(
+          formatter.percentage.format(
             (row.original.total3PtMade / (row.original.total3PtShots || 1)) *
               100,
           ) + '%',
@@ -138,7 +132,7 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
           const totalShots =
             row.original.total2PtShots + row.original.total3PtShots || 1;
           return (
-            percentageFormatter.format(
+            formatter.percentage.format(
               ((row.original.total2PtMade + 1.5 * row.original.total3PtMade) /
                 totalShots) *
                 100,
@@ -147,7 +141,7 @@ export function TeamStatsTable({ data }: { data: StatsByTeam }) {
         },
       },
     ];
-  }, [t]);
+  }, [t, formatter]);
 
   const table = useReactTable<StatsByTeamWithTeam>({
     data: dataWithTeam,

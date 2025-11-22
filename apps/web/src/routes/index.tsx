@@ -10,11 +10,11 @@ import { useStats } from '@/stores/stats';
 import { Court } from '@/components/viz/court';
 import { ShotRegionChart } from '@/components/viz/shot-region-chart';
 import { useTranslation } from 'react-i18next';
-import { PlayerStatsTable } from './-components/player-stats-table';
 import { motion, AnimatePresence } from 'motion/react';
 import { useRef, useState } from 'react';
-import { TeamStatsTable } from './-components/team-stats-table';
 import { useFilters } from '@/stores/filters';
+import { PlayerScatterplot } from '@/components/viz/player-scatterplot';
+import { TeamScatterplot } from '@/components/viz/team-scatterplot';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -147,7 +147,7 @@ function Index() {
               <Skeleton className="w-full h-full aspect-[90/100] !rounded-xl" />
             ) : (
               <div>
-                <PlayerStatsTable data={statsByPlayer} />
+                <PlayerScatterplot data={statsByPlayer} />
               </div>
             )}
           </Card>
@@ -157,7 +157,7 @@ function Index() {
               <Skeleton className="w-full h-full aspect-[90/100] !rounded-xl" />
             ) : (
               <div>
-                <TeamStatsTable data={statsByTeam} />
+                <TeamScatterplot data={statsByTeam} />
               </div>
             )}
           </Card>

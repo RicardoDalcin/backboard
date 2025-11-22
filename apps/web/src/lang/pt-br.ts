@@ -107,7 +107,8 @@ export const ptBR = {
         threePointer: '3 pontos',
         player: 'Jogador',
         team: 'Time',
-        shots: 'Total',
+        total: 'Total',
+        shots: 'Arremessos',
       },
       zones: {
         aboveBreak3: 'Acima da Linha 3',
@@ -117,6 +118,10 @@ export const ptBR = {
         paintNonRa: 'Área Pintada',
         rightCorner3: 'Canto Dir. 3',
         backcourt: 'Fundo de Quadra',
+      },
+      conferences: {
+        eastern: 'Leste',
+        western: 'Oeste',
       },
     },
   },

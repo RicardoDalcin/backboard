@@ -107,6 +107,7 @@ export const enUS: Resource = {
         threePointer: '3PT shots',
         player: 'Player',
         team: 'Team',
+        total: 'Shots',
         shots: 'Shots',
       },
       zones: {
@@ -117,6 +118,10 @@ export const enUS: Resource = {
         paintNonRa: 'Paint (Non-RA)',
         rightCorner3: 'Right Corner 3',
         backcourt: 'Backcourt',
+      },
+      conferences: {
+        eastern: 'Eastern',
+        western: 'Western',
       },
     },
   },

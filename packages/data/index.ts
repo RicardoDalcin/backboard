@@ -11,6 +11,7 @@ interface Team {
   id: number;
   name: string;
   abbreviation: string;
+  conference: 'eastern' | 'western';
 }
 
 const TEAMS = Object.values(ALL_TEAMS) as Team[];

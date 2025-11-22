@@ -15,16 +15,7 @@ import { useAtom } from 'jotai';
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
 import { useTranslation } from 'react-i18next';
-
-const bigFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
-const percentageFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+import { useFormatter } from '@/stores/formatter';
 
 type CategoricalChartWrapper = {
   container: HTMLDivElement;
@@ -235,13 +226,14 @@ const Stat = ({
   total?: number;
   hints?: string[];
 }) => {
+  const formatter = useFormatter();
   const formattedTotal = useMemo(
-    () => (total ? bigFormatter.format(total) : null),
-    [total],
+    () => (total ? formatter.bigNumber.format(total) : null),
+    [total, formatter],
   );
   const formattedAccuracy = useMemo(
-    () => percentageFormatter.format(accuracy),
-    [accuracy],
+    () => formatter.percentage.format(accuracy),
+    [accuracy, formatter],
   );
   return (
     <div className="flex flex-col items-center gap-2">

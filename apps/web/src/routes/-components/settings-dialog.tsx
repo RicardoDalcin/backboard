@@ -13,11 +13,7 @@ import { useLocation } from '@tanstack/react-router';
 import { Trans, useTranslation } from 'react-i18next';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-
-const formatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+import { useFormatter } from '@/stores/formatter';
 
 export function SettingsDialog({
   isOpen,
@@ -34,10 +30,11 @@ export function SettingsDialog({
 
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const formatter = useFormatter();
 
   const fileSizeMB = useMemo(() => {
-    return formatter.format(fileSize / 1024 / 1024) + 'mb';
-  }, [fileSize]);
+    return formatter.bigNumber.format(fileSize / 1024 / 1024) + 'mb';
+  }, [fileSize, formatter]);
 
   useEffect(() => {
     db.getStorageSize().then((size) => {

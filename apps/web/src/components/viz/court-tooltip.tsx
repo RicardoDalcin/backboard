@@ -2,6 +2,8 @@ import { HoverCallbackData } from '@/engine/Visualization';
 import { cn } from '@/lib/utils';
 import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useFormatter } from '@/stores/formatter';
+import { useTranslation } from 'react-i18next';
 
 const roundTo = (num: number, precision: number) => {
   return Math.round(num * 10 ** precision) / 10 ** precision;
@@ -56,9 +58,8 @@ export const CourtTooltip = ({
   shots: HoverCallbackData;
   container: RefObject<HTMLDivElement | null>;
 }) => {
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'decimal',
-  });
+  const formatter = useFormatter();
+  const { t } = useTranslation();
 
   const shots = useDebounce(hoveredShot, 200, (s) => s?.totalShots === 0);
 
@@ -162,17 +163,17 @@ export const CourtTooltip = ({
           }}
         >
           <div className="w-full h-full px-4 py-2 flex flex-col justify-between">
-            <div className="text-sm">
+            <div className="text-sm lowercase">
               <span className="font-bold">
-                {formatter.format(
+                {formatter.bigNumber.format(
                   average.madeShots || lastValidAverage.madeShots,
                 )}
                 /
-                {formatter.format(
+                {formatter.bigNumber.format(
                   average.totalShots || lastValidAverage.totalShots,
                 )}
               </span>{' '}
-              shots
+              {t('basketball.stats.shots')}
             </div>
 
             <div className="text-sm">
