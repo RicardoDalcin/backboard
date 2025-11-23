@@ -54,16 +54,6 @@ export const FiltersProvider = ({
     DEFAULT_FILTER_ID,
   );
 
-  const currentFilter = useMemo(() => {
-    const filter = filters.find((f) => f.id === currentFilterId);
-
-    if (!filter) {
-      throw new Error('Filter not found');
-    }
-
-    return filter;
-  }, [currentFilterId, filters]);
-
   const saveFilter = useCallback(
     (newFilter: FilterItem) => {
       setFilters((filters) => {
@@ -113,9 +103,25 @@ export const FiltersProvider = ({
     [setCurrentFilterId],
   );
 
+  const currentFilter = useMemo(() => {
+    const filter = filters.find((f) => f.id === currentFilterId);
+
+    if (!filter) {
+      const fallback = filters[0];
+      selectFilter(fallback.id);
+      return fallback;
+    }
+
+    return filter;
+  }, [currentFilterId, filters, selectFilter]);
+
   const deleteFilter = useCallback(
     (id: number) => {
       setFilters((filters) => {
+        if (filters.length === 1) {
+          return filters;
+        }
+
         return filters.filter((f) => f.id !== id);
       });
 
