@@ -31,7 +31,7 @@ function RouteComponent() {
     [
       {
         id: 1,
-        filterId: null,
+        filterId: 1,
       },
       {
         id: 2,
@@ -70,7 +70,7 @@ function RouteComponent() {
         ...panel,
         filter:
           panel.filterId != null
-            ? filters.find((f) => f.id === panel.filterId)
+            ? (filters.find((f) => f.id === panel.filterId) ?? null)
             : null,
       })),
     [panels, filters],

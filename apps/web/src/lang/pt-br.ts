@@ -79,6 +79,7 @@ export const ptBR = {
     filters: {
       name: 'Nome',
       saveChanges: 'Salvar alterações',
+      newFilter: 'Novo filtro',
       editFilter: 'Editar filtro',
       createFilter: 'Criar filtro',
       saveAsNewFilter: 'Salvar como novo filtro',

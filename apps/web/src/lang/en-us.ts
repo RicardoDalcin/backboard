@@ -80,6 +80,7 @@ export const enUS: Resource = {
     filters: {
       name: 'Name',
       saveChanges: 'Save changes',
+      newFilter: 'New filter',
       editFilter: 'Edit filter',
       createFilter: 'Create filter',
       saveAsNewFilter: 'Save as new filter',

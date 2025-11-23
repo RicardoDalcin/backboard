@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface FiltersStore {
   filters: FilterItem[];
@@ -35,12 +36,13 @@ export const FiltersProvider = ({
 }) => {
   const DEFAULT_FILTER_ID = 1;
 
+  const { t } = useTranslation();
   const [filters, setFilters] = useLocalStorage<FilterItem[]>(
     'backboard.filters',
     [
       {
         id: DEFAULT_FILTER_ID,
-        name: 'New filter',
+        name: t('filters.newFilter'),
         filters: DEFAULT_FILTER,
       },
     ],
