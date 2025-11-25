@@ -187,7 +187,10 @@ export class VisualizationEngine {
 
     for (const shot of shots) {
       const key = this.getShotKey(shot.locX + 25, shot.locY);
-      const seasonAverage = seasonAverages[`${shot.locX};${shot.locY}`];
+      const seasonAverage = seasonAverages[`${shot.locX};${shot.locY}`] ?? {
+        totalShots: 0,
+        totalMade: 0,
+      };
       const fgPercentage =
         seasonAverage.totalShots > 0
           ? seasonAverage.totalMade / seasonAverage.totalShots
