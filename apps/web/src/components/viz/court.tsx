@@ -1,10 +1,15 @@
-import { HoverCallbackData, VisualizationEngine } from '@/engine/Visualization';
+import {
+  HoverCallbackData,
+  SHOT_COLORS,
+  VisualizationEngine,
+} from '@/engine/Visualization';
 import { useEffect, useRef, useState } from 'react';
 import { CourtTooltip } from './court-tooltip';
 import { useAtom } from 'jotai';
 import { atom } from 'jotai';
 import { regionSync } from '@/stores/chart-sync';
 import { BASIC_ZONES } from '@nba-viz/data';
+import { useFilters } from '@/stores/filters';
 
 const hoveredSectionAtom = atom<{
   startX: number;
@@ -25,7 +30,7 @@ export const Court = ({
   const initialized = useRef(false);
   const engine = useRef<VisualizationEngine | null>(null);
   const [hoveredSection, setHoveredSection] = useAtom(hoveredSectionAtom);
-
+  const { currentFilter } = useFilters();
   const [hoveringData, setHoveringData] = useState<HoverCallbackData>(null);
 
   const isMouseOver = useRef(false);
@@ -90,8 +95,23 @@ export const Court = ({
       return;
     }
 
-    engine.current.setShotData(data);
+    engine.current.setShotData(data, {
+      min: currentFilter.filters.season[0],
+      max: currentFilter.filters.season[1],
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  useEffect(() => {
+    if (!engine.current) {
+      return;
+    }
+
+    engine.current.setSeasonRange(
+      currentFilter.filters.season[0],
+      currentFilter.filters.season[1],
+    );
+  }, [currentFilter]);
 
   useEffect(() => {
     if (
@@ -123,10 +143,63 @@ export const Court = ({
   }, [activeIndex]);
 
   return (
-    <div ref={containerRef} className="w-full h-min relative">
+    <div ref={containerRef} className="w-full h-min relative @container">
       <canvas ref={canvasRef}></canvas>
 
       <CourtTooltip shots={hoveringData} container={containerRef} />
+
+      <div className="w-full flex items-center justify-between @xl:px-4 px-2 pb-1">
+        <div className="flex flex-col gap-0.5">
+          <div className="@xl:h-4 h-3 flex items-center @xl:text-[10px] text-[8px] text-white">
+            <div
+              className="@xl:w-7 w-5 h-full flex items-center justify-center"
+              style={{ background: SHOT_COLORS.badEnd }}
+            >
+              -10%
+            </div>
+            <div
+              className="@xl:w-7 w-5 h-full flex items-center justify-center"
+              style={{ background: SHOT_COLORS.badStart }}
+            >
+              -3%
+            </div>
+            <div
+              className="@xl:w-7 w-5 h-full flex items-center justify-center"
+              style={{ background: SHOT_COLORS.base }}
+            ></div>
+            <div
+              className="@xl:w-7 w-5 h-full flex items-center justify-center"
+              style={{ background: SHOT_COLORS.goodStart }}
+            >
+              +3%
+            </div>
+            <div
+              className="@xl:w-7 w-5 h-full flex items-center justify-center"
+              style={{ background: SHOT_COLORS.goodEnd }}
+            >
+              +10%
+            </div>
+          </div>
+
+          <p className="opacity-60 @xl:text-xs text-[10px]">
+            FG% vs. média da liga
+          </p>
+        </div>
+
+        <div className="flex flex-col items-end gap-0.5">
+          <div className="@xl:h-4 h-3 flex items-center text-white @xl:gap-2 gap-1.5">
+            <div className="bg-zinc-800 @xl:size-[5px] size-[3px]"></div>
+            <div className="bg-zinc-800 @xl:size-[7px] size-[5px]"></div>
+            <div className="bg-zinc-800 @xl:size-[9px] size-[7px]"></div>
+            <div className="bg-zinc-800 @xl:size-[11px] size-[9px]"></div>
+            <div className="bg-zinc-800 @xl:size-[13px] size-[11px]"></div>
+          </div>
+
+          <p className="opacity-60 @xl:text-xs text-[10px]">
+            Volume: baixo para alto
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
