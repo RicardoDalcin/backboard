@@ -1,4 +1,4 @@
-import { BASIC_ZONES, ZONE_LOCATIONS } from '@nba-viz/data';
+import { BASIC_ZONES, SEASON_AVERAGES, ZONE_LOCATIONS } from '@nba-viz/data';
 
 // All units are in feet
 
@@ -57,6 +57,8 @@ interface ShotSection {
 
   totalMade: number;
   totalMissed: number;
+
+  leagueAverage: number;
 }
 
 export type HighlightCallbackData = {
@@ -109,6 +111,10 @@ export class VisualizationEngine {
   private isMouseOutside = false;
   private cachedVisualization: ImageData | null = null;
   private cachedZones = new Map<keyof typeof BASIC_ZONES, HTMLCanvasElement>();
+  private seasonRange = {
+    min: 0,
+    max: 0,
+  };
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -133,6 +139,10 @@ export class VisualizationEngine {
     return x + y * GRID_SIZE;
   }
 
+  setSeasonRange(min: number, max: number) {
+    this.seasonRange = { min, max };
+  }
+
   setShotData(
     shots: {
       locX: number;
@@ -140,11 +150,48 @@ export class VisualizationEngine {
       totalShots: number;
       totalMade: number;
     }[],
+    seasonRange: {
+      min: number;
+      max: number;
+    },
   ) {
     this.shots.clear();
+    this.seasonRange = seasonRange;
+
+    const seasonAverages: Record<
+      string,
+      {
+        totalShots: number;
+        totalMade: number;
+      }
+    > = {};
+    for (
+      let season = this.seasonRange.min;
+      season <= this.seasonRange.max;
+      season++
+    ) {
+      const seasonKey = String(season) as keyof typeof SEASON_AVERAGES;
+      const averages = SEASON_AVERAGES[seasonKey];
+
+      for (const [key, value] of Object.entries(averages)) {
+        const averageAtPosition = seasonAverages[key] ?? {
+          totalShots: 0,
+          totalMade: 0,
+        };
+
+        averageAtPosition.totalShots += value.totalShots;
+        averageAtPosition.totalMade += value.totalMade;
+        seasonAverages[key] = averageAtPosition;
+      }
+    }
 
     for (const shot of shots) {
       const key = this.getShotKey(shot.locX + 25, shot.locY);
+      const seasonAverage = seasonAverages[`${shot.locX};${shot.locY}`];
+      const fgPercentage =
+        seasonAverage.totalShots > 0
+          ? seasonAverage.totalMade / seasonAverage.totalShots
+          : 0;
       this.shots.set(key, {
         x: shot.locX + 25,
         y: shot.locY,
@@ -152,6 +199,7 @@ export class VisualizationEngine {
         fieldGoalPercentage: 0,
         totalMade: shot.totalMade,
         totalMissed: shot.totalShots - shot.totalMade,
+        leagueAverage: fgPercentage,
       });
     }
 
@@ -425,7 +473,10 @@ export class VisualizationEngine {
 
     const { x, y } = this.sectionToPosition(shot.x, shot.y);
 
-    const color = getAccuracyColor(shot.fieldGoalPercentage);
+    const color = getAccuracyColor(
+      shot.fieldGoalPercentage,
+      shot.leagueAverage,
+    );
     this.ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
 
     this.ctx.beginPath();
@@ -911,6 +962,55 @@ const colorInterpolate = (colorA: string, colorB: string, intval: number) => {
   };
 };
 
-const getAccuracyColor = (accuracy: number) => {
-  return colorInterpolate('rgb(101, 146, 173)', 'rgb(0, 20, 30)', accuracy);
+const rgbStringToObject = (color: string) => {
+  const [r, g, b] = color
+    .replace('rgb(', '')
+    .replace(')', '')
+    .split(',')
+    .map((str) => Number(str));
+  return { r, g, b };
+};
+
+// const SHOT_COLORS = {
+//   base: 'rgb(249, 220, 150)',
+//   goodStart: 'rgb(240, 130, 95)',
+//   goodEnd: 'rgb(174, 42, 71)',
+//   badStart: 'rgb(99, 137, 186)',
+//   badEnd: 'rgb(101, 146, 173)',
+// };
+
+export const SHOT_COLORS = {
+  base: 'rgb(69, 107, 130)',
+  goodStart: 'rgb(48, 82, 102)',
+  goodEnd: 'rgb(28, 54, 69)',
+  badStart: 'rgb(96, 135, 158)',
+  badEnd: 'rgb(137, 176, 199)',
+};
+
+const getAccuracyColor = (accuracy: number, average?: number) => {
+  if (average == undefined) {
+    return rgbStringToObject(SHOT_COLORS.base);
+  }
+
+  const tolerance = 0.01;
+
+  if (Math.abs(accuracy - average) <= tolerance) {
+    return rgbStringToObject(SHOT_COLORS.base);
+  }
+
+  // Lerp difference from diffStart% to diffMax%. Any different greater than diffMax% is lerped to 100% difference
+  const distanceFromAverage = Math.abs(accuracy - average);
+  const lerpAmount = Math.min(distanceFromAverage / 0.1, 1);
+
+  const colorLerp =
+    accuracy > average
+      ? {
+          start: SHOT_COLORS.goodStart,
+          end: SHOT_COLORS.goodEnd,
+        }
+      : {
+          start: SHOT_COLORS.badStart,
+          end: SHOT_COLORS.badEnd,
+        };
+  return colorInterpolate(colorLerp.start, colorLerp.end, lerpAmount);
 };

@@ -6,6 +6,7 @@ import {
   POSITIONS,
   ZONE_LOCATIONS,
 } from './output';
+import SEASON_AVERAGES from './output/season_averages.json';
 
 interface Team {
   id: number;
@@ -44,5 +45,6 @@ export {
   BASIC_ZONES,
   POSITIONS,
   ZONE_LOCATIONS,
+  SEASON_AVERAGES,
 };
 export type { Team, Season, Player };

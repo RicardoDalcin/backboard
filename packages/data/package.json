@@ -10,7 +10,8 @@
     "scrape:off": "tsx src/offensive/scrape-offensive-ratings.ts",
     "scrape:winners": "python3 src/winners/nba_winners_to_json.py",
     "scrape:players": "python3 src/players/players.py",
-    "db:create": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsx src/create-db.ts"
+    "db:create": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsx src/create-db.ts",
+    "db:test": "tsx src/test.ts"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
