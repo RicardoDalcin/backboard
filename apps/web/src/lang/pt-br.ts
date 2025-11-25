@@ -63,8 +63,12 @@ export const ptBR = {
     explore: {
       loadingShots: 'Carregando arremessos...',
       exploringShots: 'Explorando {{count, number}} arremessos',
-      statsByPlayer: 'Volume e eficiência por jogador',
-      statsByTeam: 'Volume e eficiência por time',
+      volume: 'Volume',
+      efficiency: 'Eficiência',
+      teams: 'Times',
+      players: 'Jogadores',
+      fgVsLeagueAverage: 'FG% vs. média da liga',
+      volumeLowToHigh: 'Volume: baixo para alto',
     },
     compare: {
       title: 'Comparar',

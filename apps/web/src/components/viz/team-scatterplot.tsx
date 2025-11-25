@@ -87,7 +87,7 @@ export function TeamScatterplot({ data }: { data: StatsByTeam }) {
     <ResponsiveContainer
       minWidth="100%"
       width="100%"
-      style={{ paddingTop: '8px', paddingRight: '8px' }}
+      style={{ paddingTop: '8px', paddingRight: '8px', paddingLeft: '4px' }}
       minHeight={200}
       aspect={1}
     >
@@ -101,6 +101,8 @@ export function TeamScatterplot({ data }: { data: StatsByTeam }) {
           name="totalShots"
           tickFormatter={formatter.bigNumber.format}
           className="text-xs"
+          height={55}
+          label={{ value: t('explore.volume'), position: 'insideCenter' }}
         />
         <YAxis
           domain={yDomain}
@@ -109,7 +111,8 @@ export function TeamScatterplot({ data }: { data: StatsByTeam }) {
           name="eFG%"
           unit="%"
           className="text-xs"
-          width={40}
+          width={50}
+          label={{ value: t('explore.efficiency'), angle: -90, position: 'insideLeft' }}
         />
 
         <Tooltip cursor={{ strokeDasharray: '3 3' }} content={CustomTooltip} />

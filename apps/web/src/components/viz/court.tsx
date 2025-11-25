@@ -10,6 +10,7 @@ import { atom } from 'jotai';
 import { regionSync } from '@/stores/chart-sync';
 import { BASIC_ZONES } from '@nba-viz/data';
 import { useFilters } from '@/stores/filters';
+import { useTranslation } from 'react-i18next';
 
 const hoveredSectionAtom = atom<{
   startX: number;
@@ -32,7 +33,7 @@ export const Court = ({
   const [hoveredSection, setHoveredSection] = useAtom(hoveredSectionAtom);
   const { currentFilter } = useFilters();
   const [hoveringData, setHoveringData] = useState<HoverCallbackData>(null);
-
+  const { t } = useTranslation();
   const isMouseOver = useRef(false);
   const abortController = useRef(new AbortController());
 
@@ -182,7 +183,7 @@ export const Court = ({
           </div>
 
           <p className="opacity-60 @xl:text-xs text-[10px]">
-            FG% vs. média da liga
+            {t('explore.fgVsLeagueAverage')}
           </p>
         </div>
 
@@ -196,7 +197,7 @@ export const Court = ({
           </div>
 
           <p className="opacity-60 @xl:text-xs text-[10px]">
-            Volume: baixo para alto
+            {t('explore.volumeLowToHigh')}
           </p>
         </div>
       </div>
