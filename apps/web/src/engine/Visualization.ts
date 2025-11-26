@@ -240,8 +240,8 @@ export class VisualizationEngine {
       this.cachedVisualization = this.ctx.getImageData(
         0,
         0,
-        this.canvas.width * devicePixelRatio,
-        this.canvas.height * devicePixelRatio,
+        this.canvas.width,
+        this.canvas.height,
       );
     }
 
