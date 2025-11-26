@@ -26,6 +26,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.56.1(react@19.1.0))
+      '@microsoft/clarity':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@nba-viz/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -188,7 +191,7 @@ importers:
         version: 5.6.0
       puppeteer:
         specifier: ^24.6.1
-        version: 24.7.1(typescript@5.8.3)
+        version: 24.7.1(typescript@5.7.3)
       sqlite3:
         specifier: ^5.1.7
         version: 5.1.7
@@ -550,6 +553,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@microsoft/clarity@1.0.1':
+    resolution: {integrity: sha512-z/UCSbEvDzQgCvpwnqtGHgBRGcbO+id7463wDTJXU38Lj4uuewaKLhHt11D1oq1RsO1CFDTHDPbQUXu6k0fD9g==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -3475,6 +3481,8 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
+  '@microsoft/clarity@1.0.1': {}
+
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -4656,14 +4664,14 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  cosmiconfig@9.0.0(typescript@5.8.3):
+  cosmiconfig@9.0.0(typescript@5.7.3):
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
       js-yaml: 4.1.0
       parse-json: 5.2.0
     optionalDependencies:
-      typescript: 5.8.3
+      typescript: 5.7.3
 
   cross-env@7.0.3:
     dependencies:
@@ -5587,11 +5595,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  puppeteer@24.7.1(typescript@5.8.3):
+  puppeteer@24.7.1(typescript@5.7.3):
     dependencies:
       '@puppeteer/browsers': 2.10.2
       chromium-bidi: 4.0.1(devtools-protocol@0.0.1425554)
-      cosmiconfig: 9.0.0(typescript@5.8.3)
+      cosmiconfig: 9.0.0(typescript@5.7.3)
       devtools-protocol: 0.0.1425554
       puppeteer-core: 24.7.1
       typed-query-selector: 2.12.0
