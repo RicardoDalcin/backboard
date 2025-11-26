@@ -26,9 +26,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.56.1(react@19.1.0))
-      '@microsoft/clarity':
-        specifier: ^1.0.1
-        version: 1.0.1
       '@nba-viz/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -553,9 +550,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
-
-  '@microsoft/clarity@1.0.1':
-    resolution: {integrity: sha512-z/UCSbEvDzQgCvpwnqtGHgBRGcbO+id7463wDTJXU38Lj4uuewaKLhHt11D1oq1RsO1CFDTHDPbQUXu6k0fD9g==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -3480,8 +3474,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
-
-  '@microsoft/clarity@1.0.1': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:

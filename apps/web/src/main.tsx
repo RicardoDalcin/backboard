@@ -2,18 +2,10 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { RouterProvider, createRouter } from '@tanstack/react-router';
-import Clarity from '@microsoft/clarity';
 
 import './i18n';
 import './index.css';
 
-const projectId = "uc62b9annv"
-
-try {
-  Clarity.init(projectId);
-} catch (error) {
-  console.error('Error initializing Clarity', error);
-}
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
