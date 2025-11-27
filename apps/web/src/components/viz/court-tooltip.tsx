@@ -49,7 +49,7 @@ function useDebounce<T>(
 }
 const WIDTH = 160;
 const HEIGHT = 70;
-const PADDING = 12;
+const PADDING = 18;
 
 export const CourtTooltip = ({
   shots: hoveredShot,
