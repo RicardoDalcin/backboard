@@ -44,6 +44,12 @@ export const enUS: Resource = {
       language: 'Language',
     },
     welcome: {
+      notSupported: {
+        title: 'Browser version not supported',
+        description:
+          'Unfortunately, the browser version you are using is not supported by the platform. To make the experience work properly, Backboard requires a newer version. We apologize for the inconvenience.',
+        minimumRequisites: 'Minimum requisites',
+      },
       title: 'Welcome to Backboard',
       aboutBackboard:
         'Backboard in an offline-first data visualization dashboard for exploring, analyzing and comparing NBA shot data.',

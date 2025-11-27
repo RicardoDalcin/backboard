@@ -42,6 +42,12 @@ export const ptBR = {
       language: 'Idioma',
     },
     welcome: {
+      notSupported: {
+        title: 'Versão do navegador não suportada',
+        description:
+          'Infelizmente, a versão do navegador que você está utilizando não é suportada pela plataforma. Para que a experiência funcione corretamente, o Backboard requer uma versão mais recente. Sentimos muito pela inconveniência.',
+        minimumRequisites: 'Requisitos mínimos',
+      },
       title: 'Bem-vindo ao Backboard',
       aboutBackboard:
         'Backboard é um dashboard de visualização de dados offline-first para explorar, analisar e comparar dados de arremessos da NBA.',

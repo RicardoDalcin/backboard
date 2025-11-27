@@ -325,7 +325,6 @@ class NBADatabase {
   }
 
   async getStatsByPlayer(filters: Partial<Filter>) {
-    console.log(filters);
     const query = `
       SELECT
       playerId,
