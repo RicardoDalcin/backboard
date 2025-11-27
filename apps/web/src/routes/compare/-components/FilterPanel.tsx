@@ -83,7 +83,7 @@ export const FilterPanel = ({
         )}
       </div>
 
-      <Court data={courtShotData} />
+      <Court data={courtShotData} filter={filter.filters} />
 
       <ShotRegionChart data={statSummary} />
     </div>

@@ -25,7 +25,7 @@ export const Route = createFileRoute('/')({
 function Index() {
   const { courtShotData, isLoading, statSummary, statsByPlayer, statsByTeam } =
     useStats();
-  const { getShareableUrl } = useFilters();
+  const { getShareableUrl, currentFilter } = useFilters();
   const { t } = useTranslation();
 
   const totalShots = courtShotData.reduce(
@@ -128,7 +128,7 @@ function Index() {
             {isLoading ? (
               <Skeleton className="w-full aspect-[541/406.83] !rounded-xl" />
             ) : (
-              <Court data={courtShotData} />
+              <Court data={courtShotData} filter={currentFilter.filters} />
             )}
           </Card>
 
@@ -148,7 +148,10 @@ function Index() {
             ) : (
               <div>
                 <h1 className="text-base opacity-80 font-medium px-4 pt-2 flex items-center gap-1">
-                  <strong>{t('explore.players')}</strong> - <p className="text-sm">{t('explore.volume')} x {t('explore.efficiency')}</p>
+                  <strong>{t('explore.players')}</strong> -{' '}
+                  <p className="text-sm">
+                    {t('explore.volume')} x {t('explore.efficiency')}
+                  </p>
                 </h1>
                 <PlayerScatterplot data={statsByPlayer} />
               </div>
@@ -160,8 +163,11 @@ function Index() {
               <Skeleton className="w-full h-full aspect-[90/100] !rounded-xl" />
             ) : (
               <div>
-                 <h1 className="text-base opacity-80 font-medium px-4 pt-2 flex items-center gap-1">
-                  <strong>{t('explore.teams')}</strong> - <p className="text-sm">{t('explore.volume')} x {t('explore.efficiency')}</p>
+                <h1 className="text-base opacity-80 font-medium px-4 pt-2 flex items-center gap-1">
+                  <strong>{t('explore.teams')}</strong> -{' '}
+                  <p className="text-sm">
+                    {t('explore.volume')} x {t('explore.efficiency')}
+                  </p>
                 </h1>
                 <TeamScatterplot data={statsByTeam} />
               </div>

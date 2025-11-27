@@ -9,8 +9,8 @@ import { useAtom } from 'jotai';
 import { atom } from 'jotai';
 import { regionSync } from '@/stores/chart-sync';
 import { BASIC_ZONES } from '@nba-viz/data';
-import { useFilters } from '@/stores/filters';
 import { useTranslation } from 'react-i18next';
+import { Filter } from '@/types/filters';
 
 const hoveredSectionAtom = atom<{
   startX: number;
@@ -21,8 +21,10 @@ const hoveredSectionAtom = atom<{
 
 export const Court = ({
   data,
+  filter,
 }: {
   data: { locX: number; locY: number; totalShots: number; totalMade: number }[];
+  filter: Filter;
 }) => {
   const [activeIndex] = useAtom(regionSync);
 
@@ -31,7 +33,6 @@ export const Court = ({
   const initialized = useRef(false);
   const engine = useRef<VisualizationEngine | null>(null);
   const [hoveredSection, setHoveredSection] = useAtom(hoveredSectionAtom);
-  const { currentFilter } = useFilters();
   const [hoveringData, setHoveringData] = useState<HoverCallbackData>(null);
   const { t } = useTranslation();
   const isMouseOver = useRef(false);
@@ -97,8 +98,8 @@ export const Court = ({
     }
 
     engine.current.setShotData(data, {
-      min: currentFilter.filters.season[0],
-      max: currentFilter.filters.season[1],
+      min: filter.season[0],
+      max: filter.season[1],
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
@@ -108,11 +109,8 @@ export const Court = ({
       return;
     }
 
-    engine.current.setSeasonRange(
-      currentFilter.filters.season[0],
-      currentFilter.filters.season[1],
-    );
-  }, [currentFilter]);
+    engine.current.setSeasonRange(filter.season[0], filter.season[1]);
+  }, [filter]);
 
   useEffect(() => {
     if (
