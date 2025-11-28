@@ -103,7 +103,7 @@ export function MultiCombobox<T>({
         </FormControl>
       </PopoverTrigger>
 
-      <PopoverContent className="p-0" align="start">
+      <PopoverContent className="p-0 w-[240px]" align="start">
         <Command>
           <CommandInput
             placeholder={searchPlaceholder ?? t('select.search')}
